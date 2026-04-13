@@ -1,23 +1,40 @@
 {
   "name": "whatsapp-invite-system",
+  "private": true,
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Scalable async notification system using Next.js, BullMQ, Redis, and PostgreSQL",
+  "author": "Suraj Khonde",
+  "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm dev:web & pnpm dev:worker",
+    "dev:web": "pnpm --filter web dev",
+    "dev:worker": "pnpm --filter worker start",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "worker": "pnpm --filter worker start",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "nextjs",
+    "bullmq",
+    "redis",
+    "prisma",
+    "postgresql",
+    "queue",
+    "worker",
+    "scalable-system"
+  ],
   "devDependencies": {
     "@types/node": "^25.6.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "5.22.0",
     "bullmq": "^5.73.4",
+    "dotenv": "^16.4.5",
     "ioredis": "^5.10.1",
-    "prisma": "^5.22.0"
+    "prisma": "5.22.0"
   }
 }
