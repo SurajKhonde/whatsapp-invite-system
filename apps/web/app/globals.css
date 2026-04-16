@@ -2,31 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🌈 Theme */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #fff1f2; /* soft pink bg */
+  --foreground: #1f2937;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f0f0f;
+    --foreground: #f9fafb;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
 }
-/* globals.css */
+
+/* ✨ Animations */
+
 @keyframes float {
   0% { transform: translateY(0px); opacity: 0.6; }
   50% { transform: translateY(-20px); opacity: 1; }
@@ -36,6 +32,7 @@ body {
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
 @keyframes fall {
   0% {
     transform: translateY(-100vh);
@@ -52,4 +49,20 @@ body {
 
 .animate-fall {
   animation: fall linear infinite;
+}
+
+/* 🔥 Components (Tailwind-safe way) */
+
+@layer components {
+  .input {
+    @apply w-full px-3 py-3 rounded-xl border border-pink-200 bg-white
+    focus:ring-2 focus:ring-pink-300 focus:border-pink-400 outline-none transition;
+  }
+
+  .btn-primary {
+    @apply w-full py-3 rounded-xl text-white font-medium
+    bg-gradient-to-r from-pink-500 to-red-500
+    hover:from-pink-600 hover:to-red-600
+    shadow-md hover:shadow-lg transition transform hover:scale-[1.02];
+  }
 }

@@ -6,7 +6,7 @@
   "author": "Suraj Khonde",
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm dev:web & pnpm dev:worker",
+    "dev": "pnpm dev:web ",
     "dev:web": "pnpm --filter web dev",
     "dev:worker": "pnpm --filter worker start",
     "build": "pnpm --filter web build",

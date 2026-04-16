@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-
+import { serverAdapter } from "@core/queue/board";
 import routes from "./routes";
 import { errorHandler } from "@core/errors/errorHandler";
 
@@ -35,7 +35,7 @@ app.get("/health", (req, res) => {
 
 // 🔥 API routes
 app.use("/api", routes);
-
+app.use("/admin/queues", serverAdapter.getRouter());
 // ❌ 404 handler (important)
 app.use((req, res) => {
   res.status(404).json({

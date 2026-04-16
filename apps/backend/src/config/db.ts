@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { logger } from "../core/logger/logger";
+import { logger } from "@core/logger/logger";
 
 const isProd = process.env.NODE_ENV === "production";
 

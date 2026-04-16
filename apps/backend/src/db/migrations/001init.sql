@@ -1,4 +1,4 @@
-\-- 001_init.sql
+-- 001_init.sql
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 
   email_otp INTEGER,
   otp_expires_at TIMESTAMP,
-  otp_purpose TEXT DEFAULT NULL,  -- ✅ added
+  otp_purpose TEXT DEFAULT NULL,
 
   created_at TIMESTAMP NOT NULL DEFAULT now(),
   updated_at TIMESTAMP NOT NULL DEFAULT now()

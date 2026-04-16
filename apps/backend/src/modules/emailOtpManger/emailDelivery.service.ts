@@ -1,7 +1,6 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { logger } from "@core/logger/logger";
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const isProd = process.env.NODE_ENV === "production";
@@ -11,8 +10,8 @@ const devTransporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",
   port: 587,
   auth: {
-    user: process.env.EMAIL_USER!,
-    pass: process.env.EMAIL_PASS!,
+    user: process.env.SENDER_EMAIL!,
+    pass: process.env.SENDER_EMAIL_PASSWORD!,
   },
 });
 
@@ -27,18 +26,20 @@ export const sendEmail = async ({
 }) => {
   try {
     if (!isProd) {
-      await devTransporter.sendMail({
+      let info=await devTransporter.sendMail({
         from: '"Dev App" <dev@app.com>',
         to,
         subject,
         html,
       });
-
+      console.log(
+        "📨 Preview URL:",
+        nodemailer.getTestMessageUrl(info)
+      );
       logger.info({ to }, "Email sent (DEV)");
       return;
     }
 
-    // 🔥 PROD (Resend)
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to,

@@ -7,7 +7,7 @@ import {
   verifySignupUser,
   clearOtp,
 } from "./auth.repo";
-import { otpQueue } from "@modules/emailOtpManger/emailOTP.queue";
+import { otpQueue } from "@queue/emailOTP.queue";
 
 const SALT_ROUNDS = 10;
 
@@ -40,13 +40,13 @@ export const signupService = async ({
     password: hashedPassword,
     otp,
     otpExpiry,
-    purpose: "signup", // ✅ FIXED
+    purpose: "signup", 
   });
 
   await otpQueue.add("sendOTP", {
     email,
     otp,
-    purpose: "signup", // ✅ IMPORTANT
+    purpose: "signup",
   });
 
   logger.info({ userId: user.id }, "Signup success, OTP queued");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignupMutation } from "@/store/apiSlice";
+import { useSignupMutation } from "Store/apiSlice";
 import { getErrorMessage } from "@/lib/errors";
 
 export default function SignupPage() {

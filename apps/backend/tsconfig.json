@@ -18,7 +18,11 @@
       "@config/*": ["src/config/*"],
       "@core/*": ["src/core/*"],
       "@modules/*": ["src/modules/*"],
-      "@db/*": ["db/*"]
+      "@db/*": ["db/*"],
+      "@queue/*": ["src/core/queue/*"],
+      "@workers/*": ["src/core/workers/*"],
+      "@templates/*": ["src/template/*"]
+
     }
   },
 

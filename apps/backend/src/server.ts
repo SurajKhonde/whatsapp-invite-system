@@ -1,10 +1,11 @@
+import "./config/env";
 import app from "./app";
 import { connectDB, closeDB } from "@config/db";
 import { logger } from "@core/logger/logger";
 import { closeRedis } from "@config/redis";
 import { Server } from "http";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 let server: Server;
 

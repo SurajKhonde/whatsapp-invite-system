@@ -4,10 +4,13 @@ import { pool } from "@config/db";
 import { logger } from "@core/logger/logger";
 
 const runMigrations = async () => {
-  const dir = path.join(__dirname, "migrations");
+  const dir = __dirname; // ✅ FIXED
+
   const files = fs.readdirSync(dir).sort();
 
   for (const file of files) {
+    if (file === "migrate.ts") continue; // skip self
+
     const filePath = path.join(dir, file);
     const sql = fs.readFileSync(filePath, "utf-8");
 
