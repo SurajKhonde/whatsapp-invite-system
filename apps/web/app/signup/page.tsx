@@ -58,7 +58,9 @@ export default function SignupPage() {
 
   try {
     await signup({ name, email, password }).unwrap();
-    router.push(`/verify?email=${email}`);
+    router.replace(
+  `/verify?email=${encodeURIComponent(email)}&purpose=signup`
+);
   } catch (err: unknown) {
   setError(getErrorMessage(err));
 }

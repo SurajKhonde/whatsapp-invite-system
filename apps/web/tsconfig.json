@@ -28,6 +28,7 @@
       "@/utils/*": ["utils/*"],
       "@/store/*": ["Store/*"],
       "@/providers/*":["providers/*"],
+      "@/context/*":["context/*"]
     },
     "ignoreDeprecations": "6.0",
   },

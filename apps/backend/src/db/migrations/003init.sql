@@ -1,0 +1,1 @@
+ALTER TABLE guests ADD COLUMN phone_last4 VARCHAR(4);

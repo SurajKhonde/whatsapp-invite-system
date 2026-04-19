@@ -21,7 +21,6 @@ export const verifyOtpService = async ({
   if (!user) {
     throw new AppError("User not found", 404);
   }
-console.log(user.email_otp , otp)
   // ❌ wrong OTP
   if (user.email_otp !== otp) {
     throw new AppError("Invalid OTP", 400);

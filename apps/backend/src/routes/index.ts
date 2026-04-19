@@ -1,13 +1,11 @@
-import express from "express";
-import { signup } from "@modules/auth/auth.controller";
-import {verifyOtp} from "@modules/emailOtpManger/emailOTP.controller";
+import { Router } from "express";
+import authRoutes from "@modules/auth/auth.routes";
 import guestRoutes from "@modules/guest/guest.routes";
 
+const router = Router();
 
-const router = express.Router();
-
-router.post("/auth/signup", signup);
-router.post("/auth/verify-otp", verifyOtp);
+// ✅ mount modules
+router.use("/auth", authRoutes);
 router.use("/guests", guestRoutes);
 
 export default router;

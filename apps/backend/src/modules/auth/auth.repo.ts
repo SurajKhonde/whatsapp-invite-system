@@ -54,3 +54,32 @@ export const clearOtp = async (email: string) => {
     [email]
   );
 };
+export const updateOtp = async (
+  email: string,
+  otp: number,
+  otpExpiry: Date,
+  purpose: "signup" | "forgot_password"
+) => {
+  await pool.query(
+    `UPDATE users 
+     SET email_otp = $1,
+         otp_expires_at = $2,
+         otp_purpose = $3
+     WHERE email = $4`,
+    [otp, otpExpiry, purpose, email]
+  );
+};
+export const updatePassword = async (
+  email: string,
+  hashedPassword: string
+) => {
+  await pool.query(
+    `UPDATE users 
+     SET password = $1,
+         email_otp = NULL,
+         otp_expires_at = NULL,
+         otp_purpose = NULL
+     WHERE email = $2`,
+    [hashedPassword, email]
+  );
+};

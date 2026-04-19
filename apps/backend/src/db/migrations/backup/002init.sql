@@ -1,7 +1,5 @@
--- guests table
-
 CREATE TABLE IF NOT EXISTS guests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   host_id UUID NOT NULL, -- 🔥 FK to users
 

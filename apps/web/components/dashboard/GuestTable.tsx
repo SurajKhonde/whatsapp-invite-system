@@ -1,4 +1,5 @@
 export default function GuestTable({ data }: any) {
+  const user = data?.data || []
   return (
     <div className="bg-white rounded-2xl shadow border border-pink-100 h-full flex flex-col">
 
@@ -10,7 +11,7 @@ export default function GuestTable({ data }: any) {
 
       <div className="flex-1 overflow-y-auto">
 
-        {data.length === 0 ? (
+        {user?.length === 0 ? (
           <div className="h-full flex items-center justify-center text-gray-400">
             No guests saved yet
           </div>
@@ -26,7 +27,7 @@ export default function GuestTable({ data }: any) {
             </thead>
 
             <tbody>
-              {data.map((g: any, i: number) => (
+              {user?.map((g: any, i: number) => (
                 <tr key={i} className="border-b hover:bg-pink-50">
 
                   <td className="p-3 font-medium text-black">{g.name}</td>

@@ -4,13 +4,20 @@ import { pool } from "@config/db";
 import { logger } from "@core/logger/logger";
 
 const runMigrations = async () => {
-  const dir = __dirname; // ✅ FIXED
+  const dir = __dirname;
 
-  const files = fs.readdirSync(dir).sort();
+  const files = fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".sql"))
+    .sort();
+
+  logger.info(`Migration files found: ${JSON.stringify(files)}`);
+
+  // ✅ check DB
+  const dbCheck = await pool.query("SELECT current_database()");
+  logger.info(`Connected DB: ${dbCheck.rows[0].current_database}`);
 
   for (const file of files) {
-    if (file === "migrate.ts") continue; // skip self
-
     const filePath = path.join(dir, file);
     const sql = fs.readFileSync(filePath, "utf-8");
 
@@ -22,6 +29,8 @@ const runMigrations = async () => {
       process.exit(1);
     }
   }
+
+  await pool.end();
 };
 
 runMigrations().then(() => process.exit());

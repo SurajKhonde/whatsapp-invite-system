@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "@core/logger/logger";
+import { AppError } from "@core/errors/AppError";
 
 export const errorHandler = (
   err: any,
@@ -7,10 +8,34 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  logger.error({ err }, "Unhandled error");
+  // ✅ Known / expected errors
+  if (err instanceof AppError) {
+    logger.warn(
+      {
+        message: err.message,
+        statusCode: err.statusCode,
+        path: req.originalUrl,
+        method: req.method,
+      },
+      "Handled application error"
+    );
 
-  res.status(err.statusCode || 500).json({
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+  }
+  logger.error(
+    {
+      err,
+      path: req.originalUrl,
+      method: req.method,
+    },
+    "Unhandled system error"
+  );
+
+  return res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: "Internal Server Error",
   });
 };

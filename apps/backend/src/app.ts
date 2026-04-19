@@ -3,8 +3,10 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { serverAdapter } from "@core/queue/board";
-import routes from "./routes";
+import mainRoutes from "./routes";
 import { errorHandler } from "@core/errors/errorHandler";
+import cookieParser from "cookie-parser";
+
 
 const app = express();
 
@@ -14,11 +16,11 @@ app.use(helmet());
 // 🔥 CORS
 app.use(
   cors({
-    origin: "*", // 🔥 restrict in production
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
-
+app.use(cookieParser());
 // 🔥 Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,7 +36,7 @@ app.get("/health", (req, res) => {
 });
 
 // 🔥 API routes
-app.use("/api", routes);
+app.use("/api", mainRoutes);
 app.use("/admin/queues", serverAdapter.getRouter());
 // ❌ 404 handler (important)
 app.use((req, res) => {

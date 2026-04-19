@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Header from "@/components/dashboard/Header";
 import GuestForm from "@/components/dashboard/GuestForm";
 import DraftGuestList from "@/components/dashboard/DraftGuestList";
 import GuestTable from "@/components/dashboard/GuestTable";
@@ -41,9 +40,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-red-50">
-
-      <Header />
-
       {/* TOP */}
       <div className="grid grid-cols-2 gap-6 p-6">
 

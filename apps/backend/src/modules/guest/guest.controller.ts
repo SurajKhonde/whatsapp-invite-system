@@ -2,11 +2,14 @@ import { Request, Response } from "express";
 import {
   addGuestsService,
   getGuestsService,
+  revealGuestsService
 } from "./guest.service";
+import { requireUser } from "@middlewares/requireUser";
 
-// 🔥 POST /api/guests/bulk
+//  POST /api/guests/bulk
 export const addGuests = async (req: Request, res: Response) => {
-  const hostId = req.user?.id;
+  const user =requireUser(req);
+  const hostId = user.userId;
   const { guests } = req.body;
 
   const data = await addGuestsService(hostId, guests);
@@ -17,14 +20,29 @@ export const addGuests = async (req: Request, res: Response) => {
   });
 };
 
-// 🔥 GET /api/guests
+// GET /api/guests
 export const getGuests = async (req: Request, res: Response) => {
-  const hostId = req.user?.id;
+  const user =requireUser(req);
+  const hostId = user.userId;
+  
 
   const guests = await getGuestsService(hostId);
 
-  res.json({
+ res.json({
     success: true,
     data: guests,
   });
 };
+export const revealController = (async (req: Request, res: Response) => {
+  const user = requireUser(req);
+  const hostId = user.userId;
+
+  const { guestIds } = req.body;
+
+  const data = await revealGuestsService(hostId, guestIds);
+
+  res.status(200).json({
+    success: true,
+    data,
+  });
+});
