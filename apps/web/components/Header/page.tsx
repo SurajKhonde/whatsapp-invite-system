@@ -9,14 +9,13 @@ export default function Header() {
   const navItems = [
     { name: "Home", path: "/dashboard" },
     { name: "Templates", path: "/templates" },
-    { name: "Create", path: "/create" },
     { name: "Events", path: "/events" },
   ];
 
   return (
     <header className="bg-white border-b border-pink-100 px-8 py-4 flex justify-between items-center">
       <h1 className="text-xl font-bold text-pink-600">
-        InvitePro
+          Mehfil
       </h1>
 
       <div className="flex gap-6 text-sm font-medium">

@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { redisQueue } from "@config/redis";
 import { sendEmail } from "@modules/emailOtpManger/emailDelivery.service";
-import { getOtpTemplate } from "@templates/otpTemplate";
+import { getOtpTemplate } from "@modules/template/otpTemplate";
 new Worker(
   "otpQueue",
   async (job) => {

@@ -1,10 +1,13 @@
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithNotify } from "@/lib/baseQueryWithNotify";
+import { TemplateResponse } from "@/types/template";
+import { GuestResponse } from "@/types/guest";
+import { MeResponse ,User} from "@/types/api.types";
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithNotify,
-  tagTypes: ["Guests"],
+  tagTypes: ["Guests", "Templates"],
 
   endpoints: (builder) => ({
     // ================= AUTH =================
@@ -40,10 +43,14 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    getMe: builder.query<User, void>({
+  query: () => "/api/auth/me",
 
-    // ================= GUEST =================
+  transformResponse: (response: MeResponse) => response.data,
+}),
+      // ================= GUEST =================
 
-    getGuests: builder.query<any[], void>({
+    getGuests: builder.query<GuestResponse, void>({
       query: () => "/api/guests",
       providesTags: ["Guests"],
     }),
@@ -56,6 +63,13 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Guests"],
     }),
+  getTemplates: builder.query<TemplateResponse, void>({
+  query: () => ({
+    url: "/api/templates",
+    method: "GET",
+  }),
+  providesTags: ["Templates"],
+}),
   }),
 });
 
@@ -64,6 +78,8 @@ export const {
   useLoginMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
+  useGetMeQuery,
   useGetGuestsQuery,
   useAddGuestsMutation,
+  useGetTemplatesQuery,
 } = apiSlice;

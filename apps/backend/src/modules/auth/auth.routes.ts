@@ -7,6 +7,7 @@ import {
   forgotPasswordController,
   resetPasswordController,
   logoutController,
+  getMe
 } from "./auth.controller";
 import { rateLimiter } from "@middlewares/rateLimiter";
 import { authMiddleware } from "@middlewares/auth.middleware";
@@ -33,7 +34,7 @@ router.post("/login",  rateLimiter({
     windowSec: 300,
     keyPrefix: "rate:login",
   }),loginController);
-
+router.get("/me", authMiddleware, getMe);
 router.post("/forgot-password", forgotPasswordController);
 
 router.post("/reset-password",authMiddleware, resetPasswordController);

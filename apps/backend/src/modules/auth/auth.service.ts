@@ -70,10 +70,11 @@ export const signupService = async ({
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
   const user = await createUser({
-    email,
+    email:email.toLowerCase(),
     password: hashedPassword,
     otp,
     otpExpiry,
+    role:"admin",
     purpose: "signup",
   });
 
@@ -86,7 +87,7 @@ export const signupService = async ({
 
   logger.info({ userId: user.id }, "Signup success, OTP queued");
 const token = jwt.sign(
-  { userId: user.id },
+  { userId: user.id ,role:user.role},
   process.env.JWT_SECRET!,
   { expiresIn: "7d" }
 );
@@ -164,7 +165,7 @@ export const resendOtpService = async ({
   }
 
   await otpQueue.add("sendOTP", {
-    email,
+    email:email.toLowerCase(),
     otp,
     purpose,
   });

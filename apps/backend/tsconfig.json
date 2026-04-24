@@ -20,9 +20,10 @@
       "@db/*": ["db/*"],
       "@queue/*": ["src/core/queue/*"],
       "@workers/*": ["src/core/workers/*"],
-      "@templates/*": ["src/template/*"],
+      "@templates/*": ["src/modules/template/*"],
       "@middlewares/*": ["src/middlewares/*"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@/db/*": ["src/db/*"]
 
     }
   },

@@ -3,8 +3,8 @@ import "./globals.css";
 import Providers from "@/providers/Providers";
 import AppLayout from "@/components/layout/AppLayout";
 export const metadata: Metadata = {
-  title: "InviteFlow 🚀",
-  description: "Send WhatsApp invites at scale",
+  title: "Mehfil",
+  description: "Send WhatsApp invites at where every gathering begins",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="hindi">
+    <html lang="en">
       <body>
         <Providers>
          <AppLayout>{children}</AppLayout> 

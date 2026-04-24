@@ -84,3 +84,11 @@ export const logoutController = (req: Request, res: Response) => {
   res.clearCookie("access_token");
   res.json({ message: "Logged out successfully" });
 };
+
+export const getMe = (req: Request, res: Response) => {
+  // user already attached in authMiddleware
+  res.json({
+    success: true,
+    data: req.user,
+  });
+};

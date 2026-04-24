@@ -1,148 +1,188 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const messages = [
+  "where every gathering begins ✨",
+  "1K+ messages delivered and counting 📩",
+  "10+ events created successfully 🎉",
+  "reliable delivery, every time ⚡",
+  "built for scale — 10K+ messages 🚀",
+];
 
 export default function LandingPage() {
+  const [text, setText] = useState("");
+  const [index, setIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+
+  // ✨ Typing effect
+  useEffect(() => {
+    const current = messages[index];
+
+    if (charIndex < current.length) {
+      const timeout = setTimeout(() => {
+        setText((prev) => prev + current[charIndex]);
+        setCharIndex((prev) => prev + 1);
+      }, 35);
+
+      return () => clearTimeout(timeout);
+    } else {
+      const timeout = setTimeout(() => {
+        setText("");
+        setCharIndex(0);
+        setIndex((prev) => (prev + 1) % messages.length);
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [charIndex, index]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-red-50">
-      {/* Navbar */}
-      <div className="flex justify-between items-center p-6 bg-white/80 backdrop-blur shadow-sm">
-        <h1 className="text-xl font-bold text-pink-600">
-          InviteFlow ❤️
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#140d0f]">
+
+      {/* 🌈 DARK GRADIENT BASE */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f12] via-[#140d0f] to-[#1a0f12]" />
+
+      {/* 🔴 BIG FLOATING BUBBLES */}
+      <div className="bubble bubble1" />
+      <div className="bubble bubble2" />
+      <div className="bubble bubble3" />
+      <div className="bubble bubble4" />
+
+      {/* 🧭 NAVBAR */}
+      <div className="absolute top-0 right-0 p-6 flex gap-4 z-10">
+        <Link
+          href="/login"
+          className="px-4 py-2 rounded-full border border-gray-600 text-gray-300
+          hover:border-transparent hover:text-white
+          hover:bg-gradient-to-r hover:from-pink-500 hover:to-red-500
+          transition-all duration-300"
+        >
+          Login
+        </Link>
+
+        <Link
+          href="/signup"
+          className="px-5 py-2 rounded-full text-white
+          bg-gradient-to-r from-pink-500 to-red-500
+          shadow-lg hover:shadow-2xl hover:scale-105
+          transition-all duration-300"
+        >
+          Signup
+        </Link>
+      </div>
+
+      {/* 💎 MAIN */}
+      <div className="text-center z-10 px-6">
+
+        {/* BRAND */}
+        <h1 className="text-6xl md:text-7xl font-extrabold mb-6">
+          <span className="bg-gradient-to-r from-pink-400 via-red-400 to-orange-400 bg-clip-text text-transparent animate-gradient">
+            Mehfil
+          </span>
         </h1>
 
-        <div className="flex gap-4 items-center">
-          <Link href="/login" className="text-gray-700 hover:text-pink-600">
-            Login
+        {/* ✨ TYPING */}
+        <p className="text-lg md:text-xl text-gray-300 mb-10 h-8">
+          {text}
+          <span className="animate-pulse">|</span>
+        </p>
+
+        {/* CTA */}
+        <div className="flex justify-center gap-4">
+          <Link
+            href="/signup"
+            className="px-8 py-3 rounded-full text-white text-lg font-medium
+            bg-gradient-to-r from-pink-500 to-red-500
+            shadow-lg hover:shadow-2xl hover:scale-105
+            transition-all duration-300"
+          >
+            Get Started
           </Link>
 
           <Link
-            href="/signup"
-            className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 py-2 rounded-lg shadow"
+            href="/login"
+            className="px-8 py-3 rounded-full border border-gray-600 text-gray-300
+            hover:border-transparent hover:text-white
+            hover:bg-gradient-to-r hover:from-pink-500 hover:to-red-500
+            transition-all duration-300"
           >
-            Signup
+            Login
           </Link>
         </div>
       </div>
 
-      {/* HERO SECTION */}
-      <div className="text-center mt-20 px-6">
-        <h2 className="text-5xl font-bold mb-6 text-gray-800 leading-tight">
-          Create Beautiful Invites <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">
-            For Every Special Moment ❤️
-          </span>
-        </h2>
+      {/* 🎨 STYLES */}
+      <style jsx>{`
+        /* 🌈 Gradient animation */
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradientMove 6s ease infinite;
+        }
 
-        <p className="text-gray-600 max-w-xl mx-auto mb-8">
-          Weddings, birthdays, baby showers or any celebration —
-          send stunning WhatsApp invites in seconds.
-        </p>
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
 
-        <Link
-          href="/signup"
-          className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-8 py-3 rounded-full text-lg shadow-lg hover:scale-105 transition"
-        >
-          Start Sending Invites 🚀
-        </Link>
-      </div>
+        /* 🔴 BUBBLES */
+        .bubble {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.25;
+          animation: float 20s infinite ease-in-out;
+        }
 
-      {/* EVENT SHOWCASE */}
-      <div className="grid md:grid-cols-3 gap-8 mt-20 px-10">
-        {[
-          {
-            title: "Wedding 💍",
-            desc: "Elegant invites for your big day",
-            img: "https://images.unsplash.com/photo-1520857014576-2c4f4c972b57",
-          },
-          {
-            title: "Birthday 🎂",
-            desc: "Fun and colorful party invites",
-            img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d",
-          },
-          {
-            title: "Baby Shower 👶",
-            desc: "Cute and memorable invites",
-            img: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-          },
-        ].map((event, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl overflow-hidden shadow-lg hover:scale-105 transition"
-          >
-            <img src={event.img} className="h-48 w-full object-cover" />
-            <div className="p-5">
-              <h3 className="font-bold text-lg text-pink-600">
-                {event.title}
-              </h3>
-              <p className="text-gray-600">{event.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+        .bubble1 {
+          width: 300px;
+          height: 300px;
+          background: #ff4d6d;
+          top: 10%;
+          left: 10%;
+        }
 
-      {/* HOW IT WORKS */}
-      <div className="mt-24 px-10 text-center">
-        <h2 className="text-3xl font-bold mb-10 text-gray-800">
-          How It Works ⚡
-        </h2>
+        .bubble2 {
+          width: 400px;
+          height: 400px;
+          background: #fb7185;
+          bottom: 10%;
+          right: 10%;
+          animation-delay: 5s;
+        }
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            "Upload your guest list 📋",
-            "Choose beautiful template 🎨",
-            "Send via WhatsApp instantly 📲",
-          ].map((step, i) => (
-            <div
-              key={i}
-              className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition"
-            >
-              <h3 className="font-semibold text-pink-600 mb-2">
-                Step {i + 1}
-              </h3>
-              <p className="text-gray-600">{step}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+        .bubble3 {
+          width: 250px;
+          height: 250px;
+          background: #f43f5e;
+          top: 50%;
+          left: 60%;
+          animation-delay: 2s;
+        }
 
-      {/* FEATURES */}
-      <div className="grid md:grid-cols-3 gap-6 mt-20 px-10">
-        <div className="bg-white p-6 shadow rounded-xl">
-          <h3 className="font-bold mb-2 text-pink-600">
-            Bulk Invites 🚀
-          </h3>
-          <p className="text-gray-600">Send 1000+ invites using queue system.</p>
-        </div>
+        .bubble4 {
+          width: 200px;
+          height: 200px;
+          background: #ec4899;
+          bottom: 30%;
+          left: 20%;
+          animation-delay: 7s;
+        }
 
-        <div className="bg-white p-6 shadow rounded-xl">
-          <h3 className="font-bold mb-2 text-pink-600">
-            Real-time Tracking 📊
-          </h3>
-          <p className="text-gray-600">Track delivered, failed, pending invites.</p>
-        </div>
-
-        <div className="bg-white p-6 shadow rounded-xl">
-          <h3 className="font-bold mb-2 text-pink-600">
-            Reliable Delivery 🔁
-          </h3>
-          <p className="text-gray-600">Retry system ensures no invite is missed.</p>
-        </div>
-      </div>
-
-      {/* FINAL CTA */}
-      <div className="text-center mt-24 pb-20 px-6">
-        <h2 className="text-3xl font-bold mb-4 text-gray-800">
-          Ready to Send Your First Invite? 🎉
-        </h2>
-
-        <Link
-          href="/signup"
-          className="bg-gradient-to-r from-pink-500 to-red-500 text-white px-8 py-3 rounded-full text-lg shadow-lg"
-        >
-          Get Started Now ❤️
-        </Link>
-      </div>
+        @keyframes float {
+          0% {
+            transform: translateY(0) translateX(0);
+          }
+          50% {
+            transform: translateY(-40px) translateX(20px);
+          }
+          100% {
+            transform: translateY(0) translateX(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

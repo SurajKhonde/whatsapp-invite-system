@@ -1,9 +1,10 @@
 import { pool } from "@config/db";
 
 export const findUserByEmail = async (email: string) => {
+  const userEmail = email.toLowerCase();
   const res = await pool.query(
     "SELECT * FROM users WHERE email = $1",
-    [email]
+    [userEmail]
   );
   return res.rows[0];
 };
@@ -13,20 +14,22 @@ export const createUser = async ({
   password,
   otp,
   otpExpiry,
+  role,
   purpose,
 }: {
   email: string;
   password: string;
   otp: number;
   otpExpiry: Date;
+  role:string;
   purpose: string;
 }) => {
   const res = await pool.query(
     `INSERT INTO users 
-     (email, password, email_otp, otp_expires_at, otp_purpose)
-     VALUES ($1, $2, $3, $4, $5)
+     (email, password, email_otp, otp_expires_at,role,otp_purpose )
+     VALUES ($1, $2, $3, $4, $5,$6)
      RETURNING id, email`,
-    [email, password, otp, otpExpiry, purpose]
+    [email, password, otp, otpExpiry, role, purpose]
   );
 
   return res.rows[0];

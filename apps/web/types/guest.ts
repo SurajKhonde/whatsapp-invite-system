@@ -1,12 +1,15 @@
-// types/guest.ts
-
 export type Guest = {
-  id?: string;          // 🔥 add id (important for future DB)
+  id?: string;      
   name: string;
   phone: string;
-  relation?: string;   // 🔥 optional relation
+  relation?: string; 
   blocked?: boolean;
   inviteType ?: "marriage" | "baby" | "birthday";
-  lastSentAt?: string; // optional
+  lastSentAt?: string;
   status?:string;
 };
+
+export interface GuestResponse {
+  success: boolean;
+  data: Guest[];
+}

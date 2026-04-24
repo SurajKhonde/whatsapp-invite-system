@@ -10,11 +10,13 @@ export default function AppLayout({
 }) {
   const pathname = usePathname();
 
-  const hideHeaderRoutes = ["/login", "/signup", "/auth"];
+  
+  const hiddenExact = ["/"];
+const hiddenPrefix = ["/login", "/signup"];
 
-  const shouldHideHeader = hideHeaderRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+const shouldHideHeader =
+  hiddenExact.includes(pathname) ||
+  hiddenPrefix.some((r) => pathname.startsWith(r));
 
   return (
     <>

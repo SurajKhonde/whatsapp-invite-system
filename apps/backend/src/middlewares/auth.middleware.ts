@@ -15,11 +15,12 @@ export const authMiddleware = (
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       userId: string;
+      role: string;
     };
 
-    // ✅ attach user
     req.user = {
       userId: decoded.userId,
+      role: decoded.role, 
     };
 
     next();

@@ -6,7 +6,7 @@ import { serverAdapter } from "@core/queue/board";
 import mainRoutes from "./routes";
 import { errorHandler } from "@core/errors/errorHandler";
 import cookieParser from "cookie-parser";
-
+import path from "path";
 
 const app = express();
 
@@ -34,7 +34,7 @@ if (process.env.NODE_ENV !== "production") {
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
-
+app.use("/public", express.static(path.join(process.cwd(), "src/public")));
 // 🔥 API routes
 app.use("/api", mainRoutes);
 app.use("/admin/queues", serverAdapter.getRouter());
