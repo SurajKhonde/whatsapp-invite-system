@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type { Config } from "drizzle-kit";
-
+console.log("DRIZZLE DB:", process.env.DATABASE_URL);
 export default {
   schema: "./src/db/schema",
   out: "./drizzle",

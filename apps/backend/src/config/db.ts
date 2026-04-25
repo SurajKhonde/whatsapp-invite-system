@@ -17,6 +17,7 @@ export const pool = new Pool({
 
 export const connectDB = async () => {
   try {
+    console.log("APP DB:", process.env.DATABASE_URL);
     await pool.query("SELECT 1");
     logger.info("PostgreSQL connected");
   } catch (error) {

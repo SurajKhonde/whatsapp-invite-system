@@ -1,7 +1,7 @@
 "use client";
 
-import { useGetGuestsQuery } from "@/store/apiSlice";
-import { useState } from "react";
+import { useGetGuestsQuery, useGetTemplatesQuery, useCreateEventMutation } from "@/store/apiSlice";
+import { useEffect, useState } from "react";
 
 type Props = {
   templateId: string | null;
@@ -9,12 +9,24 @@ type Props = {
 };
 
 export default function CreateEventModal({ templateId, onClose }: Props) {
-  const { data, isLoading } = useGetGuestsQuery();
+  const { data: guestData, isLoading } = useGetGuestsQuery();
+  const { data: templateData } = useGetTemplatesQuery();
 
-  const guests = data?.data || [];
+  const [createEvent, { isLoading: creating }] = useCreateEventMutation();
+
+  const guests = guestData?.data || [];
+  const templates = templateData?.data || [];
 
   const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
   const [eventType, setEventType] = useState("birthday");
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(templateId);
+
+  // 🔥 auto set template from URL
+  useEffect(() => {
+    if (templateId) {
+      setSelectedTemplate(templateId);
+    }
+  }, [templateId]);
 
   const toggleGuest = (id: string) => {
     setSelectedGuests((prev) =>
@@ -23,17 +35,36 @@ export default function CreateEventModal({ templateId, onClose }: Props) {
         : [...prev, id]
     );
   };
-function handleClick() {
-  // For demo, just log the selections
-  console.log("Creating event with:");
-  console.log("Template ID:", templateId);
-  console.log("Event Type:", eventType);
-  console.log("Selected Guests:", selectedGuests);
-  onClose(); // close modal after action
-}
+
+  async function handleClick() {
+    if (!selectedTemplate) {
+      alert("Please select a template");
+      return;
+    }
+
+    if (selectedGuests.length === 0) {
+      alert("Select at least one guest");
+      return;
+    }
+
+    try {
+      await createEvent({
+        templateId: selectedTemplate,
+        eventType,
+        guests: selectedGuests,
+      }).unwrap();
+
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const selectedTemplateName =
+    templates.find((t: any) => t.id === selectedTemplate)?.title;
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-
       <div className="bg-white w-[520px] p-6 rounded-2xl shadow-2xl animate-scaleIn">
 
         {/* HEADER */}
@@ -52,10 +83,27 @@ function handleClick() {
 
         {/* TEMPLATE */}
         <div className="mb-4">
-          <p className="text-sm text-gray-500 mb-1">Selected Template</p>
-         <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-sm text-gray-800 font-medium">
-  🎉 Template ID: {templateId}
-</div>
+          <p className="text-sm text-gray-500 mb-1">Select Template</p>
+
+          {!templateId ? (
+            <select
+              className="w-full border rounded-lg p-2 text-black"
+              value={selectedTemplate || ""}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+            >
+              <option value="">Choose Template</option>
+
+              {templates.map((t: any) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="bg-pink-50 border border-pink-200 rounded-lg p-3 text-sm text-gray-800 font-medium">
+              🎉 {selectedTemplateName || "Loading..."}
+            </div>
+          )}
         </div>
 
         {/* GUEST LIST */}
@@ -71,7 +119,7 @@ function handleClick() {
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-pink-50 cursor-pointer"
               >
                 <div>
-                  <p className="font-medium">{g.name}</p>
+                  <p className="font-medium text-black">{g.name}</p>
                   <p className="text-sm text-gray-500">{g.phone}</p>
                 </div>
 
@@ -96,14 +144,15 @@ function handleClick() {
           </button>
 
           <button
-            className="px-5 py-2 rounded-lg text-white bg-gradient-to-r from-pink-500 to-orange-500 hover:scale-105 transition"
-            onClick={handleClick}>
-            Create Event
+            disabled={creating}
+            onClick={handleClick}
+            className="px-5 py-2 rounded-lg text-white bg-gradient-to-r from-pink-500 to-orange-500 hover:scale-105 transition disabled:opacity-50"
+          >
+            {creating ? "Creating..." : "Create Event"}
           </button>
         </div>
       </div>
 
-      {/* ANIMATION */}
       <style jsx>{`
         @keyframes scaleIn {
           from {

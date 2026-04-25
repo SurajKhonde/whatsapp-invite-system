@@ -1,223 +1,372 @@
-# 🚀 WhatsApp Invite System (Async Scalable Architecture)
+# MehFil – Reliable WhatsApp Invite System (Queue-Driven)
 
-A scalable invitation system built with **Next.js, BullMQ, Redis, and PostgreSQL** that handles bulk messaging using background workers and queue-based processing.
+🧠 Why this system exists
 
----
+A friend wanted to send engagement invites to a large number of guests via WhatsApp.
 
-## 🧠 Problem Statement
+At first glance, this seems trivial:
 
-Sending messages to multiple users (100–1000+) directly from an API leads to:
+select contacts
+forward message
 
-* ❌ Slow responses
-* ❌ API timeouts
-* ❌ Rate limiting issues
-* ❌ Poor user experience
+But when we think deeper, this breaks at scale:
 
-👉 This project solves it using **asynchronous job processing**.
+❌ Problems with manual approach
+no delivery tracking
+high chance of missing contacts
+no retry on failure
+not scalable beyond small groups
+cannot automate or reuse
 
----
+This led to a deeper question:
 
-## 🏗️ Architecture
+How do real systems handle bulk communication reliably?
 
-```
-Client (Next.js UI)
-        ↓
-Next.js API (enqueue jobs)
-        ↓
-Redis (BullMQ Queue)
-        ↓
-Worker Service (Node.js)
-        ↓
-External API (Gupshup / WhatsApp)
-        ↓
-PostgreSQL (status tracking)
-```
+That question drove the design of this system.
 
----
+💡 Core Idea
 
-## ⚙️ Tech Stack
+The system is not about “sending messages”.
 
-* **Frontend**: Next.js (App Router)
-* **Backend**: Next.js API routes
-* **Queue**: BullMQ
-* **Cache / Broker**: Redis
-* **Database**: PostgreSQL (Prisma ORM)
-* **Worker**: Node.js (separate process)
-* **Auth**: OTP-based authentication
-* **Deployment (planned)**:
+It is about:
 
-  * Vercel (Frontend)
-  * AWS EC2 (Worker)
-  * EC2 (Redis)
-  * Neon / Supabase (Postgres)
+Reliable, scalable, and controlled message delivery
+
+
+> **Goal**: Deliver WhatsApp invites **reliably at scale** under rate limits, failures, and privacy constraints.
 
 ---
 
-## 🔥 Features
+## 0) Problem Framing (from first principles)
 
-### ✅ Authentication
+A naive solution (“loop over contacts and send”) fails when:
 
-* OTP-based signup/login flow
+* **Throughput** exceeds provider limits (WhatsApp rate tiers)
+* **Partial failures** occur (network/API errors)
+* **Observability** is needed (per-recipient status)
+* **Privacy** is required (PII like phone numbers)
+* **Idempotency** matters (avoid duplicate sends)
 
-### ✅ Queue-Based Processing
+**Design target**:
 
-* Jobs are added to Redis queue
-* Worker processes jobs asynchronously
-
-### ✅ Scalable Worker System
-
-* Configurable concurrency
-* Handles high-volume job bursts
-
-### ✅ Status Tracking
-
-Each invite has a state:
-
-* `PENDING`
-* `SENT`
-* `FAILED`
-
-### ✅ Retry Mechanism
-
-* Failed jobs can be retried with backoff strategy
-
----
-
-## 📦 Project Structure
-
-```
-apps/
-  web/        → Next.js app (UI + API)
-  worker/     → Background job processor
-
-packages/
-  db/         → Prisma client
-  queue/      → BullMQ setup
-  types/      → Shared types
+```text
+At-least-once delivery per recipient,
+no cross-recipient coupling,
+bounded rate,
+auditable status,
+PII protected.
 ```
 
 ---
 
-## 🚀 Getting Started
+## 1) Non-Functional Requirements (NFRs)
 
-### 1. Clone repo
+* **Reliability**: individual failures must not cascade
+* **Idempotency**: retries must not duplicate user-visible messages
+* **Throughput control**: respect WhatsApp rate limits
+* **Observability**: per-recipient status + metrics
+* **Security**: PII encrypted at rest, minimal exposure in transit/UI
+* **Cost-aware**: single-node deploy initially, horizontally scalable later
 
-```
-git clone https://github.com/SurajKhonde/whatsapp-invite-system.git
-cd whatsapp-invite-system
+---
+
+## 2) Core Abstractions
+
+* **Event**: user intent (e.g., “Engagement Invite”)
+* **Recipient (event_guest)**: unit of work (one message to one person)
+* **Job**: execution unit mapped 1:1 with `event_guest`
+* **Worker**: stateless processor consuming jobs
+* **Queue**: durability + retries + backoff
+
+> **Invariant**: *One recipient = one job = one status row*
+
+---
+
+## 3) Architecture(Mid-Level Design)
+
+This system is designed as a layered, decoupled architecture where each layer has a clear responsibility.
+
+🧱 High-Level Components
+                ┌──────────────────────┐
+                │     Frontend         │
+                │     (Next.js)        │
+                └─────────┬────────────┘
+                          │ HTTP
+                          ▼
+                ┌──────────────────────┐
+                │   API Layer          │
+                │   (Express Server)   │
+                └─────────┬────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+        ▼                 ▼                 ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ Auth Layer   │  │ Business     │  │ Rate Limiter │
+│ (JWT + OTP)  │  │ Logic        │  │ (Abuse Ctrl) │
+└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+       │                 │                 │
+       └──────────┬──────┴──────┬──────────┘
+                  ▼             ▼
+         ┌────────────────────────────┐
+         │       Database             │
+         │   PostgreSQL (Encrypted)   │
+         └────────────┬───────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────┐
+         │        Queue Layer         │
+         │     (BullMQ + Redis)       │
+         └────────────┬───────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────┐
+         │       Worker Layer         │
+         │  (Concurrent Consumers)    │
+         └────────────┬───────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────┐
+         │ External Service           │
+         │ WhatsApp Cloud API         │
+         └────────────┬───────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────┐
+         │ Status Persistence         │
+         │ (event_guests table)       │
+         └────────────────────────────┘
+
+---
+
+## 4) Data Model (source of truth)
+
+### `events`
+
+* `id, user_id, template_id, event_type`
+* metadata only (NOT delivery truth)
+
+### `event_guests` (**truth**)
+
+* `id, event_id, guest_id`
+* `status`: `pending | sent | failed`
+* `attempts, last_attempt_at, delivered_at, error_message`
+* **Unique constraint**: `(event_id, guest_id)` → prevents duplicates
+
+> **Derived counts** (never stored to avoid drift):
+
+```sql
+COUNT(*) FILTER (WHERE status='sent')
+COUNT(*) FILTER (WHERE status='failed')
 ```
 
 ---
 
-### 2. Install dependencies
+## 5) PII & Security Model
 
-```
-npm install
+* **At rest**: `guests.phone` encrypted (e.g., AES)
+* **In use**: decrypted only inside worker at send-time
+* **In UI**: masked (`+91*****1234`)
+* **Access control**: all queries scoped by `user_id`
+
+> **Threat model**: prevent enumeration of others’ contacts + accidental leaks
+
+---
+
+## 6) Job Design & Idempotency
+
+### Why 1 job per recipient?
+
+* failure isolation
+* granular retries
+* precise metrics
+* controlled parallelism
+
+### Idempotency strategy
+
+* **Primary key**: `event_guests.id`
+* Worker checks current `status`:
+
+  * if already `sent` → **no-op**
+* Optionally include **idempotency key** in outbound call metadata (if provider supports)
+
+---
+
+## 7) Worker Lifecycle (per job)
+
+```text
+Fetch job(eventGuestId, userId)
+  → SELECT event_guest
+  → if status == 'sent' → exit (idempotent)
+  → decrypt phone (via service)
+  → call WhatsApp template API
+  → on success:
+        UPDATE status='sent', delivered_at=now(), attempts++
+  → on failure:
+        UPDATE status='failed', error, attempts++, last_attempt_at
+        throw → queue handles retry (backoff)
 ```
 
 ---
 
-### 3. Start Docker (Redis + Postgres)
+## 8) Retry & Backoff
 
-```
-docker-compose up -d
-```
+* **Attempts**: e.g., 5
+* **Backoff**: exponential (2s, 4s, 8s…)
+* **Why**:
 
----
+  * transient errors (network, 5xx)
+  * provider throttling windows
 
-### 4. Run Prisma migrations
-
-```
-npx prisma migrate dev
-```
+> **Policy**: After max attempts → terminal `failed` (visible to user)
 
 ---
 
-### 5. Start Next.js app
+## 9) Rate Limiting Strategy
 
+Two layers:
+
+1. **Worker concurrency**:
+
+```text
+concurrency = 3–10 (tunable)
 ```
-cd apps/web
-npm run dev
+
+2. **Queue limiter (optional)**:
+
+```text
+max X jobs / duration Y
 ```
+
+> Align with WhatsApp tier (e.g., 10 msg/sec).
+> Prevent burst spikes → smoother throughput.
 
 ---
 
-### 6. Start Worker
+## 10) API Layer (key endpoints)
 
-```
-cd apps/worker
-npx ts-node src/worker.ts
-```
+* `POST /auth/signup | /login | /verify-otp | /resend-otp`
+* `POST /events` → creates event + `event_guests` + enqueues jobs
+* `GET /events` → list with derived counts
+* `GET /events/:id` → per-recipient status
 
----
+**Rate limiting**:
 
-## 🧪 API Example
-
-### Send invites
-
-```
-POST /api/send
-```
-
-```json
-{
-  "guests": [
-    { "name": "Suraj", "phone": "9999999999" },
-    { "name": "Rahul", "phone": "8888888888" }
-  ]
-}
-```
+* OTP endpoints throttled (prevent abuse)
+* Event creation throttled per user
 
 ---
 
-## 📊 How It Works
+## 11) WhatsApp Integration Constraints
 
-1. User submits guest list
-2. API stores data in DB
-3. Jobs are pushed to Redis queue
-4. Worker consumes jobs
-5. Sends message via external API
-6. Updates status in DB
+* **Template-only** messaging
+* **Pre-approved** templates
+* **Variables mapping** (body params)
+* **Phone format**: E.164 without `+` for API payloads
 
----
+**Failure classes**:
 
-## 📈 Future Improvements
-
-* [ ] Campaign dashboard (progress tracking)
-* [ ] Rate limiting (Gupshup safe)
-* [ ] CSV upload support
-* [ ] Real-time status updates (WebSocket)
-* [ ] Dead letter queue (failed jobs)
-* [ ] Admin analytics panel
+* 4xx (validation/template issues) → usually non-retryable
+* 5xx/network → retryable
 
 ---
 
-## 🧠 What I Learned
+## 12) Consistency Model
 
-* Difference between request-response vs async systems
-* Why queues are essential for scalability
-* Handling concurrency in distributed systems
-* Designing fault-tolerant systems with retries
-* Separation of concerns (API vs Worker)
+* **Eventual consistency** between UI and worker updates
+* UI uses **polling** (e.g., 2–3s) to fetch status
+* Strong consistency not required; correctness comes from DB truth
 
 ---
 
-## 💡 Key Insight
+## 13) Observability (minimum viable)
 
-> This is not just a messaging system —
-> it is a **distributed job processing system with state tracking**
+* Logs:
+
+  * job start/end
+  * API responses (sanitized)
+  * errors with codes
+* Metrics (future):
+
+  * success rate
+  * retries per job
+  * latency per send
+
+---
+
+## 14) Failure Modes & Handling
+
+| Failure       | Handling                    |
+| ------------- | --------------------------- |
+| Network error | retry with backoff          |
+| WhatsApp 4xx  | mark failed (no retry)      |
+| Worker crash  | job re-queued by BullMQ     |
+| Duplicate job | idempotent check via status |
+| DB outage     | job fails → retry later     |
+
+---
+
+## 15) Deployment Model (cost-aware)
+
+Single VPS (2GB RAM):
+
+```text
+Docker Compose
+├── app (API + Next.js)
+├── worker
+├── postgres
+├── redis
+├── nginx (reverse proxy)
+```
+
+* Scale later by adding more **worker replicas**
+* No need for managed services at MVP stage
+
+---
+
+## 16) Trade-offs
+
+**Chosen**
+
+* Queue-based async processing (complex but reliable)
+* Derived counts (correctness over write-time convenience)
+
+**Avoided**
+
+* synchronous bulk send (simple but fragile)
+* storing counters (risk of drift)
+
+---
+
+## 17) Future Extensions
+
+* **Webhook ingestion** (delivered/read receipts)
+* **Dead-letter queue** (manual re-drive)
+* **Scheduling** (send at time T)
+* **Multi-tenant isolation** (per-tenant limits)
+* **Payments** (quota-based usage)
+* **WebSockets** (replace polling when needed)
+
+---
+
+## 18) Key Invariants (what must always hold)
+
+* Each `(event_id, guest_id)` appears **once**
+* A job **never** sends twice after `status='sent'`
+* PII is **never** exposed in plaintext outside worker boundary
+* Counts in UI are **derived**, not stored
+
+---
+
+## 19) What this demonstrates
+
+* async system design under real constraints
+* idempotency + retry strategies
+* secure handling of sensitive data
+* external API integration with backpressure control
 
 ---
 
 ## 👨‍💻 Author
 
-**Suraj Khonde**
-
-* Backend-focused full-stack developer
-* Interested in scalable systems & real-world architecture
-
----
-
-## ⭐ If you found this useful
-
-Give it a star ⭐ and feel free to contribute!
+Suraj Khonde
