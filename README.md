@@ -1,141 +1,173 @@
-# MehFil – Reliable WhatsApp Invite System (Queue-Driven)
+# 🚀 MehFil – Reliable WhatsApp Invite System (Queue-Driven)
 
-🧠 Why this system exists
-
-A friend wanted to send engagement invites to a large number of guests via WhatsApp.
-
-At first glance, this seems trivial:
-
-select contacts
-forward message
-
-But when we think deeper, this breaks at scale:
-
-❌ Problems with manual approach
-no delivery tracking
-high chance of missing contacts
-no retry on failure
-not scalable beyond small groups
-cannot automate or reuse
-
-This led to a deeper question:
-
-How do real systems handle bulk communication reliably?
-
-That question drove the design of this system.
-
-💡 Core Idea
-
-The system is not about “sending messages”.
-
-It is about:
-
-Reliable, scalable, and controlled message delivery
-
-
-> **Goal**: Deliver WhatsApp invites **reliably at scale** under rate limits, failures, and privacy constraints.
+> Send WhatsApp invites at scale — **reliably, securely, and asynchronously**
 
 ---
 
-## 0) Problem Framing (from first principles)
+## 🧠 Why this system exists
 
-A naive solution (“loop over contacts and send”) fails when:
+A real problem triggered this project.
 
-* **Throughput** exceeds provider limits (WhatsApp rate tiers)
-* **Partial failures** occur (network/API errors)
-* **Observability** is needed (per-recipient status)
-* **Privacy** is required (PII like phone numbers)
-* **Idempotency** matters (avoid duplicate sends)
+A friend needed to send engagement invites to many people via WhatsApp.
 
-**Design target**:
+At first, it seems simple:
+
+* Select contacts
+* Forward message
+
+But this breaks quickly at scale.
+
+### ❌ Problems with manual approach
+
+* No delivery tracking
+* High chance of missing contacts
+* No retry on failure
+* Not scalable beyond small groups
+* Cannot automate or reuse
+
+This led to a key question:
+
+> **How do real systems handle bulk communication reliably?**
+
+---
+
+## 💡 Core Idea
+
+This system is **not about sending messages**.
+
+It is about:
 
 ```text
-At-least-once delivery per recipient,
-no cross-recipient coupling,
-bounded rate,
-auditable status,
-PII protected.
+Reliable, scalable, and controlled message delivery
 ```
 
 ---
 
-## 1) Non-Functional Requirements (NFRs)
+## 🎯 Goal
 
-* **Reliability**: individual failures must not cascade
-* **Idempotency**: retries must not duplicate user-visible messages
-* **Throughput control**: respect WhatsApp rate limits
-* **Observability**: per-recipient status + metrics
-* **Security**: PII encrypted at rest, minimal exposure in transit/UI
-* **Cost-aware**: single-node deploy initially, horizontally scalable later
+> Deliver WhatsApp invites **reliably at scale** under:
 
----
-
-## 2) Core Abstractions
-
-* **Event**: user intent (e.g., “Engagement Invite”)
-* **Recipient (event_guest)**: unit of work (one message to one person)
-* **Job**: execution unit mapped 1:1 with `event_guest`
-* **Worker**: stateless processor consuming jobs
-* **Queue**: durability + retries + backoff
-
-> **Invariant**: *One recipient = one job = one status row*
+* rate limits
+* failures
+* privacy constraints
 
 ---
 
-## 3) Architecture(Mid-Level Design)
+# 🧩 0) Problem Framing (First Principles)
 
-This system is designed as a layered, decoupled architecture where each layer has a clear responsibility.
+A naive solution:
 
-🧱 High-Level Components
-                ┌──────────────────────┐
-                │     Frontend         │
-                │     (Next.js)        │
-                └─────────┬────────────┘
-                          │ HTTP
-                          ▼
-                ┌──────────────────────┐
-                │   API Layer          │
-                │   (Express Server)   │
-                └─────────┬────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-        ▼                 ▼                 ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│ Auth Layer   │  │ Business     │  │ Rate Limiter │
-│ (JWT + OTP)  │  │ Logic        │  │ (Abuse Ctrl) │
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-       └──────────┬──────┴──────┬──────────┘
-                  ▼             ▼
-         ┌────────────────────────────┐
-         │       Database             │
-         │   PostgreSQL (Encrypted)   │
-         └────────────┬───────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────┐
-         │        Queue Layer         │
-         │     (BullMQ + Redis)       │
-         └────────────┬───────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────┐
-         │       Worker Layer         │
-         │  (Concurrent Consumers)    │
-         └────────────┬───────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────┐
-         │ External Service           │
-         │ WhatsApp Cloud API         │
-         └────────────┬───────────────┘
-                      │
-                      ▼
-         ┌────────────────────────────┐
-         │ Status Persistence         │
-         │ (event_guests table)       │
-         └────────────────────────────┘
+```text
+loop → send → done
+```
+
+Fails due to:
+
+* **Throughput limits** → WhatsApp rate limits
+* **Partial failures** → network/API errors
+* **Lack of observability** → no per-user tracking
+* **Privacy risks** → phone numbers exposure
+* **Idempotency issues** → duplicate messages
+
+### ✅ Design Target
+
+```text
+At-least-once delivery per recipient
+No cross-recipient coupling
+Bounded rate
+Auditable status
+PII protected
+```
+
+---
+
+# ⚙️ 1) Non-Functional Requirements
+
+* **Reliability** → failures must not cascade
+* **Idempotency** → retries must not duplicate sends
+* **Rate control** → respect API limits
+* **Observability** → track per-recipient status
+* **Security** → encrypt sensitive data
+* **Cost efficiency** → single-node deployment initially
+
+---
+
+# 🧱 2) Core Abstractions
+
+* **Event** → user intent (e.g., engagement invite)
+* **Recipient (event_guest)** → unit of work
+* **Job** → execution unit (1:1 with recipient)
+* **Worker** → processes jobs
+* **Queue** → manages retries + execution
+
+> ⚠️ **Invariant**
+> One recipient = one job = one status row
+
+---
+
+# 🏗️ 3) Architecture (Mid-Level Design)
+
+### 🔹 High-Level Flow
+
+```text
+Frontend (Next.js)
+        ↓
+API Layer (Express)
+        ↓
+Auth + Rate Limit
+        ↓
+Business Logic
+        ↓
+PostgreSQL (Encrypted)
+        ↓
+Queue (BullMQ + Redis)
+        ↓
+Worker (Parallel Processing)
+        ↓
+WhatsApp API
+        ↓
+Status Update (event_guests)
+```
+
+---
+
+### 🔹 Key Design Principle
+
+```text
+Synchronous → user intent
+Asynchronous → execution
+```
+
+* API responds fast
+* heavy work happens in background
+
+---
+
+### 🔹 Why Queue is Critical
+
+❌ Without queue:
+
+```text
+API → loop → send
+```
+
+Problems:
+
+* blocking
+* failures stop everything
+* no retries
+
+✅ With queue:
+
+```text
+API → enqueue → worker
+```
+
+Benefits:
+
+* scalable
+* reliable
+* fault isolated
 
 ---
 
