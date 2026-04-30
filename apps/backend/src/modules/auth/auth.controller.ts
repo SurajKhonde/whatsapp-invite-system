@@ -59,7 +59,6 @@ export const loginController = async (req: Request, res: Response, next: NextFun
   }
 };
 
-// 🔥 FORGOT PASSWORD
 export const forgotPasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await forgotPasswordService(req.body);
@@ -82,7 +81,7 @@ export const resetPasswordController = async (req: Request, res: Response, next:
 // 🔥 LOGOUT
 export const logoutController = (req: Request, res: Response) => {
   res.clearCookie("access_token");
-  res.json({ message: "Logged out successfully" });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
 export const getMe = (req: Request, res: Response) => {

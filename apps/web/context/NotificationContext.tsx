@@ -4,10 +4,19 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
   ReactNode,
 } from "react";
 import NotificationContainer from "@/components/ui/NotificationContainer";
-import { Notification, NotificationType } from "@/types/notification";
+import { setNotifier } from "@/utils/notify";
+
+export type NotificationType = "success" | "error" | "info";
+
+export interface Notification {
+  id: number;
+  message: string;
+  type: NotificationType;
+}
 
 interface NotificationContextType {
   addNotification: (message: string, type?: NotificationType) => void;
@@ -15,29 +24,26 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
 
-export const NotificationProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const addNotification = (
     message: string,
     type: NotificationType = "info"
   ) => {
-    const id = Date.now();
+    const id = Date.now() + Math.random();
 
     setNotifications((prev) => [...prev, { id, message, type }]);
 
     setTimeout(() => {
-      removeNotification(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     }, 3000);
   };
 
-  const removeNotification = (id: number) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
+  // 🔥 connect global notify()
+  useEffect(() => {
+    setNotifier(addNotification);
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ addNotification }}>
@@ -47,12 +53,8 @@ export const NotificationProvider = ({
   );
 };
 
-export const useNotification = (): NotificationContextType => {
-  const context = useContext(NotificationContext);
-
-  if (!context) {
-    throw new Error("useNotification must be used within NotificationProvider");
-  }
-
-  return context;
+export const useNotification = () => {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) throw new Error("useNotification must be used inside provider");
+  return ctx;
 };

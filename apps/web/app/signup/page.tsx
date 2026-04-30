@@ -20,7 +20,7 @@ export default function SignupPage() {
     { left: string; top: string; duration: string }[]
   >([]);
 
-  // 🌟 stars (safe)
+  // 🌟 Stars
   useEffect(() => {
     const generated = Array.from({ length: 25 }).map(() => ({
       left: `${Math.random() * 100}%`,
@@ -28,7 +28,6 @@ export default function SignupPage() {
       duration: `${5 + Math.random() * 10}s`,
     }));
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStars(generated);
   }, []);
 
@@ -40,32 +39,32 @@ export default function SignupPage() {
     /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
 
   const handleSignup = async () => {
-  setError("");
+    setError("");
 
-  if (!name || !email || !password) {
-    return setError("All fields are required");
-  }
+    if (!name || !email || !password) {
+      return setError("All fields are required");
+    }
 
-  if (!validateEmail(email)) {
-    return setError("Invalid email format");
-  }
+    if (!validateEmail(email)) {
+      return setError("Invalid email format");
+    }
 
-  if (!validatePassword(password)) {
-    return setError(
-      "Password must be 8+ chars, include uppercase, number & special char"
-    );
-  }
+    if (!validatePassword(password)) {
+      return setError(
+        "Password must be 8+ chars, include uppercase, number & special char"
+      );
+    }
 
-  try {
-    await signup({ name, email, password }).unwrap();
-    router.replace(
-  `/verify?email=${encodeURIComponent(email)}&purpose=signup`
-);
-  } catch (err: unknown) {
-  setError(getErrorMessage(err));
-}
-  }
+    try {
+      await signup({ name, email, password }).unwrap();
 
+      router.replace(
+        `/verify?email=${encodeURIComponent(email)}&purpose=signup`
+      );
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    }
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-100 via-red-100 to-pink-200">
@@ -86,8 +85,9 @@ export default function SignupPage() {
       </div>
 
       {/* 💎 Card */}
-      <div className="relative z-10 backdrop-blur-lg bg-white/60 p-10 rounded-2xl shadow-xl w-[380px] border border-white/30 space-y-4">
+      <div className="relative z-10 backdrop-blur-lg bg-white/60 p-10 rounded-2xl shadow-xl w-[380px] border border-white/30 space-y-5">
         
+        {/* Title */}
         <h2 className="text-3xl font-bold text-center text-pink-600">
           Create Account
         </h2>
@@ -135,7 +135,7 @@ export default function SignupPage() {
           <button
             type="button"
             onClick={() => setShow(!show)}
-            className="absolute right-3 top-3 text-sm text-pink-600"
+            className="absolute right-3 top-3 text-sm text-pink-600 hover:text-pink-700"
           >
             {show ? "Hide" : "Show"}
           </button>
@@ -149,6 +149,24 @@ export default function SignupPage() {
         >
           {isLoading ? "Creating..." : "Create Account 🚀"}
         </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-[1px] bg-gray-200"></div>
+          <span className="text-xs text-gray-400">or</span>
+          <div className="flex-1 h-[1px] bg-gray-200"></div>
+        </div>
+
+        {/* Already have account */}
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <button
+            onClick={() => router.push("/login")}
+            className="text-pink-600 font-medium hover:underline hover:text-pink-700 transition"
+          >
+            Sign in
+          </button>
+        </p>
       </div>
     </div>
   );

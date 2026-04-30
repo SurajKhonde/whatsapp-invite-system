@@ -10,6 +10,7 @@ export default function Header() {
     { name: "Home", path: "/dashboard" },
     { name: "Templates", path: "/templates" },
     { name: "Events", path: "/events" },
+    {name :"logout",path:"/logout"}
   ];
 
   return (

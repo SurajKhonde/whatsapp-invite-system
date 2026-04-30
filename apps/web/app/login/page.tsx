@@ -126,23 +126,45 @@ export default function LoginPage() {
             {show ? "Hide" : "Show"}
           </button>
         </div>
+        
+       {/* Forgot Password */}
+<div className="flex justify-end mb-3">
+  <button
+    onClick={() => router.push("/forgot-password")}
+    className="text-xs text-pink-500 hover:text-pink-600 transition"
+  >
+    Forgot password?
+  </button>
+</div>
 
-        {/* Button */}
-        <button
-          onClick={handleLogin}
-          disabled={isLoading}
-          className="w-full py-3 rounded-xl text-white font-medium 
-          bg-gradient-to-r from-pink-500 to-red-500 
-          hover:from-pink-600 hover:to-red-600
-          shadow-lg shadow-pink-200 
-          transition transform hover:scale-[1.02]"
-        >
-          {isLoading ? "Logging in..." : "Login 🚀"}
-        </button>
+{/* Button */}
+<button
+  onClick={handleLogin}
+  disabled={isLoading}
+  className="w-full py-3 rounded-xl text-white font-medium 
+  bg-gradient-to-r from-pink-500 to-red-500 
+  hover:from-pink-600 hover:to-red-600
+  shadow-lg shadow-pink-200 
+  transition transform hover:scale-[1.02]"
+>
+  {isLoading ? "Logging in..." : "Login"}
+</button>
 
-        <p className="text-center text-xs text-gray-400 mt-5">
-          Secure login powered by modern encryption 🔐
-        </p>
+{/* Signup Link */}
+<p className="text-center text-sm text-gray-500 mt-5">
+  Don’t have an account?{" "}
+  <button
+    onClick={() => router.push("/signup")}
+    className="text-pink-600 font-medium hover:underline"
+  >
+    Sign up
+  </button>
+</p>
+
+{/* Footer */}
+<p className="text-center text-xs text-gray-400 mt-3">
+  Secure login powered by modern encryption 🔐
+</p>
       </div>
     </div>
   );

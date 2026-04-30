@@ -4,7 +4,7 @@
 
 ---
 
-## 🧠 Why this system exists
+## 🧠 Why this system existsS
 
 A real problem triggered this project.
 

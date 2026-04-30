@@ -9,25 +9,25 @@ const rawBaseQuery = fetchBaseQuery({
 export const baseQueryWithNotify = async (args: any, api: any, extraOptions: any) => {
   const result = await rawBaseQuery(args, api, extraOptions);
 
-  // ❌ Errors
+  // ❌ ERROR HANDLING
   if (result.error) {
     const status = result.error.status;
     const errData = result.error.data as any;
 
     if (status === 429) notify("Too many requests", "error");
-    else if (status === 401) notify("Session expired", "error");
+    else if (status === 401) notify("Session expired, login again", "error");
     else if (status === 404) notify("Route not found", "error");
     else if (typeof status === "number" && status >= 500)
       notify("Server error", "error");
     else notify(errData?.message || "Something went wrong", "error");
   }
 
-  // ✅ Success
+  // ✅ SUCCESS HANDLING
   if (result.data) {
     const data = result.data as any;
 
-    if (data.notify !== false) {
-      notify(data.message || "Success", "success");
+    if (data?.notify !== false) {
+      notify(data?.message || "Success", "success");
     }
   }
 
