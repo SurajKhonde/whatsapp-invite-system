@@ -109,25 +109,75 @@ PII protected
 
 ### 🔹 High-Level Flow
 
-```text
-Frontend (Next.js)
-        ↓
-API Layer (Express)
-        ↓
-Auth + Rate Limit
-        ↓
-Business Logic
-        ↓
-PostgreSQL (Encrypted)
-        ↓
-Queue (BullMQ + Redis)
-        ↓
-Worker (Parallel Processing)
-        ↓
-WhatsApp API
-        ↓
-Status Update (event_guests)
+## 🏗️ 3) Architecture (Mid-Level Design)
+
+```mermaid
+flowchart TB
+
+%% ===== FRONTEND =====
+FE["Frontend (Next.js UI)\n- Create Event\n- Select Guests\n- View Status"]
+
+%% ===== API LAYER =====
+API["API Layer (Express)\n- Routing\n- Validation\n- Controllers"]
+
+%% ===== CROSS CUTTING =====
+AUTH["Auth Layer\n(JWT + OTP)"]
+RATE["Rate Limiter\n(Abuse Control)"]
+BL["Business Logic\n- Create Event\n- Attach Guests\n- Enqueue Jobs"]
+
+%% ===== DATABASE =====
+DB[("PostgreSQL\nEncrypted Storage\n- Users\n- Guests\n- Events\n- event_guests")]
+
+%% ===== QUEUE =====
+QUEUE[("BullMQ Queue\n(Redis)\n- Job Buffer\n- Retry\n- Backoff")]
+
+%% ===== WORKER =====
+WORKER["Worker Layer\n(Parallel Consumers)\n- Fetch Job\n- Decrypt Phone\n- Send Message\n- Update Status"]
+
+%% ===== EXTERNAL =====
+WA["WhatsApp Cloud API\n(Template Messaging)"]
+
+%% ===== FLOW =====
+FE --> API
+API --> AUTH
+API --> RATE
+API --> BL
+
+BL --> DB
+BL --> QUEUE
+
+QUEUE --> WORKER
+
+WORKER --> WA
+WORKER --> DB
 ```
+
+---
+
+### 🔹 Flow Summary
+
+```text
+User → Frontend → API  
+→ Auth + Rate Limit  
+→ Business Logic  
+→ DB + Queue  
+→ Worker  
+→ WhatsApp API  
+→ DB update  
+→ Frontend polls status
+```
+
+---
+
+### 🔹 Key Idea
+
+```text
+Synchronous → API (fast response)
+Asynchronous → Queue + Worker (heavy work)
+```
+
+---
+
 
 ---
 
