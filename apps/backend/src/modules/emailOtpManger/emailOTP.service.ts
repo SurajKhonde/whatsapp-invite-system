@@ -9,7 +9,7 @@ export const verifyOtpService = async ({
 }: {
   email: string;
   otp: number;
-  purpose: "signup" | "forgot_password";
+  purpose: "signup" | "forgot-password";
 }) => {
   const res = await pool.query(
     `SELECT * FROM users WHERE email = $1`,
@@ -50,7 +50,7 @@ export const verifyOtpService = async ({
   }
 
   // ✅ forgot password → just validate OTP (don’t verify email again)
-  if (purpose === "forgot_password") {
+  if (purpose === "forgot-password") {
     await pool.query(
       `UPDATE users 
        SET email_otp = NULL,

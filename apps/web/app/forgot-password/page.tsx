@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
       await forgotPassword({ email }).unwrap();
 
       router.push(
-        `/verify?email=${encodeURIComponent(email)}&purpose=reset`
+        `/verify?email=${encodeURIComponent(email)}&purpose=forgot-password`
       );
     } catch (err) {
       setError(getErrorMessage(err));

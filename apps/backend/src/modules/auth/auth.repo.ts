@@ -1,14 +1,22 @@
 import { pool } from "@config/db";
 
 export const findUserByEmail = async (email: string) => {
-  const userEmail = email.toLowerCase();
+  const userEmail = email.toLowerCase().trim();
+
   const res = await pool.query(
     "SELECT * FROM users WHERE email = $1",
     [userEmail]
   );
   return res.rows[0];
 };
+export const findUserById = async (id: string) => {
+  const res = await pool.query(
+    "SELECT * FROM users WHERE id = $1",
+    [id]
+  );
 
+  return res.rows[0];
+};
 export const createUser = async ({
   email,
   password,
@@ -61,7 +69,7 @@ export const updateOtp = async (
   email: string,
   otp: number,
   otpExpiry: Date,
-  purpose: "signup" | "forgot_password"
+  purpose: "signup" | "forgot-password"
 ) => {
   await pool.query(
     `UPDATE users 

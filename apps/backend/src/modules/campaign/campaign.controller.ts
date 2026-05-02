@@ -1,25 +1,28 @@
 import { Request, Response, NextFunction } from "express";
 import { EventService } from "./campaign.service";
+import { sendResponse } from "@utils/response";
+import { AppError } from "@core/errors/AppError";
 
 export class EventController {
   private service = new EventService();
 
-  // ✅ CREATE (you already have)
+  // ✅ CREATE EVENT
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ success: false });
+        throw new AppError("Unauthorized", 401);
       }
 
-      const event = await this.service.createEvent(userId, req.body);
+      const result = await this.service.createEvent(userId, req.body);
 
-      return res.status(201).json({
-        success: true,
-        data: event,
+      return sendResponse({
+        res,
+        statusCode: 201,
+        ...result,
       });
     } catch (err) {
-      return next(err);
+      next(err);
     }
   };
 
@@ -28,14 +31,14 @@ export class EventController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        return res.status(401).json({ success: false });
+        throw new AppError("Unauthorized", 401);
       }
 
-      const events = await this.service.getEvents(userId);
+      const result = await this.service.getEvents(userId);
 
-      return res.json({
-        success: true,
-        data: events,
+      return sendResponse({
+        res,
+        ...result,
       });
     } catch (err) {
       next(err);
@@ -43,28 +46,27 @@ export class EventController {
   };
 
   // ✅ GET EVENT DETAILS
- getOne = async (
-  req: Request<{ id: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
+  getOne = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new AppError("Unauthorized", 401);
+      }
 
-    if (!userId) {
-      return res.status(401).json({ success: false });
+      const { id } = req.params;
+
+      const result = await this.service.getEventDetails(userId, id);
+
+      return sendResponse({
+        res,
+        ...result,
+      });
+    } catch (err) {
+      next(err);
     }
-
-    const { id } = req.params;
-
-    const data = await this.service.getEventDetails(userId, id);
-
-    return res.json({
-      success: true,
-      data,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+  };
 }

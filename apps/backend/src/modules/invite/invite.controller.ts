@@ -1,24 +1,23 @@
-// src/modules/invite/invite.controller.ts
-
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { InviteService } from "./invite.service";
+import { sendResponse } from "@utils/response";
 
 const inviteService = new InviteService();
 
-export const createInvite = async (req: Request, res: Response) => {
+export const createInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const fileName = await inviteService.generateAndSave(req.body);
+    const result = await inviteService.generateAndSave(req.body);
 
-    // ✅ Public URL
-    const imageUrl = `/generated/${fileName}`;
-
-    return res.json({
-      success: true,
-      imageUrl,
+    return sendResponse({
+      res,
+      statusCode: 201,
+      ...result,
     });
-
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Failed to generate invite" });
+    next(err);
   }
 };

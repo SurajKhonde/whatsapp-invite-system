@@ -6,13 +6,13 @@ import {
   loginController,
   forgotPasswordController,
   resetPasswordController,
+  changePasswordController,
   logoutController,
   getMe
 } from "./auth.controller";
 import { rateLimiter } from "@middlewares/rateLimiter";
 import { authMiddleware } from "@middlewares/auth.middleware";
 import { validateSignup } from "@middlewares/validate.middleware";
-
 const router = Router();
 
 router.post("/signup", validateSignup, signupController);
@@ -35,9 +35,17 @@ router.post("/login",  rateLimiter({
     keyPrefix: "rate:login",
   }),loginController);
 router.get("/me", authMiddleware, getMe);
-router.post("/forgot-password", forgotPasswordController);
-
-router.post("/reset-password",authMiddleware, resetPasswordController);
+router.post("/forgot-password", rateLimiter({
+    limit: 5,
+    windowSec: 60,
+    keyPrefix: "rate:forgot-password",
+  }),forgotPasswordController);
+router.post("/reset-password",rateLimiter({
+    limit: 4,
+    windowSec: 60,
+    keyPrefix: "verify:otp",
+  }), resetPasswordController);
+router.post("/reset-old-password",authMiddleware, changePasswordController);
 
 router.post("/logout", authMiddleware, logoutController);
 

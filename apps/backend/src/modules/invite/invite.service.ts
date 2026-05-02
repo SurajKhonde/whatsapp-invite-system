@@ -32,7 +32,6 @@ export class InviteService {
         throw new Error(`Asset not found: ${file}`);
       }
 
-      // ✅ important for Puppeteer
       return `${fullPath}`;
     };
 
@@ -45,21 +44,25 @@ export class InviteService {
     };
   }
 
-  async generateAndSave(data: PreviewInviteDTO): Promise<string> {
+  async generateAndSave(data: PreviewInviteDTO) {
     const html = renderTemplate(
       this.getTemplatePath(),
       this.buildTemplateData(data)
     );
 
-    // ✅ debug HTML (open manually if needed)
     const debugPath = path.join(process.cwd(), "debug.html");
     fs.writeFileSync(debugPath, html);
-    console.log("HTML saved at:", debugPath);
 
     const buffer = await generateImage(html);
 
     const fileName = saveLocalImage(buffer);
 
-    return fileName;
+    const imageUrl = `/generated/${fileName}`;
+
+    return {
+      message: "Invite generated successfully",
+      data: { imageUrl },
+      notify: true,
+    };
   }
 }

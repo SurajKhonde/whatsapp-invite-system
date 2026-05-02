@@ -22,13 +22,14 @@ export const sendEmail = async ({ to, subject, html }:{
 }) => {
   try {
     if (!isProd) {
-      await devTransporter.sendMail({
+      const info = await devTransporter.sendMail({
         from: '"Dev App" <dev@app.com>',
         to,
         subject,
         html,
       });
-
+const previewUrl = nodemailer.getTestMessageUrl(info);
+console.log(`Preview URL: ${previewUrl}`);
       logger.info({ to }, "Email sent (DEV)");
       return;
     }

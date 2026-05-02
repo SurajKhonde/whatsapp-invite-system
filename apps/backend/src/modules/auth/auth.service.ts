@@ -1,120 +1,111 @@
 import bcrypt from "bcrypt";
-import { AppError } from "@core/errors/AppError";
 import jwt from "jsonwebtoken";
-import { logger } from "@core/logger/logger";
-import {redisCache} from "@config/redis"
+import { AppError } from "@core/errors/AppError";
 import {
   findUserByEmail,
+  findUserById,
   createUser,
   verifySignupUser,
   clearOtp,
+  updateOtp,
+  updatePassword,
 } from "./auth.repo";
-import{updateOtp, updatePassword} from "./auth.repo";
 import { otpQueue } from "@queue/emailOTP.queue";
-import {validateEmail, validatePassword, validateName} from "./auth.validators";
+
 const SALT_ROUNDS = 10;
 
+const normalizeEmail = (email: string): string =>
+  email.trim().toLowerCase();
+
+type SignupInput = {
+  email: string;
+  password: string;
+  name?: string;
+  role: string;
+};
+
+type VerifyOtpInput = {
+  email: string;
+  otp: number;
+  purpose: "signup" | "forgot-password";
+};
+
+type LoginInput = {
+  email: string;
+  password: string;
+};
+
+type ForgotPasswordInput = {
+  email: string;
+};
+
+type ChangePasswordInput = {
+  userId: string;
+  oldPassword: string;
+  newPassword: string;
+};
+
+type ResendOtpInput = {
+  email: string;
+  purpose: "signup" | "forgot-password";
+};
 
 // 🔥 SIGNUP
 export const signupService = async ({
   email,
   password,
-  name,
-}: {
-  email: string;
-  password: string;
-  name?: string;
-}) => {
-
-  // ✅ Trim + normalize
-  email = email.trim().toLowerCase();
-  password = password.trim();
-  name = name?.trim();
-  // ✅ Required fields
+  role,
+}: SignupInput) => {
   if (!email || !password) {
     throw new AppError("Email and password are required", 400);
   }
 
-  // ✅ Email format
-  if (!validateEmail(email)) {
-    throw new AppError("Invalid email format", 400);
-  }
+  email = normalizeEmail(email);
 
-  // ✅ Password strength
-  if (!validatePassword(password)) {
-    throw new AppError(
-      "Password must be at least 8 characters and contain at least one letter",
-      400
-    );
-  }
-
-  // ✅ Name validation (optional)
-  if (name && !validateName(name)) {
-    throw new AppError(
-      "Name should not contain numbers or special characters",
-      400
-    );
-  }
-
-  // ✅ Unique email
   const existingUser = await findUserByEmail(email);
-  if (existingUser) {
-    throw new AppError("User already exists", 400);
-  }
+  if (existingUser) throw new AppError("User already exists", 400);
 
-  // ✅ Hash password (ALWAYS)
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // ✅ OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
   const user = await createUser({
-    email:email.toLowerCase(),
+    email,
     password: hashedPassword,
     otp,
     otpExpiry,
-    role:"admin",
+    role,
     purpose: "signup",
   });
 
-  // ✅ Queue OTP
-  await otpQueue.add("sendOTP", {
-    email,
-    otp,
-    purpose: "signup",
-  });
+  await otpQueue.add("sendOTP", { email, otp, purpose: "signup" });
 
-  logger.info({ userId: user.id }, "Signup success, OTP queued");
-const token = jwt.sign(
-  { userId: user.id ,role:user.role},
-  process.env.JWT_SECRET!,
-  { expiresIn: "7d" }
-);
+  const token: string = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_SECRET!,
+    { expiresIn: "7d" }
+  );
 
-  return { token}
- 
+  return {
+    message: "Signup successful & OTP sent",
+    data: { token },
+    notify: true,
+  };
 };
-
-
 
 // 🔥 VERIFY OTP
 export const verifyOtpService = async ({
   email,
   otp,
   purpose,
-}: {
-  email: string;
-  otp: number;
-  purpose: "signup" | "forgot_password";
-}) => {
+}: VerifyOtpInput) => {
+  email = normalizeEmail(email);
+
   const user = await findUserByEmail(email);
+  if (!user) throw new AppError("User not found", 404);
 
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
   if (Number(user.email_otp) !== Number(otp)) {
-
     throw new AppError("Invalid OTP", 400);
   }
 
@@ -132,21 +123,112 @@ export const verifyOtpService = async ({
     await clearOtp(email);
   }
 
-  logger.info({ email, purpose }, "OTP verified");
-
   return {
     message: "OTP verified successfully",
+    notify: true,
   };
 };
+
+// 🔥 LOGIN
+export const loginService = async ({
+  email,
+  password,
+}: LoginInput) => {
+  if (!email || !password) {
+    throw new AppError("Email and password are required", 400);
+  }
+
+  email = normalizeEmail(email);
+
+  const user = await findUserByEmail(email);
+  if (!user) throw new AppError("Invalid credentials", 400);
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new AppError("Invalid credentials", 400);
+
+  const token = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_SECRET!,
+    { expiresIn: "7d" }
+  );
+
+  return {
+    message: "Login successful",
+    data: { token },
+    notify: true,
+  };
+};
+
+// 🔥 FORGOT PASSWORD
+export const forgotPasswordService = async ({
+  email,
+}: ForgotPasswordInput) => {
+  if (!email) throw new AppError("Email is required", 400);
+
+  email = normalizeEmail(email);
+
+  const user = await findUserByEmail(email);
+  if (!user) throw new AppError("User not found", 404);
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+  await updateOtp(email, otp, otpExpiry, "forgot-password");
+
+  await otpQueue.add("sendOTP", {
+    email,
+    otp,
+    purpose: "forgot-password",
+  });
+
+  return {
+    message: "OTP sent successfully",
+    notify: true,
+  };
+};
+
+// 🔥 CHANGE PASSWORD
+export const changePasswordService = async ({
+  userId,
+  oldPassword,
+  newPassword,
+}: ChangePasswordInput) => {
+  if (!oldPassword || !newPassword) {
+    throw new AppError("All fields are required", 400);
+  }
+
+  const user = await findUserById(userId);
+  if (!user) throw new AppError("User not found", 404);
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) throw new AppError("Old password is incorrect", 400);
+
+  if (oldPassword === newPassword) {
+    throw new AppError("New password must be different", 400);
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await updatePassword(user.email, hashedPassword);
+
+  return {
+    message: "Password updated successfully",
+    notify: true,
+  };
+};
+
+// 🔥 RESEND OTP
 export const resendOtpService = async ({
   email,
   purpose,
-}: {
-  email: string;
-  purpose: "signup" | "forgot_password";
-}) => {
-  const user = await findUserByEmail(email);
+}: ResendOtpInput) => {
+  if (!email) {
+    throw new AppError("Email is required", 400);
+  }
 
+  email = normalizeEmail(email);
+
+  const user = await findUserByEmail(email);
   if (!user) {
     throw new AppError("User not found", 404);
   }
@@ -154,6 +236,7 @@ export const resendOtpService = async ({
   if (user.otp_purpose !== purpose) {
     throw new AppError("Invalid OTP purpose", 400);
   }
+
   let otp = user.email_otp;
   let otpExpiry = user.otp_expires_at;
 
@@ -165,103 +248,40 @@ export const resendOtpService = async ({
   }
 
   await otpQueue.add("sendOTP", {
-    email:email.toLowerCase(),
+    email,
     otp,
     purpose,
   });
 
-  logger.info({ email, purpose  }, "OTP resent");
-
   return {
     message: "OTP resent successfully",
+    notify: true,
   };
 };
 
-
-export const loginService = async ({
+// 🔥 RESET PASSWORD
+export const resetNewPassword = async ({
   email,
   password,
 }: {
   email: string;
   password: string;
 }) => {
+  if (!email || !password) {
+    throw new AppError("Email and new password are required", 400);
+  }
+
+  email = normalizeEmail(email);
+
   const user = await findUserByEmail(email);
+  if (!user) throw new AppError("User not found", 404);
 
-  if (!user) {
-    throw new AppError("Invalid credentials", 400);
-  }
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    throw new AppError("Invalid credentials", 400);
-  }
-
-const token = jwt.sign(
-  { userId: user.id },
-  process.env.JWT_SECRET!,
-  { expiresIn: "7d" }
-);
-
-  return { token}
-};
-export const forgotPasswordService = async ({
-  email,
-}: {
-  email: string;
-}) => {
-  const user = await findUserByEmail(email);
-
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000);
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
-
-  await updateOtp(email, otp, otpExpiry, "forgot_password");
-
-  await otpQueue.add("sendOTP", {
-    email,
-    otp,
-    purpose: "forgot_password",
-  });
+  await updatePassword(user.email, hashedPassword);
 
   return {
-    message: "OTP sent to email",
-  };
-};
-export const resetPasswordService = async ({
-  email,
-  otp,
-  newPassword,
-}: {
-  email: string;
-  otp: number;
-  newPassword: string;
-}) => {
-  const user = await findUserByEmail(email);
-
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
-
-  if (user.email_otp !== otp) {
-    throw new AppError("Invalid OTP", 400);
-  }
-
-  if (!user.otp_expires_at || new Date(user.otp_expires_at) < new Date()) {
-    throw new AppError("OTP expired", 400);
-  }
-
-  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-
-  await updatePassword(email, hashedPassword);
-
-  await clearOtp(email);
-
-  return {
-    message: "Password reset successful",
+    message: "Password updated successfully",
+    notify: true,
   };
 };

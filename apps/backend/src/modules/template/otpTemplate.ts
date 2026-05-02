@@ -17,7 +17,7 @@ export const getOtpTemplate = ({
     };
   }
 
-  if (purpose === "forgot_password") {
+  if (purpose === "forgot-password") {
     return {
       subject: "Reset your password",
       html: `

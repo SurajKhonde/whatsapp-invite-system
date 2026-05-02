@@ -12,7 +12,7 @@ export default function AppLayout({
 
   
   const hiddenExact = ["/"];
-const hiddenPrefix = ["/login", "/signup"];
+const hiddenPrefix = ["/login", "/signup","/logout","/reset-password","/forgot-password","/reset-new-password","/verify"];
 
 const shouldHideHeader =
   hiddenExact.includes(pathname) ||

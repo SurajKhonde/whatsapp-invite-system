@@ -6,12 +6,12 @@ import {
   useVerifyOtpMutation,
   useResendOtpMutation,
 } from "@/store/apiSlice";
-
+type Purpose = "signup" | "forgot-password";
 export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
-  const purpose = searchParams.get("purpose");
+  const purpose = searchParams.get("purpose") as Purpose;
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: resendLoading }] =
     useResendOtpMutation();
@@ -78,25 +78,34 @@ const handleVerify = async () => {
     return;
   }
 
-  try {
-    await verifyOtp({ email, otp: finalOtp, purpose }).unwrap();
+try {
+  await verifyOtp({
+    email: email!,
+    otp: finalOtp,
+    purpose: purpose,
+  }).unwrap();
 
-    setIsVerified(true);
-    resetOtpState(); // ✅ CLEAR STATE
+  setIsVerified(true);
+  resetOtpState();
 
-    setTimeout(() => {
+  setTimeout(() => {
+    if (purpose === "signup") {
       router.replace("/dashboard");
-    }, 1000);
-  } catch (err) {
-    setError(true);
-    resetOtpState(); // ✅ also clear on failure
-  }
+    } else if (purpose === "forgot-password") {
+      router.replace(`/reset-new-password?email=${email}`);
+    }
+  }, 1000);
+
+} catch (err) {
+  setError(true);
+  resetOtpState();
+}
 };
 
   // 🔁 RESEND OTP
 const handleResend = async () => {
   try {
-    const res = await resendOtp({ email, purpose }).unwrap();
+    const res = await resendOtp({  email: email! , purpose:purpose }).unwrap();
 
     // ✅ success case
     setResendCount(true);

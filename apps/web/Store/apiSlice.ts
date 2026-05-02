@@ -1,6 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithNotify } from "@/lib/baseQueryWithNotify";
-
 import { TemplateResponse } from "@/types/template";
 import { GuestResponse, Guest } from "@/types/guest";
 import { MeResponse, User } from "@/types/api.types";
@@ -23,7 +22,7 @@ export const apiSlice = createApi({
 
     signup: builder.mutation<
       void,
-      { name: string; email: string; password: string }
+      { name: string; email: string; password: string,role:string }
     >({
       query: (data) => ({
         url: "/api/auth/signup",
@@ -46,7 +45,7 @@ export const apiSlice = createApi({
 
     verifyOtp: builder.mutation<
       void,
-      { email: string; otp: number; purpose: "signup" | "reset" }
+      { email: string; otp: string; purpose: string}
     >({
       query: (data) => ({
         url: "/api/auth/verify-otp",
@@ -57,7 +56,7 @@ export const apiSlice = createApi({
 
     resendOtp: builder.mutation<
       void,
-      { email: string }
+      { email: string ,purpose: string}
     >({
       query: (data) => ({
         url: "/api/auth/resend-otp",
@@ -87,8 +86,20 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
+    changeOldPassword: builder.mutation<
+      void,
+      { email: string,oldPassword: string; newPassword: string }
+    >({
+      query: (data) => ({
+        url: "/api/auth/reset-old-password",
+        method: "POST",
+        body: data,
+      }),
+    }), 
+  
 
-    logout: builder.mutation<void, void>({
+
+    logout: builder.mutation<void, {feedback:string}>({
       query: () => ({
         url: "/api/auth/logout",
         method: "POST",
@@ -176,6 +187,7 @@ export const {
   useResendOtpMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useChangeOldPasswordMutation,
   useLogoutMutation,
   useGetMeQuery,
   useGetGuestsQuery,

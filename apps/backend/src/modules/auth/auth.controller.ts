@@ -5,89 +5,144 @@ import {
   resendOtpService,
   loginService,
   forgotPasswordService,
-  resetPasswordService,
+  changePasswordService,
+  resetNewPassword,
 } from "./auth.service";
+import { sendResponse } from "@utils/response";
 
-// 🔥 SIGNUP
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+// ✅ SIGNUP
 export const signupController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {token} = await signupService(req.body);
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const result = await signupService(req.body);
 
-    res.status(201).json({ message: "Signup successful" });
+    const token = result.data?.token;
+    if (token) {
+      res.cookie("access_token", token, cookieOptions);
+    }
+
+    return sendResponse({
+      res,
+      statusCode: 201,
+      ...result,
+    });
   } catch (err) {
     next(err);
   }
 };
+
+// ✅ VERIFY OTP
 export const verifyOtpController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await verifyOtpService(req.body);
-    res.json(result);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
   } catch (err) {
     next(err);
   }
 };
+
+// ✅ RESEND OTP
 export const resendOtpController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await resendOtpService(req.body);
-    res.json(result);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
   } catch (err) {
     next(err);
   }
 };
 
-// 🔥 LOGIN (Cookie-based)
+// ✅ LOGIN
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { token } = await loginService(req.body);
+    const result = await loginService(req.body);
 
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    const token = result.data?.token;
+    if (token) {
+      res.cookie("access_token", token, cookieOptions);
+    }
+
+    return sendResponse({
+      res,
+      ...result,
     });
-
-    res.json({ message: "Login successful" });
   } catch (err) {
     next(err);
   }
 };
 
+// ✅ FORGOT PASSWORD
 export const forgotPasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await forgotPasswordService(req.body);
-    res.json(result);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
   } catch (err) {
     next(err);
   }
 };
 
-// 🔥 RESET PASSWORD
+// ✅ CHANGE PASSWORD
+export const changePasswordController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await changePasswordService(req.body);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ✅ RESET PASSWORD
 export const resetPasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await resetPasswordService(req.body);
-    res.json(result);
+    const result = await resetNewPassword(req.body);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
   } catch (err) {
     next(err);
   }
 };
 
-// 🔥 LOGOUT
+// ✅ LOGOUT
 export const logoutController = (req: Request, res: Response) => {
-  res.clearCookie("access_token");
-  res.status(200).json({ message: "Logged out successfully" });
+  res.clearCookie("access_token", cookieOptions);
+
+  return sendResponse({
+    res,
+    message: "Logged out successfully",
+    notify: true,
+  });
 };
 
+// ✅ GET ME (NO TOAST 🔥)
 export const getMe = (req: Request, res: Response) => {
-  // user already attached in authMiddleware
-  res.json({
-    success: true,
+  return sendResponse({
+    res,
+    message: "User fetched",
     data: req.user,
+    notify: false,
   });
 };

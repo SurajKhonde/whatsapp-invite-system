@@ -1,48 +1,63 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   addGuestsService,
   getGuestsService,
-  revealGuestsService
+  revealGuestsService,
 } from "./guest.service";
 import { requireUser } from "@middlewares/requireUser";
+import { sendResponse } from "@utils/response";
 
-//  POST /api/guests/bulk
-export const addGuests = async (req: Request, res: Response) => {
-  const user =requireUser(req);
-  const hostId = user.userId;
-  const { guests } = req.body;
+// POST /api/guests/bulk
+export const addGuests = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = requireUser(req);
+    const hostId = user.userId;
+    const { guests } = req.body;
 
-  const data = await addGuestsService(hostId, guests);
+    const result = await addGuestsService(hostId, guests);
 
-  res.json({
-    success: true,
-    data,
-  });
+    return sendResponse({
+      res,
+      statusCode: 201,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // GET /api/guests
-export const getGuests = async (req: Request, res: Response) => {
-  const user =requireUser(req);
-  const hostId = user.userId;
-  
+export const getGuests = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = requireUser(req);
+    const hostId = user.userId;
 
-  const guests = await getGuestsService(hostId);
+    const result = await getGuestsService(hostId);
 
- res.json({
-    success: true,
-    data: guests,
-  });
+    return sendResponse({
+      res,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
-export const revealController = (async (req: Request, res: Response) => {
-  const user = requireUser(req);
-  const hostId = user.userId;
 
-  const { guestIds } = req.body;
+// POST /api/guests/reveal
+export const revealController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = requireUser(req);
+    const hostId = user.userId;
 
-  const data = await revealGuestsService(hostId, guestIds);
+    const { guestIds } = req.body;
 
-  res.status(200).json({
-    success: true,
-    data,
-  });
-});
+    const result = await revealGuestsService(hostId, guestIds);
+
+    return sendResponse({
+      res,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

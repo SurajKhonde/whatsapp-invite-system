@@ -20,7 +20,6 @@ export default function SignupPage() {
     { left: string; top: string; duration: string }[]
   >([]);
 
-  // 🌟 Stars
   useEffect(() => {
     const generated = Array.from({ length: 25 }).map(() => ({
       left: `${Math.random() * 100}%`,
@@ -56,7 +55,7 @@ export default function SignupPage() {
     }
 
     try {
-      await signup({ name, email, password }).unwrap();
+      await signup({ name, email, password,role:"user" }).unwrap();
 
       router.replace(
         `/verify?email=${encodeURIComponent(email)}&purpose=signup`

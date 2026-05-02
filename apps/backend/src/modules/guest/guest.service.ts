@@ -6,7 +6,13 @@ export const addGuestsService = async (hostId: string, guests: any[]) => {
     throw new AppError("Guests required", 400);
   }
 
-  return bulkInsertGuests(hostId, guests);
+  const data = await bulkInsertGuests(hostId, guests);
+
+  return {
+    message: "Guests added successfully",
+    data,
+    notify: true,
+  };
 };
 
 export const getGuestsService = async (hostId: string) => {
@@ -14,8 +20,15 @@ export const getGuestsService = async (hostId: string) => {
     throw new AppError("Unauthorized", 401);
   }
 
-  return getGuestsByHost(hostId);
+  const data = await getGuestsByHost(hostId);
+
+  return {
+    message: "Guests fetched",
+    data,
+    notify: false, // 🔥 no toast
+  };
 };
+
 export const revealGuestsService = async (
   hostId: string,
   guestIds: string[]
@@ -28,9 +41,11 @@ export const revealGuestsService = async (
     throw new AppError("guestIds required", 400);
   }
 
-  // if (guestIds.length > 20) {
-  //   throw new AppError("Too many guests requested", 400);
-  // }
+  const data = await revealGuestPhones(hostId, guestIds);
 
-  return revealGuestPhones(hostId, guestIds);
+  return {
+    message: "Guests revealed successfully",
+    data,
+    notify: true,
+  };
 };
