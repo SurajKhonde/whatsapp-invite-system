@@ -1,454 +1,417 @@
-# 🚀 MehFil – Reliable WhatsApp Invite System (Queue-Driven)
+# MehFil — Bulk Personalized WhatsApp Invite Platform
 
-> Send WhatsApp invites at scale — **reliably, securely, and asynchronously**
+> Send 1000 personalized WhatsApp invites reliably, with delivery tracking, PII protection, and zero message loss — built for weddings, birthdays, and business events in India.
 
----
-
-## 🧠 Why this system existsS
-
-A real problem triggered this project.
-
-A friend needed to send engagement invites to many people via WhatsApp.
-
-At first, it seems simple:
-
-* Select contacts
-* Forward message
-
-But this breaks quickly at scale.
-
-### ❌ Problems with manual approach
-
-* No delivery tracking
-* High chance of missing contacts
-* No retry on failure
-* Not scalable beyond small groups
-* Cannot automate or reuse
-
-This led to a key question:
-
-> **How do real systems handle bulk communication reliably?**
+![Stack](https://img.shields.io/badge/Node.js-Express-green?style=flat-square)
+![Queue](https://img.shields.io/badge/Queue-BullMQ%20%2B%20Redis-red?style=flat-square)
+![DB](https://img.shields.io/badge/Database-PostgreSQL%20%2B%20Drizzle-blue?style=flat-square)
+![Frontend](https://img.shields.io/badge/Frontend-Next.js%2014-black?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active%20Development-orange?style=flat-square)
 
 ---
 
-## 💡 Core Idea
+## The Problem
 
-This system is **not about sending messages**.
+Every wedding season in India, thousands of people manually forward the same WhatsApp message to hundreds of contacts, one by one.
 
-It is about:
+The problems are obvious once you try it at scale:
 
-```text
-Reliable, scalable, and controlled message delivery
+- No delivery tracking — did everyone actually receive it?
+- If WhatsApp cuts off mid-send, you don't know where it stopped
+- Every guest gets the same generic message — no personalization
+- No retry if a message fails — some guests are silently missed
+- Phone numbers of all your guests sitting in plain text
+
+MehFil solves this. Upload your guest list, pick a template, and every guest receives a **personalized invite with their name** — reliably, with full delivery tracking, retries on failure, and all phone numbers encrypted at rest.
+
+---
+
+## What It Does
+
+```
+User uploads guest list (CSV or manual)
+    ↓
+Selects a template (birthday, wedding, business event)
+    ↓
+System generates a personalized image per guest (their name on the card)
+    ↓
+Each invite is queued as an independent job
+    ↓
+Worker decrypts phone number, sends WhatsApp message with personalized image
+    ↓
+Dashboard shows real-time status: sent / failed / pending per guest
+    ↓
+Failed jobs retry automatically with exponential backoff
 ```
 
 ---
 
-## 🎯 Goal
+## Architecture
 
-> Deliver WhatsApp invites **reliably at scale** under:
-
-* rate limits
-* failures
-* privacy constraints
-
----
-
-# 🧩 0) Problem Framing (First Principles)
-
-A naive solution:
-
-```text
-loop → send → done
+```
+┌─────────────────────────────────────────────────────┐
+│                   Next.js Frontend                   │
+│   (Event creation · Guest management · Dashboard)    │
+└────────────────────────┬────────────────────────────┘
+                         │ HTTP
+┌────────────────────────▼────────────────────────────┐
+│              Express API (Node.js / TypeScript)       │
+│   Auth · Rate Limiting · Validation · Controllers    │
+└──────┬──────────────────────────┬───────────────────┘
+       │                          │
+┌──────▼──────┐          ┌────────▼────────┐
+│ PostgreSQL  │          │   BullMQ Queue  │
+│  (Drizzle)  │          │    (Redis)      │
+│             │          │ 5 retries       │
+│ users       │          │ exponential     │
+│ guests      │          │ backoff         │
+│ events      │          │ DLQ on failure  │
+│ event_guests│          └────────┬────────┘
+└─────────────┘                   │
+                         ┌────────▼────────────────────┐
+                         │     Invite Worker            │
+                         │  concurrency: 5              │
+                         │  1. Fetch job (eventGuestId) │
+                         │  2. Decrypt phone (AES-256)  │
+                         │  3. Generate image           │
+                         │     (Puppeteer → PNG)        │
+                         │  4. Send WhatsApp message    │
+                         │  5. Update DB status         │
+                         └────────┬────────────────────┘
+                                  │
+                         ┌────────▼────────┐
+                         │ WhatsApp Cloud  │
+                         │     API         │
+                         │ (Meta Business) │
+                         └─────────────────┘
 ```
 
-Fails due to:
+### Key Design Decisions
 
-* **Throughput limits** → WhatsApp rate limits
-* **Partial failures** → network/API errors
-* **Lack of observability** → no per-user tracking
-* **Privacy risks** → phone numbers exposure
-* **Idempotency issues** → duplicate messages
+**Why one job per guest?**
+Failure isolation. If 1 guest fails, the other 999 continue unaffected. Each job has its own retry counter, status row, and error log.
 
-### ✅ Design Target
+**Why async queue instead of direct loop?**
+A synchronous loop blocks the API, has no retry on failure, and can't be monitored. The queue gives you backpressure control, retry, observability, and the ability to scale workers independently.
 
-```text
-At-least-once delivery per recipient
-No cross-recipient coupling
-Bounded rate
-Auditable status
-PII protected
+**Why encrypt phone numbers?**
+Your guests' phone numbers are PII. MehFil encrypts every phone number with AES-256-CBC (unique IV per number) before storing. The plaintext is only available inside the worker at send-time, never in API responses or logs.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| API | Node.js + Express + TypeScript | Async-first, typed, familiar ecosystem |
+| Frontend | Next.js 14 + Redux Toolkit | SSR, RTK Query for data fetching |
+| Queue | BullMQ + Redis | Battle-tested, retry/backoff built-in, Bull Board UI |
+| Database | PostgreSQL + Drizzle ORM | Relational integrity, type-safe schema |
+| Image Gen | Puppeteer (HTML → PNG) | Full CSS rendering, custom fonts, rich templates |
+| Auth | JWT + bcrypt + Email OTP | Stateless, secure, OTP via queue (not sync) |
+| Payments | Razorpay | India-first, UPI support |
+| Security | AES-256-CBC encryption | Phone numbers encrypted at rest |
+| DevOps | Docker Compose, PM2 | Single-node MVP, scale to multi-worker later |
+
+---
+
+## Database Schema
+
+### `guests`
+```sql
+id          UUID PRIMARY KEY
+host_id     UUID → users (cascade delete)
+name        TEXT NOT NULL
+phone       TEXT NOT NULL          -- AES-256 encrypted
+phone_last4 TEXT                   -- for masked display only
+relation    TEXT DEFAULT 'friend'
+invite_count INTEGER DEFAULT 0
+created_at  TIMESTAMP
 ```
-
----
-
-# ⚙️ 1) Non-Functional Requirements
-
-* **Reliability** → failures must not cascade
-* **Idempotency** → retries must not duplicate sends
-* **Rate control** → respect API limits
-* **Observability** → track per-recipient status
-* **Security** → encrypt sensitive data
-* **Cost efficiency** → single-node deployment initially
-
----
-
-# 🧱 2) Core Abstractions
-
-* **Event** → user intent (e.g., engagement invite)
-* **Recipient (event_guest)** → unit of work
-* **Job** → execution unit (1:1 with recipient)
-* **Worker** → processes jobs
-* **Queue** → manages retries + execution
-
-> ⚠️ **Invariant**
-> One recipient = one job = one status row
-
----
-
-# 🏗️ 3) Architecture (Mid-Level Design)
-
-### 🔹 High-Level Flow
-
-## 🏗️ 3) Architecture (Mid-Level Design)
-
-```mermaid
-flowchart TB
-
-%% ===== FRONTEND =====
-FE["Frontend (Next.js UI)\n- Create Event\n- Select Guests\n- View Status"]
-
-%% ===== API LAYER =====
-API["API Layer (Express)\n- Routing\n- Validation\n- Controllers"]
-
-%% ===== CROSS CUTTING =====
-AUTH["Auth Layer\n(JWT + OTP)"]
-RATE["Rate Limiter\n(Abuse Control)"]
-BL["Business Logic\n- Create Event\n- Attach Guests\n- Enqueue Jobs"]
-
-%% ===== DATABASE =====
-DB[("PostgreSQL\nEncrypted Storage\n- Users\n- Guests\n- Events\n- event_guests")]
-
-%% ===== QUEUE =====
-QUEUE[("BullMQ Queue\n(Redis)\n- Job Buffer\n- Retry\n- Backoff")]
-
-%% ===== WORKER =====
-WORKER["Worker Layer\n(Parallel Consumers)\n- Fetch Job\n- Decrypt Phone\n- Send Message\n- Update Status"]
-
-%% ===== EXTERNAL =====
-WA["WhatsApp Cloud API\n(Template Messaging)"]
-
-%% ===== FLOW =====
-FE --> API
-API --> AUTH
-API --> RATE
-API --> BL
-
-BL --> DB
-BL --> QUEUE
-
-QUEUE --> WORKER
-
-WORKER --> WA
-WORKER --> DB
-```
-
----
-
-### 🔹 Flow Summary
-
-```text
-User → Frontend → API  
-→ Auth + Rate Limit  
-→ Business Logic  
-→ DB + Queue  
-→ Worker  
-→ WhatsApp API  
-→ DB update  
-→ Frontend polls status
-```
-
----
-
-### 🔹 Key Idea
-
-```text
-Synchronous → API (fast response)
-Asynchronous → Queue + Worker (heavy work)
-```
-
----
-
-
----
-
-### 🔹 Key Design Principle
-
-```text
-Synchronous → user intent
-Asynchronous → execution
-```
-
-* API responds fast
-* heavy work happens in background
-
----
-
-### 🔹 Why Queue is Critical
-
-❌ Without queue:
-
-```text
-API → loop → send
-```
-
-Problems:
-
-* blocking
-* failures stop everything
-* no retries
-
-✅ With queue:
-
-```text
-API → enqueue → worker
-```
-
-Benefits:
-
-* scalable
-* reliable
-* fault isolated
-
----
-
-## 4) Data Model (source of truth)
 
 ### `events`
-
-* `id, user_id, template_id, event_type`
-* metadata only (NOT delivery truth)
-
-### `event_guests` (**truth**)
-
-* `id, event_id, guest_id`
-* `status`: `pending | sent | failed`
-* `attempts, last_attempt_at, delivered_at, error_message`
-* **Unique constraint**: `(event_id, guest_id)` → prevents duplicates
-
-> **Derived counts** (never stored to avoid drift):
-
 ```sql
-COUNT(*) FILTER (WHERE status='sent')
-COUNT(*) FILTER (WHERE status='failed')
+id           UUID PRIMARY KEY
+user_id      UUID → users
+template_id  UUID → templates
+event_type   TEXT                  -- 'birthday' | 'wedding' | 'business'
+total_guests INTEGER
+status       TEXT                  -- 'processing' | 'completed'
+created_at   TIMESTAMP
+```
+
+### `event_guests` ← the delivery truth table
+```sql
+id              UUID PRIMARY KEY
+event_id        UUID → events (cascade delete)
+guest_id        UUID → guests (cascade delete)
+status          TEXT DEFAULT 'pending'  -- pending | sent | failed
+attempts        INTEGER DEFAULT 0
+last_attempt_at TIMESTAMP
+delivered_at    TIMESTAMP
+error_message   TEXT
+```
+
+> **Invariant:** `(event_id, guest_id)` is unique. One guest, one job, one status row per event. Counts (sent/failed) are always derived with `COUNT(*) FILTER` — never stored — to prevent drift.
+
+---
+
+## Security Model
+
+```
+Phone numbers in DB:   AES-256-CBC encrypted (unique IV per number)
+Phone in API response: Masked  (+91*****1234)
+Phone in worker:       Decrypted only at send-time, never logged
+Phone in queue:        Never stored — only guest UUID travels in job payload
+Access control:        All queries scoped by user_id
+```
+
+This means even if your database is leaked, phone numbers are not readable without the encryption key.
+
+---
+
+## Project Structure
+
+```
+mehfil/
+├── apps/
+│   ├── backend/                    # Express API
+│   │   └── src/
+│   │       ├── core/
+│   │       │   ├── errors/         # AppError, global error handler
+│   │       │   ├── queue/          # BullMQ queue definitions
+│   │       │   └── worker/         # BullMQ workers
+│   │       ├── db/
+│   │       │   └── schema/         # Drizzle schema definitions
+│   │       ├── modules/
+│   │       │   ├── auth/           # Signup, login, OTP, JWT
+│   │       │   ├── campaign/       # Event creation and management
+│   │       │   ├── guest/          # Guest CRUD, bulk insert, encryption
+│   │       │   ├── invite/         # Image generation (Puppeteer)
+│   │       │   ├── payment/        # Razorpay integration
+│   │       │   ├── template/       # Template management + cache
+│   │       │   └── whatsapp/       # WhatsApp Cloud API integration
+│   │       └── utils/
+│   │           ├── encrptContact.ts  # AES-256 encrypt/decrypt
+│   │           ├── generateImage.ts  # Puppeteer HTML → PNG
+│   │           └── templateEngine.ts # {{variable}} HTML renderer
+│   └── web/                        # Next.js 14 frontend
+│       ├── app/                    # App router pages
+│       ├── components/             # Dashboard, GuestForm, GuestList
+│       └── Store/                  # Redux Toolkit + RTK Query
+├── packages/
+│   ├── db/                         # Shared DB client
+│   └── queue/                      # Shared queue config
+└── docker-compose.yml              # PostgreSQL + Redis + pgAdmin
 ```
 
 ---
 
-## 5) PII & Security Model
+## Getting Started
 
-* **At rest**: `guests.phone` encrypted (e.g., AES)
-* **In use**: decrypted only inside worker at send-time
-* **In UI**: masked (`+91*****1234`)
-* **Access control**: all queries scoped by `user_id`
+### Prerequisites
 
-> **Threat model**: prevent enumeration of others’ contacts + accidental leaks
+- Node.js 18+
+- pnpm
+- Docker + Docker Compose
+- Meta Business WhatsApp Cloud API credentials
 
----
+### 1. Clone and install
 
-## 6) Job Design & Idempotency
-
-### Why 1 job per recipient?
-
-* failure isolation
-* granular retries
-* precise metrics
-* controlled parallelism
-
-### Idempotency strategy
-
-* **Primary key**: `event_guests.id`
-* Worker checks current `status`:
-
-  * if already `sent` → **no-op**
-* Optionally include **idempotency key** in outbound call metadata (if provider supports)
-
----
-
-## 7) Worker Lifecycle (per job)
-
-```text
-Fetch job(eventGuestId, userId)
-  → SELECT event_guest
-  → if status == 'sent' → exit (idempotent)
-  → decrypt phone (via service)
-  → call WhatsApp template API
-  → on success:
-        UPDATE status='sent', delivered_at=now(), attempts++
-  → on failure:
-        UPDATE status='failed', error, attempts++, last_attempt_at
-        throw → queue handles retry (backoff)
+```bash
+git clone https://github.com/SurajKhonde/whatsapp-invite-system.git
+cd whatsapp-invite-system
+pnpm install
 ```
 
----
+### 2. Start infrastructure
 
-## 8) Retry & Backoff
-
-* **Attempts**: e.g., 5
-* **Backoff**: exponential (2s, 4s, 8s…)
-* **Why**:
-
-  * transient errors (network, 5xx)
-  * provider throttling windows
-
-> **Policy**: After max attempts → terminal `failed` (visible to user)
-
----
-
-## 9) Rate Limiting Strategy
-
-Two layers:
-
-1. **Worker concurrency**:
-
-```text
-concurrency = 3–10 (tunable)
+```bash
+docker-compose up -d
+# Starts: PostgreSQL (5432), Redis (6379), pgAdmin (5050)
 ```
 
-2. **Queue limiter (optional)**:
+### 3. Configure environment
 
-```text
-max X jobs / duration Y
+```bash
+cp apps/backend/.env.example apps/backend/.env
 ```
 
-> Align with WhatsApp tier (e.g., 10 msg/sec).
-> Prevent burst spikes → smoother throughput.
+```env
+# Database
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/invite_db
 
----
+# Redis
+REDIS_URL=redis://localhost:6379
 
-## 10) API Layer (key endpoints)
+# Auth
+JWT_SECRET=your_secret_here
+ENCRYPTION_KEY=your_32_char_key_here
 
-* `POST /auth/signup | /login | /verify-otp | /resend-otp`
-* `POST /events` → creates event + `event_guests` + enqueues jobs
-* `GET /events` → list with derived counts
-* `GET /events/:id` → per-recipient status
+# WhatsApp Cloud API
+WHATSAPP_TOKEN=your_meta_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_id
+WHATSAPP_API_URL=https://graph.facebook.com/v19.0
 
-**Rate limiting**:
+# Email (for OTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_USER=your@gmail.com
+SMTP_PASS=your_app_password
 
-* OTP endpoints throttled (prevent abuse)
-* Event creation throttled per user
-
----
-
-## 11) WhatsApp Integration Constraints
-
-* **Template-only** messaging
-* **Pre-approved** templates
-* **Variables mapping** (body params)
-* **Phone format**: E.164 without `+` for API payloads
-
-**Failure classes**:
-
-* 4xx (validation/template issues) → usually non-retryable
-* 5xx/network → retryable
-
----
-
-## 12) Consistency Model
-
-* **Eventual consistency** between UI and worker updates
-* UI uses **polling** (e.g., 2–3s) to fetch status
-* Strong consistency not required; correctness comes from DB truth
-
----
-
-## 13) Observability (minimum viable)
-
-* Logs:
-
-  * job start/end
-  * API responses (sanitized)
-  * errors with codes
-* Metrics (future):
-
-  * success rate
-  * retries per job
-  * latency per send
-
----
-
-## 14) Failure Modes & Handling
-
-| Failure       | Handling                    |
-| ------------- | --------------------------- |
-| Network error | retry with backoff          |
-| WhatsApp 4xx  | mark failed (no retry)      |
-| Worker crash  | job re-queued by BullMQ     |
-| Duplicate job | idempotent check via status |
-| DB outage     | job fails → retry later     |
-
----
-
-## 15) Deployment Model (cost-aware)
-
-Single VPS (2GB RAM):
-
-```text
-Docker Compose
-├── app (API + Next.js)
-├── worker
-├── postgres
-├── redis
-├── nginx (reverse proxy)
+# Payments
+RAZORPAY_KEY_ID=your_key
+RAZORPAY_KEY_SECRET=your_secret
 ```
 
-* Scale later by adding more **worker replicas**
-* No need for managed services at MVP stage
+### 4. Run database migrations
+
+```bash
+cd apps/backend
+pnpm drizzle-kit push
+```
+
+### 5. Start development
+
+```bash
+# From root
+pnpm dev
+```
+
+- API: http://localhost:5000
+- Frontend: http://localhost:3000
+- Bull Board (queue monitor): http://localhost:5000/admin/queues
+- pgAdmin: http://localhost:5050
 
 ---
 
-## 16) Trade-offs
+## API Reference
 
-**Chosen**
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/signup` | Register + send OTP |
+| POST | `/api/auth/verify` | Verify OTP |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/forgot-password` | Send reset OTP |
+| POST | `/api/auth/resend-otp` | Resend OTP |
+| POST | `/api/auth/reset-password` | Set new password |
 
-* Queue-based async processing (complex but reliable)
-* Derived counts (correctness over write-time convenience)
+### Guests
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/guests` | Add guests (bulk) |
+| GET | `/api/guests` | List guests (phone masked) |
+| POST | `/api/contacts/upload` | CSV upload |
 
-**Avoided**
+### Events (Campaigns)
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/campaign` | Create event + queue all invites |
+| GET | `/api/campaign` | List events with sent/failed counts |
+| GET | `/api/campaign/:id` | Event details + per-guest status |
 
-* synchronous bulk send (simple but fragile)
-* storing counters (risk of drift)
-
----
-
-## 17) Future Extensions
-
-* **Webhook ingestion** (delivered/read receipts)
-* **Dead-letter queue** (manual re-drive)
-* **Scheduling** (send at time T)
-* **Multi-tenant isolation** (per-tenant limits)
-* **Payments** (quota-based usage)
-* **WebSockets** (replace polling when needed)
-
----
-
-## 18) Key Invariants (what must always hold)
-
-* Each `(event_id, guest_id)` appears **once**
-* A job **never** sends twice after `status='sent'`
-* PII is **never** exposed in plaintext outside worker boundary
-* Counts in UI are **derived**, not stored
-
----
-
-## 19) What this demonstrates
-
-* async system design under real constraints
-* idempotency + retry strategies
-* secure handling of sensitive data
-* external API integration with backpressure control
+### Invites
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/invite/preview` | Generate preview image for template |
 
 ---
 
-## 👨‍💻 Author
+## Worker Lifecycle
 
-Suraj Khonde
+For each guest in an event, a job is created in BullMQ:
+
+```
+Job payload: { eventId, eventGuestId, userId }
+
+Worker steps:
+  1. SELECT event_guest WHERE id = eventGuestId
+  2. If status === 'sent' → skip (idempotent)
+  3. Decrypt phone number (AES-256)
+  4. Send WhatsApp message with personalized image
+  5. On success → UPDATE status='sent', delivered_at=now(), attempts++
+  6. On failure → UPDATE status='failed', error_message, attempts++
+               → throw error → BullMQ handles retry
+```
+
+**Retry config:**
+- Max attempts: 5
+- Backoff: exponential starting at 2 seconds (2s → 4s → 8s → 16s → 32s)
+- Failed jobs are kept in Redis for inspection (not auto-deleted)
+
+---
+
+## Image Generation Pipeline
+
+```
+Guest data (name, event details)
+    ↓
+templateEngine.ts — injects {{name}}, {{date}}, {{venue}} into HTML
+    ↓
+generateImage.ts — Puppeteer renders HTML to PNG (800×1100px)
+    ↓
+saveLocalImage.ts — saves to /public/generated/invite-{uuid}.png
+    ↓
+[Roadmap] — upload to S3, attach as media in WhatsApp message
+```
+
+Templates are pure HTML/CSS files. To add a new template, create an HTML file with `{{variable}}` placeholders and register it in the template table.
+
+---
+
+## Roadmap
+
+### In Progress
+- [ ] Wire generated image to WhatsApp media message
+- [ ] CSV guest list upload with validation
+- [ ] Razorpay payment integration (per-event pricing)
+
+### Planned
+- [ ] Puppeteer browser pool (replace per-request launch)
+- [ ] Webhook ingestion for delivery receipts from WhatsApp
+- [ ] WebSocket live dashboard (replace polling)
+- [ ] Dead-letter queue UI for manual job re-drive
+- [ ] Scheduled sends (send at a specific date/time)
+- [ ] Wedding / corporate event templates
+- [ ] Multi-language support (Hindi, Kannada, Tamil)
+- [ ] WhatsApp opt-in flow (for compliance)
+
+---
+
+## Local Development Tips
+
+**View queues:** http://localhost:5000/admin/queues (Bull Board) — see pending, active, failed jobs in real time.
+
+**View database:** http://localhost:5050 (pgAdmin) — login with `admin@example.com` / `admin`.
+
+**Test WhatsApp sending:** Start with the sandbox number Meta provides — no template approval needed for test messages.
+
+**Add a new template:** Create `src/modules/template/{name}/{name}.html` with `{{guestName}}`, `{{eventDate}}`, `{{venue}}` placeholders. Run Puppeteer preview to check rendering before adding to the DB.
+
+---
+
+## Contributing
+
+This project is in active development. Contributions welcome.
+
+1. Fork the repo
+2. Create your branch: `git checkout -b feat/your-feature`
+3. Commit with clear messages: `feat: add CSV bulk upload`, `fix: puppeteer browser pool`
+4. Open a PR with description of what you built and why
+
+Areas especially needing help: frontend design, template library, WhatsApp webhook handling.
+
+---
+
+## Author
+
+**Suraj Khonde** — Full Stack Engineer specializing in real-time systems and event-driven architecture.
+
+[GitHub](https://github.com/SurajKhonde) · [LinkedIn](https://linkedin.com/in/surajkhonde) · [Portfolio](https://surajkhonde.dev) · [Medium](https://medium.com/@surajkhonde)
+
+---
+
+## License
+
+MIT — use it, fork it, build on it.

@@ -3,65 +3,43 @@ import fs from "fs";
 import { renderTemplate } from "@utils/templateEngine";
 import { generateImage } from "@utils/generateImage";
 import { saveLocalImage } from "@utils/saveLocalImage";
-import {
-  InviteTemplateData,
-  PreviewInviteDTO,
-} from "./invite.types";
-
+import {saveCloudinaryImage} from "@utils/saveCloudinaryImage"
+import { InviteTemplateData, PreviewInviteDTO } from "./invite.types";
+import { templateRegistry } from "@config/templateRegistry";
 export class InviteService {
-  private getTemplatePath(): string {
-    const templatePath = path.join(
-      process.cwd(),
-      "src/template/birthday/birthday-premium.html"
-    );
-
-    if (!fs.existsSync(templatePath)) {
-      throw new Error("Template file not found");
-    }
-
-    return templatePath;
+  private getTemplatePath(templateName: string): string {
+  const relativePath = templateRegistry[templateName];
+  if (!relativePath) {
+    throw new Error(`Template "${templateName}" not found in registry`);
   }
-
+  const templatePath = path.join(process.cwd(), relativePath);
+  if (!fs.existsSync(templatePath)) {
+    throw new Error(`Template file not found at path: ${templatePath}`);
+  }
+  return templatePath;
+}
   private buildTemplateData(data: PreviewInviteDTO): InviteTemplateData {
-    const basePath = path.join(process.cwd(), "src/public/birthday");
-
-    const toFileUrl = (file: string) => {
-      const fullPath = path.join(basePath, file);
-
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(`Asset not found: ${file}`);
-      }
-
-      return `${fullPath}`;
+    const templateData = {
+      groomName: data.groomName,
+      brideName: data.brideName,
+      day: data.day,
+      monthYear: data.monthYear,
+      venueName: data.venueName,
+      venueAddress: data.venueAddress,
     };
-
-    return {
-      ...data,
-      bgImage: toFileUrl("birthdaynew.jpeg"),
-      ribbonImage: toFileUrl("ribban.png"),
-      balloonImage: toFileUrl("baloonImageFive.png"),
-      candleImage: toFileUrl("candle.jpeg"),
-    };
+    return templateData;
   }
 
   async generateAndSave(data: PreviewInviteDTO) {
-    const html = renderTemplate(
-      this.getTemplatePath(),
-      this.buildTemplateData(data)
-    );
-
-    const debugPath = path.join(process.cwd(), "debug.html");
-    fs.writeFileSync(debugPath, html);
-
+    const templatePath = this.getTemplatePath(data.templateName);
+    const templateData = this.buildTemplateData(data);
+    const html = renderTemplate(templatePath, templateData);
     const buffer = await generateImage(html);
-
-    const fileName = saveLocalImage(buffer);
-
-    const imageUrl = `/generated/${fileName}`;
-
+    const imageUrl = await saveCloudinaryImage(buffer);
+ 
     return {
       message: "Invite generated successfully",
-      data: { imageUrl },
+      data: { imageUrl }, 
       notify: true,
     };
   }

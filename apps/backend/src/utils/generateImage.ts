@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 
 export const generateImage = async (html: string): Promise<Buffer> => {
   const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/brave-browser", // or chromium
+    executablePath: "/usr/bin/brave-browser",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -11,29 +11,21 @@ export const generateImage = async (html: string): Promise<Buffer> => {
     ],
   });
 
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  await page.setViewport({
-    width: 800,
-    height: 1100,
-  });
+    await page.setViewport({ width: 800, height: 1100 });
 
-  // ✅ wait for all resources (images, css, fonts)
-  await page.setContent(html, {
-    waitUntil: "networkidle0",
-  });
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
-  // ✅ ensure fonts loaded
-  await page.evaluateHandle("document.fonts.ready");
+    await page.evaluateHandle("document.fonts.ready");
 
-  // ✅ FIX for older Puppeteer (instead of waitForTimeout)
-  await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const screenshot = await page.screenshot({
-    type: "png",
-  });
+    const screenshot = await page.screenshot({ type: "png" });
 
-  await browser.close();
-
-  return Buffer.from(screenshot);
+    return Buffer.from(screenshot);
+  } finally {
+    await browser.close();
+  }
 };

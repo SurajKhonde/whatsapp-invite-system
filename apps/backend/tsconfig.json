@@ -19,7 +19,7 @@
       "@modules/*": ["src/modules/*"],
       "@queue/*": ["src/core/queue/*"],
       "@workers/*": ["src/core/workers/*"],
-      "@templates/*": ["src/modules/template/*"],
+      "@templates/*": ["src/HTML-template/*"],
       "@middlewares/*": ["src/middlewares/*"],
       "@utils/*": ["src/utils/*"],
       "@/db/*": ["src/db/*"]

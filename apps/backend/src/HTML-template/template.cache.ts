@@ -1,4 +1,4 @@
-import { redisCache } from "../../config/redis";
+import { redisCache } from "../config/redis";
 
 const TTL = 60 * 5; // 5 minutes
 

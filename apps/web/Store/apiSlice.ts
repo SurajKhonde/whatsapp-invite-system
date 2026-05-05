@@ -1,8 +1,8 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithNotify } from "@/lib/baseQueryWithNotify";
 import { TemplateResponse } from "@/types/template";
-import { GuestResponse, Guest } from "@/types/guest";
 import { MeResponse, User } from "@/types/api.types";
+import { GuestResponse, GuestInput, AddGuestsRequest } from "@/types/guest";
 import {
   GetEventsResponse,
   EventDetailsResponse,
@@ -118,24 +118,18 @@ export const apiSlice = createApi({
 
     // ================= GUEST =================
 
-    getGuests: builder.query<GuestResponse, void>({
-      query: () => ({
-        url: "/api/guests",
-      }),
-      providesTags: ["Guests"],
-    }),
-
-    addGuests: builder.mutation<
-      void,
-      { guests: Guest[] }
-    >({
-      query: (data) => ({
-        url: "/api/guests/bulk",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Guests"],
-    }),
+     getGuests: builder.query<GuestResponse, void>({
+ query: () => ({ url: "/api/guests" }),
+ providesTags: ["Guests"],
+ }),
+    addGuests: builder.mutation<GuestResponse, AddGuestsRequest>({
+  query: (data) => ({
+     url: "/api/guests/bulk",
+     method: "POST",
+   body: data,
+ }),
+   invalidatesTags: ["Guests"],
+ }),
 
     // ================= TEMPLATE =================
 
@@ -175,6 +169,26 @@ export const apiSlice = createApi({
         url: `/api/events/${id}`,
       }),
     }),
+// ================= PAYMENT=================    
+    createOrder: builder.mutation({
+  query: (body: { messageType: string; guestCount: number }) => ({
+    url: "/api/payment/create-order",
+    method: "POST",
+    body,
+  }),
+}),
+
+verifyPayment: builder.mutation({
+  query: (body: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => ({
+    url: "/api/payment/verify",
+    method: "POST",
+    body,
+  }),
+}),
   }),
 });
 
@@ -196,4 +210,6 @@ export const {
   useCreateEventMutation,
   useGetEventsQuery,
   useGetEventDetailsQuery,
+  useCreateOrderMutation,
+  useVerifyPaymentMutation
 } = apiSlice;

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 800px;
+    height: 1100px;
+    background: #0a1628;
+    font-family: 'Lato', sans-serif;
+  }
+
+  .card {
+    width: 800px;
+    height: 1100px;
+    position: relative;
+    overflow: hidden;
+    background: #0a1628;
+  }
+
+  /* ── STARFIELD BACKGROUND ── */
+  .stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 60% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 70% 90%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  }
+
+  /* ── GOLD DECORATIVE BORDER ── */
+  .outer-border {
+    position: absolute;
+    inset: 14px;
+    border: 1.5px solid rgba(212,175,55,0.5);
+    border-radius: 4px;
+  }
+  .inner-border {
+    position: absolute;
+    inset: 20px;
+    border: 0.5px solid rgba(212,175,55,0.25);
+    border-radius: 3px;
+  }
+
+  /* ── CORNER ORNAMENTS ── */
+  .corner {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    opacity: 0.7;
+  }
+  .corner svg { width: 100%; height: 100%; }
+  .corner.tl { top: 8px; left: 8px; }
+  .corner.tr { top: 8px; right: 8px; transform: scaleX(-1); }
+  .corner.bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+  .corner.br { bottom: 8px; right: 8px; transform: scale(-1); }
+
+  /* ── TOP ORNAMENT ── */
+  .top-ornament {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .top-ornament .om {
+    font-size: 22px;
+    color: #d4af37;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .top-ornament .divider-line {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    margin: 4px auto;
+  }
+
+  /* ── WEDDING TITLE ── */
+  .wedding-title {
+    position: absolute;
+    top: 72px;
+    width: 100%;
+    text-align: center;
+    font-family: 'Great Vibes', cursive;
+    font-size: 58px;
+    color: #d4af37;
+    text-shadow: 0 0 30px rgba(212,175,55,0.4), 0 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 2px;
+  }
+
+  /* ── FLORAL TOP LEFT ── */
+  .floral-tl {
+    position: absolute;
+    top: 130px;
+    left: -10px;
+    width: 200px;
+    opacity: 0.85;
+  }
+  .floral-tr {
+    position: absolute;
+    top: 130px;
+    right: -10px;
+    width: 200px;
+    opacity: 0.85;
+    transform: scaleX(-1);
+  }
+
+  /* ── COUPLE NAMES SECTION ── */
+  .couple-section {
+    position: absolute;
+    top: 155px;
+    width: 100%;
+    text-align: center;
+    padding: 0 160px;
+  }
+
+  .groom-block, .bride-block {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .role-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(212,175,55,0.7);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .person-name {
+    font-family: 'Great Vibes', cursive;
+    font-size: 42px;
+    color: #ffffff;
+    line-height: 1.1;
+    text-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+
+  .weds-text {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #d4af37;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    display: block;
+    margin: 12px 0;
+  }
+
+  /* ── MAIN BANNER ── */
+  .names-banner {
+    position: absolute;
+    top: 310px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .banner-bg {
+    display: inline-block;
+    position: relative;
+    padding: 12px 60px;
+  }
+
+  .banner-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(20,50,100,0.9), rgba(10,30,70,0.95));
+    border-top: 2px solid #d4af37;
+    border-bottom: 2px solid #d4af37;
+  }
+
+  .banner-names {
+    font-family: 'Great Vibes', cursive;
+    font-size: 72px;
+    color: #d4af37;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 40px rgba(212,175,55,0.5), 0 3px 6px rgba(0,0,0,0.8);
+    white-space: nowrap;
+  }
+
+  /* ── COUPLE ILLUSTRATION AREA ── */
+  .illustration {
+    position: absolute;
+    top: 420px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* SVG couple illustration */
+  .couple-svg {
+    width: 340px;
+    height: 260px;
+  }
+
+  /* ── FLORAL BOTTOM ── */
+  .floral-bl {
+    position: absolute;
+    bottom: 230px;
+    left: -10px;
+    width: 180px;
+    opacity: 0.8;
+  }
+  .floral-br {
+    position: absolute;
+    bottom: 230px;
+    right: -10px;
+    width: 180px;
+    opacity: 0.8;
+    transform: scaleX(-1);
+  }
+
+  /* ── SAVE THE DATE BOX ── */
+  .save-date-section {
+    position: absolute;
+    bottom: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 680px;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #d4af37;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(8,20,50,0.95);
+  }
+
+  .save-label {
+    background: rgba(212,175,55,0.15);
+    border-right: 1px solid #d4af37;
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 130px;
+  }
+
+  .save-label .save-word {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #ffffff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .save-label .date-word {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: #d4af37;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .date-block {
+    border-right: 1px solid rgba(212,175,55,0.3);
+    padding: 14px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 130px;
+  }
+
+  .date-day {
+    font-family: 'Great Vibes', cursive;
+    font-size: 52px;
+    color: #d4af37;
+    line-height: 1;
+  }
+
+  .date-month-year {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  .venue-block {
+    padding: 14px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .venue-join {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    color: rgba(212,175,55,0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .venue-name {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .venue-address {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    position: absolute;
+    bottom: 36px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .footer-line {
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent);
+    margin: 0 auto 8px;
+  }
+
+  .footer-text {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: rgba(212,175,55,0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="stars"></div>
+  <div class="outer-border"></div>
+  <div class="inner-border"></div>
+
+  <!-- Corner ornaments -->
+  <div class="corner tl">
+    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 L5 5 L55 5" stroke="#d4af37" stroke-width="1.5" fill="none"/>
+      <path d="M5 5 Q20 5 20 20" stroke="#d4af37" stroke-width="1" fill="none" opacity="0.5"/>
+      <circle cx="5" cy="5" r="3" fill="#d4af37" opacity="0.8"/>
+      <path d="M12 5 L12 12 M5 12 L12 12" stroke="#d4af37" stroke-width="0.8" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 L5 5 L55 5" stroke="#d4af37" stroke-width="1.5" fill="none"/>
+      <circle cx="5" cy="5" r="3" fill="#d4af37" opacity="0.8"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 L5 5 L55 5" stroke="#d4af37" stroke-width="1.5" fill="none"/>
+      <circle cx="5" cy="5" r="3" fill="#d4af37" opacity="0.8"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 55 L5 5 L55 5" stroke="#d4af37" stroke-width="1.5" fill="none"/>
+      <circle cx="5" cy="5" r="3" fill="#d4af37" opacity="0.8"/>
+    </svg>
+  </div>
+
+  <!-- Top ornament -->
+  <div class="top-ornament">
+    <span class="om">✦ ॐ ✦</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Wedding title -->
+  <div class="wedding-title">Wedding Invitation</div>
+
+  <!-- Left floral -->
+  <div class="floral-tl">
+    <svg viewBox="0 0 200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Roses and leaves -->
+      <ellipse cx="60" cy="100" rx="28" ry="28" fill="#c0392b" opacity="0.85"/>
+      <ellipse cx="60" cy="100" rx="20" ry="20" fill="#e74c3c" opacity="0.7"/>
+      <ellipse cx="60" cy="100" rx="12" ry="12" fill="#f1948a" opacity="0.6"/>
+      <ellipse cx="60" cy="100" rx="6" ry="6" fill="#fadbd8" opacity="0.8"/>
+      <!-- petals -->
+      <ellipse cx="40" cy="85" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(-30 40 85)"/>
+      <ellipse cx="80" cy="85" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(30 80 85)"/>
+      <ellipse cx="45" cy="118" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(20 45 118)"/>
+      <ellipse cx="76" cy="118" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(-20 76 118)"/>
+
+      <!-- Small rose -->
+      <ellipse cx="110" cy="200" rx="20" ry="20" fill="#c0392b" opacity="0.7"/>
+      <ellipse cx="110" cy="200" rx="13" ry="13" fill="#e74c3c" opacity="0.6"/>
+      <ellipse cx="110" cy="200" rx="7" ry="7" fill="#f1948a" opacity="0.7"/>
+
+      <!-- Leaves -->
+      <ellipse cx="30" cy="150" rx="18" ry="9" fill="#27ae60" opacity="0.75" transform="rotate(-40 30 150)"/>
+      <ellipse cx="80" cy="160" rx="22" ry="10" fill="#2ecc71" opacity="0.65" transform="rotate(20 80 160)"/>
+      <ellipse cx="50" cy="240" rx="20" ry="9" fill="#27ae60" opacity="0.7" transform="rotate(-30 50 240)"/>
+      <ellipse cx="130" cy="260" rx="18" ry="8" fill="#2ecc71" opacity="0.6" transform="rotate(40 130 260)"/>
+
+      <!-- Stem -->
+      <path d="M60 128 Q55 170 50 200 Q60 240 110 220" stroke="#27ae60" stroke-width="2.5" fill="none" opacity="0.7"/>
+      <path d="M60 128 Q90 150 110 180" stroke="#27ae60" stroke-width="2" fill="none" opacity="0.5"/>
+
+      <!-- Small buds -->
+      <ellipse cx="30" cy="280" rx="8" ry="8" fill="#e91e8c" opacity="0.6"/>
+      <ellipse cx="30" cy="280" rx="4" ry="4" fill="#f48fb1" opacity="0.7"/>
+      <ellipse cx="155" cy="290" rx="10" ry="10" fill="#c0392b" opacity="0.6"/>
+      <ellipse cx="155" cy="290" rx="5" ry="5" fill="#e74c3c" opacity="0.7"/>
+    </svg>
+  </div>
+
+  <div class="floral-tr">
+    <svg viewBox="0 0 200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="60" cy="100" rx="28" ry="28" fill="#c0392b" opacity="0.85"/>
+      <ellipse cx="60" cy="100" rx="20" ry="20" fill="#e74c3c" opacity="0.7"/>
+      <ellipse cx="60" cy="100" rx="12" ry="12" fill="#f1948a" opacity="0.6"/>
+      <ellipse cx="60" cy="100" rx="6" ry="6" fill="#fadbd8" opacity="0.8"/>
+      <ellipse cx="40" cy="85" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(-30 40 85)"/>
+      <ellipse cx="80" cy="85" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(30 80 85)"/>
+      <ellipse cx="45" cy="118" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(20 45 118)"/>
+      <ellipse cx="76" cy="118" rx="10" ry="6" fill="#e74c3c" opacity="0.6" transform="rotate(-20 76 118)"/>
+      <ellipse cx="110" cy="200" rx="20" ry="20" fill="#c0392b" opacity="0.7"/>
+      <ellipse cx="110" cy="200" rx="13" ry="13" fill="#e74c3c" opacity="0.6"/>
+      <ellipse cx="110" cy="200" rx="7" ry="7" fill="#f1948a" opacity="0.7"/>
+      <ellipse cx="30" cy="150" rx="18" ry="9" fill="#27ae60" opacity="0.75" transform="rotate(-40 30 150)"/>
+      <ellipse cx="80" cy="160" rx="22" ry="10" fill="#2ecc71" opacity="0.65" transform="rotate(20 80 160)"/>
+      <ellipse cx="50" cy="240" rx="20" ry="9" fill="#27ae60" opacity="0.7" transform="rotate(-30 50 240)"/>
+      <path d="M60 128 Q55 170 50 200 Q60 240 110 220" stroke="#27ae60" stroke-width="2.5" fill="none" opacity="0.7"/>
+      <ellipse cx="30" cy="280" rx="8" ry="8" fill="#e91e8c" opacity="0.6"/>
+      <ellipse cx="30" cy="280" rx="4" ry="4" fill="#f48fb1" opacity="0.7"/>
+    </svg>
+  </div>
+
+  <!-- Groom & Bride names -->
+  <div class="couple-section">
+    <span class="role-label">Groom to be</span>
+    <div class="person-name">{{groomName}}</div>
+    <span class="weds-text">— weds —</span>
+    <span class="role-label">Bride to be</span>
+    <div class="person-name">{{brideName}}</div>
+  </div>
+
+  <!-- Big banner names -->
+  <!-- <div class="names-banner">
+    <div class="banner-bg">
+      <div class="banner-names">{{brideName}} weds {{groomName}}</div>
+    </div>
+  </div> -->
+
+  <!-- Couple SVG illustration -->
+  <div class="illustration">
+    <svg class="couple-svg" viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- Groom -->
+      <!-- Sherwani body -->
+      <rect x="60" y="120" width="70" height="110" rx="8" fill="#f5f0e8"/>
+      <rect x="65" y="120" width="60" height="20" fill="#e8e0d0"/>
+      <!-- Sherwani embroidery lines -->
+      <line x1="95" y1="125" x2="95" y2="200" stroke="#c9a84c" stroke-width="1.5" opacity="0.6"/>
+      <line x1="80" y1="135" x2="110" y2="135" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+      <line x1="78" y1="150" x2="112" y2="150" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+      <!-- Dhoti -->
+      <ellipse cx="95" cy="225" rx="38" ry="18" fill="#f0e6c8"/>
+      <!-- Feet -->
+      <ellipse cx="80" cy="242" rx="14" ry="7" fill="#c8a882"/>
+      <ellipse cx="110" cy="242" rx="14" ry="7" fill="#c8a882"/>
+      <!-- Arms -->
+      <rect x="38" y="122" width="24" height="12" rx="6" fill="#f5f0e8"/>
+      <rect x="128" y="122" width="24" height="12" rx="6" fill="#f5f0e8"/>
+      <!-- Hands -->
+      <ellipse cx="38" cy="140" rx="9" ry="11" fill="#c8a882"/>
+      <ellipse cx="152" cy="140" rx="9" ry="11" fill="#c8a882"/>
+      <!-- Neck -->
+      <rect x="88" y="100" width="14" height="22" rx="4" fill="#c8a882"/>
+      <!-- Head -->
+      <ellipse cx="95" cy="88" rx="28" ry="30" fill="#c8a882"/>
+      <!-- Hair -->
+      <ellipse cx="95" cy="62" rx="28" ry="14" fill="#1a0a00"/>
+      <!-- Eyes -->
+      <ellipse cx="86" cy="85" rx="4" ry="4.5" fill="white"/>
+      <ellipse cx="104" cy="85" rx="4" ry="4.5" fill="white"/>
+      <circle cx="87" cy="86" r="2.5" fill="#1a0a00"/>
+      <circle cx="105" cy="86" r="2.5" fill="#1a0a00"/>
+      <!-- Eyebrows -->
+      <path d="M82 79 Q86 76 90 79" stroke="#1a0a00" stroke-width="1.5" fill="none"/>
+      <path d="M100 79 Q104 76 108 79" stroke="#1a0a00" stroke-width="1.5" fill="none"/>
+      <!-- Beard -->
+      <path d="M75 98 Q95 112 115 98" fill="#1a0a00" opacity="0.7"/>
+      <!-- Smile -->
+      <path d="M86 95 Q95 102 104 95" stroke="#8B4513" stroke-width="1.5" fill="none"/>
+      <!-- Sehra / turban hint -->
+      <ellipse cx="95" cy="60" rx="30" ry="8" fill="#d4af37" opacity="0.5"/>
+
+      <!-- Bride -->
+      <!-- Saree body -->
+      <rect x="198" y="115" width="72" height="115" rx="8" fill="#e8360a" opacity="0.9"/>
+      <!-- Saree drape -->
+      <path d="M198 115 Q185 160 190 230" stroke="#c0392b" stroke-width="3" fill="none"/>
+      <path d="M270 115 Q285 150 278 230" stroke="#c0392b" stroke-width="2" fill="none"/>
+      <!-- Saree blouse -->
+      <rect x="202" y="115" width="64" height="30" rx="4" fill="#f39c12" opacity="0.9"/>
+      <!-- Gold border on saree -->
+      <path d="M198 115 L198 230 Q234 240 270 230 L270 115" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7"/>
+      <!-- Feet -->
+      <ellipse cx="215" cy="242" rx="13" ry="7" fill="#c8a882"/>
+      <ellipse cx="253" cy="242" rx="13" ry="7" fill="#c8a882"/>
+      <!-- Blouse sleeves -->
+      <rect x="178" y="116" width="26" height="11" rx="5" fill="#f39c12" opacity="0.9"/>
+      <rect x="264" y="116" width="26" height="11" rx="5" fill="#f39c12" opacity="0.9"/>
+      <!-- Hands -->
+      <ellipse cx="178" cy="138" rx="9" ry="11" fill="#c8a882"/>
+      <ellipse cx="290" cy="138" rx="9" ry="11" fill="#c8a882"/>
+      <!-- Bangles -->
+      <ellipse cx="178" cy="133" rx="9" ry="3" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+      <ellipse cx="178" cy="138" rx="9" ry="3" fill="none" stroke="#c0392b" stroke-width="1.5"/>
+      <!-- Neck -->
+      <rect x="227" y="95" width="14" height="22" rx="4" fill="#c8a882"/>
+      <!-- Necklace -->
+      <path d="M220 115 Q234 125 248 115" stroke="#d4af37" stroke-width="2" fill="none"/>
+      <circle cx="234" cy="126" r="3" fill="#d4af37"/>
+      <!-- Head -->
+      <ellipse cx="234" cy="80" rx="26" ry="28" fill="#c8a882"/>
+      <!-- Hair bun -->
+      <path d="M210 68 Q234 50 258 68" fill="#1a0a00"/>
+      <ellipse cx="252" cy="62" rx="12" ry="10" fill="#1a0a00"/>
+      <!-- Dupatta -->
+      <path d="M210 70 Q200 90 205 115" stroke="#e8360a" stroke-width="8" fill="none" opacity="0.7"/>
+      <!-- Bindi -->
+      <circle cx="234" cy="72" r="3.5" fill="#c0392b"/>
+      <!-- Eyes -->
+      <ellipse cx="225" cy="80" rx="4" ry="4.5" fill="white"/>
+      <ellipse cx="243" cy="80" rx="4" ry="4.5" fill="white"/>
+      <circle cx="226" cy="81" r="2.5" fill="#1a0a00"/>
+      <circle cx="244" cy="81" r="2.5" fill="#1a0a00"/>
+      <!-- Eyebrows -->
+      <path d="M221 74 Q225 71 229 74" stroke="#1a0a00" stroke-width="1.5" fill="none"/>
+      <path d="M239 74 Q243 71 247 74" stroke="#1a0a00" stroke-width="1.5" fill="none"/>
+      <!-- Smile -->
+      <path d="M226 91 Q234 97 242 91" stroke="#8B4513" stroke-width="1.5" fill="none"/>
+      <!-- Earrings -->
+      <circle cx="208" cy="84" r="4" fill="#d4af37" opacity="0.8"/>
+      <circle cx="260" cy="84" r="4" fill="#d4af37" opacity="0.8"/>
+
+      <!-- Holding hands in middle -->
+      <path d="M152 145 Q165 148 178 140" stroke="#c8a882" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+      <!-- Ground shadow -->
+      <ellipse cx="165" cy="250" rx="120" ry="8" fill="rgba(0,0,0,0.2)"/>
+    </svg>
+  </div>
+
+  <!-- Bottom florals -->
+  <div class="floral-bl">
+    <svg viewBox="0 0 180 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="90" cy="50" rx="24" ry="24" fill="#c0392b" opacity="0.8"/>
+      <ellipse cx="90" cy="50" rx="16" ry="16" fill="#e74c3c" opacity="0.7"/>
+      <ellipse cx="90" cy="50" rx="8" ry="8" fill="#f1948a" opacity="0.8"/>
+      <ellipse cx="40" cy="120" rx="18" ry="18" fill="#e91e8c" opacity="0.7"/>
+      <ellipse cx="40" cy="120" rx="10" ry="10" fill="#f48fb1" opacity="0.7"/>
+      <ellipse cx="50" cy="100" rx="20" ry="9" fill="#27ae60" opacity="0.75" transform="rotate(30 50 100)"/>
+      <ellipse cx="130" cy="130" rx="20" ry="9" fill="#2ecc71" opacity="0.65" transform="rotate(-20 130 130)"/>
+      <path d="M90 74 Q70 100 40 100 Q30 130 40 138" stroke="#27ae60" stroke-width="2" fill="none" opacity="0.7"/>
+    </svg>
+  </div>
+  <div class="floral-br">
+    <svg viewBox="0 0 180 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="90" cy="50" rx="24" ry="24" fill="#c0392b" opacity="0.8"/>
+      <ellipse cx="90" cy="50" rx="16" ry="16" fill="#e74c3c" opacity="0.7"/>
+      <ellipse cx="90" cy="50" rx="8" ry="8" fill="#f1948a" opacity="0.8"/>
+      <ellipse cx="40" cy="120" rx="18" ry="18" fill="#e91e8c" opacity="0.7"/>
+      <ellipse cx="40" cy="120" rx="10" ry="10" fill="#f48fb1" opacity="0.7"/>
+      <ellipse cx="50" cy="100" rx="20" ry="9" fill="#27ae60" opacity="0.75" transform="rotate(30 50 100)"/>
+      <path d="M90 74 Q70 100 40 100 Q30 130 40 138" stroke="#27ae60" stroke-width="2" fill="none" opacity="0.7"/>
+    </svg>
+  </div>
+
+  <!-- Save the Date box -->
+  <div class="save-date-section">
+    <div class="save-label">
+      <span class="save-word">Save</span>
+      <span class="save-word">the</span>
+      <span class="date-word">DATE</span>
+    </div>
+    <div class="date-block">
+      <div class="date-day">{{day}}</div>
+      <div class="date-month-year">{{monthYear}}</div>
+    </div>
+    <div class="venue-block">
+      <div class="venue-join">Join the celebration</div>
+      <div class="venue-name">{{venueName}}</div>
+      <div class="venue-address">{{venueAddress}}</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-line"></div>
+    <div class="footer-text">Made with ❤ · MehFil Invites</div>
+  </div>
+
+</div>
+</body>
+</html>

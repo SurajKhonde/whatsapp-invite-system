@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { redisQueue } from "@config/redis";
 import { sendEmail } from "@modules/emailOtpManger/emailDelivery.service";
-import { getOtpTemplate } from "@modules/template/otpTemplate";
+import { getOtpTemplate } from "src/HTML-template/otpTemplate";
 import { RetryableError, NonRetryableError } from "@utils/errorClass";
 import { dlqQueue } from "@core/queue/dlq.queue";
 import { logger } from "@core/logger/logger";
@@ -20,7 +20,7 @@ new Worker(
         html,
       });
     } catch (err) {
-      // ❌ NON-RETRYABLE → send to DLQ
+
       if (err instanceof NonRetryableError) {
         await dlqQueue.add("failed-email", {
           jobData: job.data,

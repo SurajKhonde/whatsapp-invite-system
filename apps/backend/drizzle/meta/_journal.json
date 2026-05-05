@@ -8,6 +8,13 @@
       "when": 1777052493988,
       "tag": "0000_fair_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777919314640,
+      "tag": "0001_overconfident_mister_fear",
+      "breakpoints": true
     }
   ]
 }

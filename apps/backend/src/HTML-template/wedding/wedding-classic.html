@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  width:800px; height:1100px;
+  background:#fdf6f0;
+  font-family:'Montserrat',sans-serif;
+}
+
+.card {
+  width:800px; height:1100px;
+  position:relative; overflow:hidden;
+  background: linear-gradient(160deg, #fdf6f0 0%, #fceee4 40%, #fdf0e8 100%);
+}
+
+/* ── DAMASK WATERMARK PATTERN ── */
+.damask {
+  position:absolute; inset:0; opacity:0.06;
+  background-image: radial-gradient(ellipse at 25% 25%, #8B4513 1px, transparent 1px),
+    radial-gradient(ellipse at 75% 75%, #8B4513 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 50%, #8B4513 0.5px, transparent 0.5px);
+  background-size: 60px 60px, 60px 60px, 30px 30px;
+}
+
+/* ── OUTER BORDER ── */
+.border-outer {
+  position:absolute; inset:12px;
+  border:2px solid rgba(180,120,60,0.4);
+}
+.border-inner {
+  position:absolute; inset:20px;
+  border:1px solid rgba(180,120,60,0.2);
+}
+
+/* ── CORNER PIECES ── */
+.corner { position:absolute; width:80px; height:80px; }
+.corner.tl { top:6px; left:6px; }
+.corner.tr { top:6px; right:6px; transform:scaleX(-1); }
+.corner.bl { bottom:6px; left:6px; transform:scaleY(-1); }
+.corner.br { bottom:6px; right:6px; transform:scale(-1,-1); }
+
+/* ── SAVE THE DATE HEADER ── */
+.header {
+  position:absolute; top:32px; width:100%; text-align:center;
+}
+.save-the {
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px; font-weight:300;
+  color:#5a3825; letter-spacing:10px;
+  text-transform:uppercase; display:block;
+  margin-bottom:-4px;
+}
+.date-script {
+  font-family:'Pinyon Script',cursive;
+  font-size:72px; color:#8B4513;
+  line-height:1; display:block;
+  text-shadow: 1px 1px 0 rgba(139,69,19,0.2);
+}
+.header-line {
+  width:320px; height:1px; margin:6px auto 0;
+  background:linear-gradient(90deg,transparent,rgba(139,69,19,0.5),transparent);
+}
+
+/* ── MANDAP ARCH ── */
+.mandap-area {
+  position:absolute; top:155px; left:50%; transform:translateX(-50%);
+  width:540px; height:360px;
+}
+
+/* ── COUPLE NAMES ABOVE ILLUSTRATION ── */
+.names-above {
+  position:absolute; top:160px; width:100%; text-align:center;
+}
+.groom-name-top {
+  font-family:'Pinyon Script',cursive;
+  font-size:38px; color:#5a3825;
+  display:inline-block;
+}
+.ampersand {
+  font-family:'Pinyon Script',cursive;
+  font-size:50px; color:#c0703a;
+  display:inline-block; margin:0 8px; line-height:1;
+  vertical-align:middle;
+}
+.bride-name-top {
+  font-family:'Pinyon Script',cursive;
+  font-size:38px; color:#5a3825;
+  display:inline-block;
+}
+
+/* ── DETAILS RIBBON ── */
+.ribbon-section {
+  position:absolute; bottom:220px; left:50%; transform:translateX(-50%);
+  width:640px; text-align:center;
+}
+.ribbon-bg {
+  background:linear-gradient(135deg,rgba(139,69,19,0.08),rgba(192,112,58,0.12),rgba(139,69,19,0.08));
+  border:1px solid rgba(139,69,19,0.3);
+  border-radius:2px; padding:16px 28px;
+  position:relative;
+}
+.ribbon-bg::before, .ribbon-bg::after {
+  content:''; position:absolute; top:50%; width:18px; height:40px;
+  background:rgba(139,69,19,0.15); transform:translateY(-50%);
+  clip-path:polygon(0 0,100% 20%,100% 80%,0 100%);
+}
+.ribbon-bg::before { left:-18px; }
+.ribbon-bg::after { right:-18px; transform:translateY(-50%) scaleX(-1); }
+
+.detail-row { display:flex; justify-content:center; align-items:center; gap:24px; margin:5px 0; }
+.detail-icon { font-size:16px; }
+.detail-text {
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px; color:#5a3825; letter-spacing:1px;
+}
+.detail-label {
+  font-family:'Montserrat',sans-serif;
+  font-size:9px; color:rgba(90,56,37,0.6);
+  letter-spacing:3px; text-transform:uppercase;
+  display:block; margin-bottom:2px;
+}
+.divider-dot { color:rgba(139,69,19,0.4); font-size:20px; line-height:1; }
+
+/* ── VENUE BOX ── */
+.venue-section {
+  position:absolute; bottom:100px; left:50%; transform:translateX(-50%);
+  width:580px; text-align:center;
+}
+.venue-label {
+  font-family:'Montserrat',sans-serif;
+  font-size:9px; letter-spacing:4px; color:rgba(90,56,37,0.5);
+  text-transform:uppercase; margin-bottom:6px;
+}
+.venue-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px; font-weight:600; color:#5a3825;
+  letter-spacing:1px; display:block;
+}
+.venue-addr {
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px; color:rgba(90,56,37,0.7);
+  font-style:italic; margin-top:3px;
+}
+.venue-line {
+  width:200px; height:1px; margin:8px auto;
+  background:linear-gradient(90deg,transparent,rgba(139,69,19,0.35),transparent);
+}
+
+/* ── FOOTER ── */
+.footer {
+  position:absolute; bottom:28px; width:100%; text-align:center;
+}
+.footer-text {
+  font-family:'Montserrat',sans-serif;
+  font-size:9px; letter-spacing:3px; color:rgba(139,69,19,0.4);
+  text-transform:uppercase;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="damask"></div>
+  <div class="border-outer"></div>
+  <div class="border-inner"></div>
+
+  <!-- ── CORNER ORNAMENTS ── -->
+  <div class="corner tl">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 72 L8 8 L72 8" stroke="#8B4513" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="4" fill="#8B4513" opacity="0.6"/>
+      <circle cx="8" cy="8" r="2" fill="#c0703a" opacity="0.8"/>
+      <!-- Floral corner detail -->
+      <path d="M8 8 Q30 8 30 30" stroke="#8B4513" stroke-width="0.8" fill="none" opacity="0.3"/>
+      <ellipse cx="22" cy="14" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-30 22 14)"/>
+      <ellipse cx="14" cy="22" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-60 14 22)"/>
+      <ellipse cx="20" cy="20" rx="5" ry="5" fill="#27ae60" opacity="0.3"/>
+      <!-- Teardrop drops -->
+      <path d="M8 20 L6 28 Q8 32 10 28 Z" fill="#8B4513" opacity="0.3"/>
+      <path d="M20 8 L28 6 Q32 8 28 10 Z" fill="#8B4513" opacity="0.3"/>
+      <!-- Infinity side -->
+      <path d="M8 50 Q14 44 20 50 Q26 56 32 50" stroke="#8B4513" stroke-width="1" fill="none" opacity="0.25"/>
+    </svg>
+  </div>
+  <div class="corner tr">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 72 L8 8 L72 8" stroke="#8B4513" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="4" fill="#8B4513" opacity="0.6"/>
+      <circle cx="8" cy="8" r="2" fill="#c0703a" opacity="0.8"/>
+      <ellipse cx="22" cy="14" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-30 22 14)"/>
+      <ellipse cx="14" cy="22" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-60 14 22)"/>
+      <ellipse cx="20" cy="20" rx="5" ry="5" fill="#27ae60" opacity="0.3"/>
+      <path d="M8 20 L6 28 Q8 32 10 28 Z" fill="#8B4513" opacity="0.3"/>
+      <path d="M20 8 L28 6 Q32 8 28 10 Z" fill="#8B4513" opacity="0.3"/>
+      <path d="M8 50 Q14 44 20 50 Q26 56 32 50" stroke="#8B4513" stroke-width="1" fill="none" opacity="0.25"/>
+    </svg>
+  </div>
+  <div class="corner bl">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 72 L8 8 L72 8" stroke="#8B4513" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="4" fill="#8B4513" opacity="0.6"/>
+      <circle cx="8" cy="8" r="2" fill="#c0703a" opacity="0.8"/>
+      <ellipse cx="22" cy="14" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-30 22 14)"/>
+      <ellipse cx="14" cy="22" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-60 14 22)"/>
+      <ellipse cx="20" cy="20" rx="5" ry="5" fill="#27ae60" opacity="0.3"/>
+      <path d="M8 20 L6 28 Q8 32 10 28 Z" fill="#8B4513" opacity="0.3"/>
+      <path d="M20 8 L28 6 Q32 8 28 10 Z" fill="#8B4513" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="corner br">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 72 L8 8 L72 8" stroke="#8B4513" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <circle cx="8" cy="8" r="4" fill="#8B4513" opacity="0.6"/>
+      <circle cx="8" cy="8" r="2" fill="#c0703a" opacity="0.8"/>
+      <ellipse cx="22" cy="14" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-30 22 14)"/>
+      <ellipse cx="14" cy="22" rx="8" ry="5" fill="#c0392b" opacity="0.35" transform="rotate(-60 14 22)"/>
+      <ellipse cx="20" cy="20" rx="5" ry="5" fill="#27ae60" opacity="0.3"/>
+      <path d="M8 20 L6 28 Q8 32 10 28 Z" fill="#8B4513" opacity="0.3"/>
+      <path d="M20 8 L28 6 Q32 8 28 10 Z" fill="#8B4513" opacity="0.3"/>
+    </svg>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <span class="save-the">Save</span>
+    <span class="date-script">The Date</span>
+    <div class="header-line"></div>
+  </div>
+
+  <!-- ── COUPLE NAMES ── -->
+  <div class="names-above">
+    <span class="groom-name-top">{{groomName}}</span>
+    <span class="ampersand">&</span>
+    <span class="bride-name-top">{{brideName}}</span>
+  </div>
+
+  <!-- ── FULL MANDAP + COUPLE ILLUSTRATION ── -->
+  <svg style="position:absolute;top:210px;left:50%;transform:translateX(-50%);" width="660" height="430" viewBox="0 0 660 430" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Pink backdrop panel -->
+    <rect x="110" y="30" width="440" height="360" rx="12" fill="#fce4d6" opacity="0.7"/>
+    <rect x="118" y="38" width="424" height="344" rx="10" fill="#fde8db" opacity="0.5"/>
+
+    <!-- ── MANDAP PILLARS ── -->
+    <!-- Left pillar -->
+    <rect x="118" y="60" width="22" height="300" rx="5" fill="#a0522d" opacity="0.6"/>
+    <rect x="121" y="60" width="16" height="300" rx="4" fill="#cd853f" opacity="0.5"/>
+    <!-- Right pillar -->
+    <rect x="520" y="60" width="22" height="300" rx="5" fill="#a0522d" opacity="0.6"/>
+    <rect x="523" y="60" width="16" height="300" rx="4" fill="#cd853f" opacity="0.5"/>
+
+    <!-- ── MANDAP TOP BEAM ── -->
+    <rect x="105" y="50" width="450" height="28" rx="6" fill="#8B4513" opacity="0.65"/>
+    <rect x="108" y="53" width="444" height="22" rx="5" fill="#cd853f" opacity="0.45"/>
+    <!-- Beam decorative studs -->
+    <circle cx="140" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="200" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="260" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="330" cy="64" r="5" fill="#d4af37" opacity="0.9"/>
+    <circle cx="400" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="460" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="520" cy="64" r="4" fill="#d4af37" opacity="0.7"/>
+
+    <!-- ── FLOWER GARLAND ON ARCH ── -->
+    <!-- Main garland curve -->
+    <path d="M105 78 Q180 120 330 100 Q480 120 555 78" stroke="#e8a0a0" stroke-width="6" fill="none" opacity="0.6"/>
+    <path d="M105 78 Q180 120 330 100 Q480 120 555 78" stroke="#27ae60" stroke-width="3" fill="none" opacity="0.4" stroke-dasharray="8,6"/>
+
+    <!-- Hanging flower clusters -->
+    <!-- Left cluster -->
+    <ellipse cx="150" cy="95" rx="16" ry="16" fill="#e74c3c" opacity="0.8"/>
+    <ellipse cx="150" cy="95" rx="10" ry="10" fill="#f1948a" opacity="0.8"/>
+    <ellipse cx="150" cy="95" rx="5" ry="5" fill="#fde8e8" opacity="0.9"/>
+    <ellipse cx="136" cy="88" rx="10" ry="7" fill="#e74c3c" opacity="0.6" transform="rotate(-40 136 88)"/>
+    <ellipse cx="164" cy="88" rx="10" ry="7" fill="#e74c3c" opacity="0.6" transform="rotate(40 164 88)"/>
+    <ellipse cx="140" cy="108" rx="10" ry="7" fill="#c0392b" opacity="0.5" transform="rotate(20 140 108)"/>
+
+    <!-- Center cluster -->
+    <ellipse cx="330" cy="96" rx="18" ry="18" fill="#e74c3c" opacity="0.85"/>
+    <ellipse cx="330" cy="96" rx="12" ry="12" fill="#f1948a" opacity="0.8"/>
+    <ellipse cx="330" cy="96" rx="6" ry="6" fill="#fde8e8" opacity="0.9"/>
+    <ellipse cx="312" cy="88" rx="12" ry="8" fill="#e74c3c" opacity="0.6" transform="rotate(-35 312 88)"/>
+    <ellipse cx="348" cy="88" rx="12" ry="8" fill="#e74c3c" opacity="0.6" transform="rotate(35 348 88)"/>
+    <ellipse cx="320" cy="112" rx="10" ry="7" fill="#c0392b" opacity="0.5"/>
+    <ellipse cx="340" cy="112" rx="10" ry="7" fill="#c0392b" opacity="0.5"/>
+
+    <!-- Right cluster -->
+    <ellipse cx="510" cy="95" rx="16" ry="16" fill="#e74c3c" opacity="0.8"/>
+    <ellipse cx="510" cy="95" rx="10" ry="10" fill="#f1948a" opacity="0.8"/>
+    <ellipse cx="510" cy="95" rx="5" ry="5" fill="#fde8e8" opacity="0.9"/>
+    <ellipse cx="496" cy="88" rx="10" ry="7" fill="#e74c3c" opacity="0.6" transform="rotate(-40 496 88)"/>
+    <ellipse cx="524" cy="88" rx="10" ry="7" fill="#e74c3c" opacity="0.6" transform="rotate(40 524 88)"/>
+
+    <!-- Leaf clusters on garland -->
+    <ellipse cx="200" cy="106" rx="14" ry="7" fill="#27ae60" opacity="0.65" transform="rotate(20 200 106)"/>
+    <ellipse cx="190" cy="98" rx="12" ry="6" fill="#2ecc71" opacity="0.55" transform="rotate(-15 190 98)"/>
+    <ellipse cx="240" cy="100" rx="12" ry="6" fill="#27ae60" opacity="0.6" transform="rotate(10 240 100)"/>
+    <ellipse cx="420" cy="106" rx="14" ry="7" fill="#27ae60" opacity="0.65" transform="rotate(-20 420 106)"/>
+    <ellipse cx="460" cy="100" rx="12" ry="6" fill="#2ecc71" opacity="0.55" transform="rotate(15 460 100)"/>
+
+    <!-- White flowers on garland -->
+    <circle cx="175" cy="102" r="7" fill="white" opacity="0.7"/>
+    <circle cx="175" cy="102" r="3" fill="#f9e4c8" opacity="0.8"/>
+    <circle cx="280" cy="95" r="7" fill="white" opacity="0.7"/>
+    <circle cx="280" cy="95" r="3" fill="#f9e4c8" opacity="0.8"/>
+    <circle cx="380" cy="95" r="7" fill="white" opacity="0.7"/>
+    <circle cx="380" cy="95" r="3" fill="#f9e4c8" opacity="0.8"/>
+    <circle cx="475" cy="100" r="7" fill="white" opacity="0.7"/>
+    <circle cx="475" cy="100" r="3" fill="#f9e4c8" opacity="0.8"/>
+
+    <!-- Pillar flower decorations -->
+    <ellipse cx="129" cy="200" rx="20" ry="20" fill="#e74c3c" opacity="0.7"/>
+    <ellipse cx="129" cy="200" rx="12" ry="12" fill="#f1948a" opacity="0.7"/>
+    <ellipse cx="129" cy="200" rx="6" ry="6" fill="white" opacity="0.8"/>
+    <ellipse cx="531" cy="200" rx="20" ry="20" fill="#e74c3c" opacity="0.7"/>
+    <ellipse cx="531" cy="200" rx="12" ry="12" fill="#f1948a" opacity="0.7"/>
+    <ellipse cx="531" cy="200" rx="6" ry="6" fill="white" opacity="0.8"/>
+
+    <!-- Side leaf sprigs on pillars -->
+    <ellipse cx="108" cy="160" rx="16" ry="7" fill="#27ae60" opacity="0.6" transform="rotate(-50 108 160)"/>
+    <ellipse cx="104" cy="178" rx="16" ry="7" fill="#2ecc71" opacity="0.5" transform="rotate(-40 104 178)"/>
+    <ellipse cx="552" cy="160" rx="16" ry="7" fill="#27ae60" opacity="0.6" transform="rotate(50 552 160)"/>
+    <ellipse cx="556" cy="178" rx="16" ry="7" fill="#2ecc71" opacity="0.5" transform="rotate(40 556 178)"/>
+
+    <!-- ── GROOM ── -->
+    <!-- Sherwani - cream with gold embroidery -->
+    <path d="M218 370 L200 240 L195 190 L240 175 L270 170 L300 175 L310 190 L305 240 L295 370 Z" fill="#f5f0e0"/>
+    <path d="M240 175 L270 170 L300 175 L310 190 L270 195 L230 190 Z" fill="#e8dfc0"/>
+    <!-- Sherwani collar -->
+    <path d="M250 175 L270 180 L290 175 L285 165 L270 168 L255 165 Z" fill="#d4c090"/>
+    <!-- Embroidery lines on sherwani -->
+    <line x1="270" y1="185" x2="270" y2="340" stroke="#d4af37" stroke-width="1.5" opacity="0.5"/>
+    <path d="M255 200 Q270 210 285 200" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <path d="M252 220 Q270 230 288 220" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <path d="M250 240 Q270 250 290 240" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.3"/>
+    <!-- Buttons on sherwani -->
+    <circle cx="270" cy="205" r="3" fill="#d4af37" opacity="0.7"/>
+    <circle cx="270" cy="225" r="3" fill="#d4af37" opacity="0.7"/>
+    <circle cx="270" cy="245" r="3" fill="#d4af37" opacity="0.7"/>
+    <!-- Dhoti/churidar bottom -->
+    <path d="M200 370 L218 340 L240 370 Z" fill="#e8dfc0"/>
+    <path d="M295 370 L277 340 L255 370 Z" fill="#e8dfc0"/>
+    <!-- Shoes -->
+    <ellipse cx="222" cy="375" rx="22" ry="8" fill="#8B4513" opacity="0.7"/>
+    <ellipse cx="278" cy="375" rx="22" ry="8" fill="#8B4513" opacity="0.7"/>
+    <!-- Left arm - namaste -->
+    <path d="M200 240 Q175 260 180 295 Q185 320 200 330" stroke="#d4a873" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <!-- Right arm - namaste -->
+    <path d="M305 240 Q330 260 325 295 Q320 320 305 330" stroke="#d4a873" stroke-width="18" stroke-linecap="round" fill="none"/>
+    <!-- Namaste hands -->
+    <ellipse cx="250" cy="330" rx="50" ry="22" fill="#d4a873" opacity="0.9"/>
+    <ellipse cx="250" cy="328" rx="44" ry="18" fill="#e0b882"/>
+    <!-- Fingers -->
+    <path d="M215 318 L212 305 Q214 300 218 305 L220 318" fill="#e0b882"/>
+    <path d="M225 315 L222 300 Q225 294 229 300 L230 315" fill="#e0b882"/>
+    <path d="M235 313 L233 297 Q237 291 241 297 L241 313" fill="#e0b882"/>
+    <path d="M245 313 L244 297 Q248 291 252 297 L251 313" fill="#e0b882"/>
+    <path d="M255 314 L255 299 Q259 293 263 299 L262 314" fill="#e0b882"/>
+    <path d="M265 316 L266 302 Q270 297 274 302 L272 316" fill="#e0b882"/>
+    <path d="M275 318 L277 306 Q281 302 284 306 L282 318" fill="#e0b882"/>
+    <!-- Ring on finger -->
+    <circle cx="264" cy="308" r="3" fill="#d4af37" opacity="0.9"/>
+    <!-- Neck -->
+    <rect x="261" y="148" width="18" height="28" rx="6" fill="#d4a873"/>
+    <!-- Necklace/mala -->
+    <path d="M255 173 Q270 185 285 173" stroke="#c0392b" stroke-width="3" fill="none" opacity="0.8"/>
+    <circle cx="270" cy="186" r="4" fill="#c0392b" opacity="0.8"/>
+    <!-- HEAD -->
+    <ellipse cx="270" cy="130" rx="36" ry="38" fill="#d4a873"/>
+    <!-- TURBAN - bright yellow-orange -->
+    <ellipse cx="270" cy="102" rx="42" ry="22" fill="#f0a500"/>
+    <ellipse cx="270" cy="96" rx="38" ry="16" fill="#f5b800"/>
+    <path d="M232 100 Q270 85 308 100" fill="#e09500" opacity="0.6"/>
+    <!-- Turban folds -->
+    <path d="M235 98 Q270 88 305 98" stroke="#d4af37" stroke-width="1.5" fill="none" opacity="0.6"/>
+    <path d="M238 104 Q270 94 302 104" stroke="#d4af37" stroke-width="1" fill="none" opacity="0.4"/>
+    <!-- Turban front piece/kalgi -->
+    <path d="M270 84 Q275 70 268 60 Q272 72 278 78 Q282 68 276 58" fill="#d4af37" opacity="0.9"/>
+    <circle cx="271" cy="84" r="5" fill="#d4af37" opacity="0.9"/>
+    <!-- SUNGLASSES on groom -->
+    <rect x="248" y="126" width="22" height="14" rx="6" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="274" y="126" width="22" height="14" rx="6" fill="#1a1a2e" opacity="0.9"/>
+    <line x1="270" y1="133" x2="274" y2="133" stroke="#8B6914" stroke-width="2"/>
+    <line x1="248" y1="133" x2="242" y2="131" stroke="#8B6914" stroke-width="1.5"/>
+    <line x1="296" y1="133" x2="302" y2="131" stroke="#8B6914" stroke-width="1.5"/>
+    <!-- Reflection on glasses -->
+    <path d="M252 128 L258 130" stroke="white" stroke-width="1" opacity="0.4"/>
+    <path d="M278 128 L284 130" stroke="white" stroke-width="1" opacity="0.4"/>
+    <!-- BEARD -->
+    <path d="M248 148 Q252 165 270 170 Q288 165 292 148 Q285 158 270 162 Q255 158 248 148 Z" fill="#1a0a00" opacity="0.75"/>
+    <!-- Mustache -->
+    <path d="M258 140 Q270 148 282 140" fill="#1a0a00" opacity="0.6"/>
+    <!-- Ear -->
+    <ellipse cx="234" cy="135" rx="6" ry="8" fill="#c8956a"/>
+    <ellipse cx="306" cy="135" rx="6" ry="8" fill="#c8956a"/>
+    <!-- SMILE -->
+    <path d="M260 152 Q270 160 280 152" stroke="#8B4513" stroke-width="1.5" fill="none"/>
+
+    <!-- ── BRIDE ── -->
+    <!-- Saree - yellow/orange with blue drape -->
+    <path d="M355 370 L348 240 L345 185 L385 172 L420 168 L455 172 L460 185 L457 240 L445 370 Z" fill="#f0a500" opacity="0.9"/>
+    <!-- Blue saree drape over shoulder -->
+    <path d="M348 240 Q330 280 335 370" stroke="#1565C0" stroke-width="28" stroke-linecap="round" fill="none" opacity="0.75"/>
+    <path d="M345 185 Q330 200 328 220 Q326 240 330 260" stroke="#1565C0" stroke-width="20" fill="none" opacity="0.6"/>
+    <!-- Saree pleats -->
+    <path d="M380 370 L375 250 Q380 240 385 250 L385 370" fill="#d4900a" opacity="0.4"/>
+    <path d="M400 370 L398 250 Q403 240 407 250 L408 370" fill="#d4900a" opacity="0.3"/>
+    <!-- Saree gold border -->
+    <path d="M445 172 L457 185 L457 240 L445 370" stroke="#d4af37" stroke-width="3" fill="none" opacity="0.6"/>
+    <!-- Blouse - orange -->
+    <path d="M385 172 L420 168 L455 172 L458 200 L420 208 L382 200 Z" fill="#e8860a"/>
+    <!-- Blouse embroidery -->
+    <path d="M390 182 Q420 190 450 182" stroke="#d4af37" stroke-width="1" fill="none" opacity="0.5"/>
+    <!-- Feet/heels -->
+    <ellipse cx="368" cy="376" rx="18" ry="7" fill="#c8956a"/>
+    <ellipse cx="430" cy="376" rx="18" ry="7" fill="#c8956a"/>
+    <!-- Bangles on left arm -->
+    <path d="M345 185 Q322 210 318 250 Q315 280 328 305" stroke="#d4a873" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <ellipse cx="322" cy="240" rx="12" ry="5" fill="none" stroke="#d4af37" stroke-width="2" transform="rotate(20 322 240)"/>
+    <ellipse cx="320" cy="250" rx="12" ry="5" fill="none" stroke="#c0392b" stroke-width="2" transform="rotate(20 320 250)"/>
+    <ellipse cx="319" cy="260" rx="12" ry="5" fill="none" stroke="#27ae60" stroke-width="2" transform="rotate(20 319 260)"/>
+    <!-- Right arm -->
+    <path d="M460 185 Q482 210 485 250 Q487 280 475 305" stroke="#d4a873" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <!-- Namaste hands bride -->
+    <ellipse cx="400" cy="320" rx="48" ry="22" fill="#d4a873" opacity="0.9"/>
+    <ellipse cx="400" cy="318" rx="42" ry="18" fill="#e0b882"/>
+    <!-- Fingers bride -->
+    <path d="M365 308 L362 295 Q365 289 369 295 L370 308" fill="#e0b882"/>
+    <path d="M375 305 L373 290 Q377 284 381 290 L381 305" fill="#e0b882"/>
+    <path d="M385 303 L384 287 Q388 281 392 287 L392 303" fill="#e0b882"/>
+    <path d="M395 303 L395 287 Q399 281 403 287 L402 303" fill="#e0b882"/>
+    <path d="M405 304 L406 289 Q410 283 414 289 L413 304" fill="#e0b882"/>
+    <path d="M415 306 L417 292 Q421 287 425 292 L423 306" fill="#e0b882"/>
+    <path d="M425 308 L428 296 Q432 292 435 296 L433 308" fill="#e0b882"/>
+    <!-- Mehendi pattern hint on hands -->
+    <path d="M370 310 Q390 305 410 310" stroke="#8B4513" stroke-width="0.8" fill="none" opacity="0.4"/>
+    <!-- Neck -->
+    <rect x="411" y="142" width="18" height="28" rx="6" fill="#d4a873"/>
+    <!-- Jewelry necklace -->
+    <path d="M395 170 Q420 186 445 170" stroke="#d4af37" stroke-width="3" fill="none" opacity="0.9"/>
+    <circle cx="420" cy="188" r="6" fill="#d4af37" opacity="0.8"/>
+    <circle cx="408" cy="182" r="4" fill="#d4af37" opacity="0.7"/>
+    <circle cx="432" cy="182" r="4" fill="#d4af37" opacity="0.7"/>
+    <!-- HEAD bride -->
+    <ellipse cx="420" cy="122" rx="34" ry="36" fill="#d4a873"/>
+    <!-- Hair -->
+    <path d="M388 118 Q420 100 452 118 L454 145 Q420 138 386 145 Z" fill="#1a0a00"/>
+    <!-- Hair bun side -->
+    <ellipse cx="450" cy="115" rx="14" ry="12" fill="#1a0a00"/>
+    <!-- Maang tikka -->
+    <path d="M420 100 L416 84" stroke="#d4af37" stroke-width="1.5"/>
+    <circle cx="416" cy="82" r="5" fill="#d4af37" opacity="0.9"/>
+    <circle cx="416" cy="82" r="2.5" fill="#c0392b" opacity="0.9"/>
+    <!-- DUPATTA - blue over head -->
+    <path d="M388 118 Q360 130 345 185" stroke="#1565C0" stroke-width="15" stroke-linecap="round" fill="none" opacity="0.65"/>
+    <path d="M388 118 Q380 112 376 105" stroke="#1565C0" stroke-width="10" fill="none" opacity="0.5"/>
+    <!-- BINDI -->
+    <circle cx="420" cy="110" r="5" fill="#c0392b" opacity="0.95"/>
+    <!-- SUNGLASSES bride -->
+    <rect x="400" y="118" width="20" height="13" rx="6" fill="#1a1a2e" opacity="0.9"/>
+    <rect x="424" y="118" width="20" height="13" rx="6" fill="#1a1a2e" opacity="0.9"/>
+    <line x1="420" y1="124" x2="424" y2="124" stroke="#8B6914" stroke-width="2"/>
+    <line x1="400" y1="124" x2="394" y2="122" stroke="#8B6914" stroke-width="1.5"/>
+    <line x1="444" y1="124" x2="450" y2="122" stroke="#8B6914" stroke-width="1.5"/>
+    <!-- Reflection -->
+    <path d="M403 120 L408 122" stroke="white" stroke-width="1" opacity="0.4"/>
+    <path d="M427 120 L432 122" stroke="white" stroke-width="1" opacity="0.4"/>
+    <!-- SMILE bride -->
+    <path d="M410 138 Q420 146 430 138" stroke="#8B4513" stroke-width="1.5" fill="none"/>
+    <!-- Earrings -->
+    <circle cx="386" cy="126" r="5" fill="#d4af37" opacity="0.85"/>
+    <path d="M386 131 L384 142 Q386 148 388 142 L386 131" fill="#d4af37" opacity="0.7"/>
+    <circle cx="454" cy="126" r="5" fill="#d4af37" opacity="0.85"/>
+    <path d="M454 131 L452 142 Q454 148 456 142 L454 131" fill="#d4af37" opacity="0.7"/>
+
+    <!-- ── GROUND SHADOW ── -->
+    <ellipse cx="340" cy="390" rx="180" ry="12" fill="rgba(100,50,20,0.12)"/>
+
+    <!-- ── BOTTOM FLOWER SCATTER ── -->
+    <circle cx="130" cy="360" r="8" fill="#e74c3c" opacity="0.6"/>
+    <circle cx="130" cy="360" r="4" fill="#fde8e8" opacity="0.7"/>
+    <circle cx="148" cy="372" r="6" fill="#e91e8c" opacity="0.5"/>
+    <circle cx="115" cy="378" r="5" fill="#e74c3c" opacity="0.5"/>
+
+    <circle cx="530" cy="360" r="8" fill="#e74c3c" opacity="0.6"/>
+    <circle cx="530" cy="360" r="4" fill="#fde8e8" opacity="0.7"/>
+    <circle cx="548" cy="372" r="6" fill="#e91e8c" opacity="0.5"/>
+    <circle cx="515" cy="378" r="5" fill="#e74c3c" opacity="0.5"/>
+
+    <!-- Scattered petals -->
+    <ellipse cx="160" cy="385" rx="8" ry="4" fill="#f1948a" opacity="0.5" transform="rotate(30 160 385)"/>
+    <ellipse cx="500" cy="385" rx="8" ry="4" fill="#f1948a" opacity="0.5" transform="rotate(-30 500 385)"/>
+    <ellipse cx="200" cy="395" rx="6" ry="3" fill="#e74c3c" opacity="0.4" transform="rotate(-20 200 395)"/>
+    <ellipse cx="460" cy="395" rx="6" ry="3" fill="#e74c3c" opacity="0.4" transform="rotate(20 460 395)"/>
+
+  </svg>
+
+  <!-- ── EVENT DETAILS RIBBON ── -->
+  <div class="ribbon-section">
+    <div class="ribbon-bg">
+      <div class="detail-row">
+        <div>
+          <span class="detail-label">Date</span>
+          <span class="detail-text">📅 &nbsp;{{day}} {{monthYear}}</span>
+        </div>
+        <span class="divider-dot">·</span>
+        <div>
+          <span class="detail-label">Time</span>
+          <span class="detail-text">⏰ &nbsp;{{time}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VENUE ── -->
+  <div class="venue-section">
+    <div class="venue-line"></div>
+    <div class="venue-label">Venue</div>
+    <span class="venue-name">{{venueName}}</span>
+    <div class="venue-addr">{{venueAddress}}</div>
+    <div class="venue-line"></div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer">
+    <div class="footer-text">✦ &nbsp; MehFil Invites &nbsp; ✦</div>
+  </div>
+
+</div>
+</body>
+</html>
