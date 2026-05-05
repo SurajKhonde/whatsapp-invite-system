@@ -1,5 +1,5 @@
 export default function GuestTable({ data }: any) {
-  const user = data?.data || []
+  const user = data || []
   return (
     <div className="bg-white rounded-2xl shadow border border-pink-100 h-full flex flex-col">
 

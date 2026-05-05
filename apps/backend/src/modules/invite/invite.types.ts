@@ -1,22 +1,18 @@
-// src/modules/invite/invite.types.ts
-
-export interface InviteTemplateData {
-  [key: string]: string; // ✅ FIX for Record<string, string>
-
-  name: string;
-  date: string;
-  time: string;
-  venue: string;
-
-  bgImage: string;
-  ribbonImage: string;
-  balloonImage: string;
-  candleImage: string;
+export interface PreviewInviteDTO {
+  templateName: string;
+  groomName: string;
+  brideName: string;
+  day: string;
+  monthYear: string;
+  venueName: string;
+  venueAddress: string;
 }
 
-export interface PreviewInviteDTO {
-  name: string;
-  date: string;
-  time: string;
-  venue: string;
+export interface InviteTemplateData extends Record<string, string> {
+  groomName: string;
+  brideName: string;
+  day: string;
+  monthYear: string;
+  venueName: string;
+  venueAddress: string;
 }
