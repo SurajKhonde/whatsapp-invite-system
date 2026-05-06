@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import { logger } from "@core/logger/logger";
 const resend = new Resend(process.env.RESEND_API_KEY);
 import { RetryableError, NonRetryableError } from "@utils/errorClass";
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === "prod";
 
 const devTransporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",

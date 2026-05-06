@@ -1,21 +1,21 @@
 "use client";
 
+// context/NotificationContext.tsx
+// CHANGE: added "warning" to NotificationType
+
 import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
+  createContext, useContext,
+  useState, useEffect, ReactNode,
 } from "react";
 import NotificationContainer from "@/components/ui/NotificationContainer";
 import { setNotifier } from "@/utils/notify";
 
-export type NotificationType = "success" | "error" | "info";
+export type NotificationType = "success" | "error" | "info" | "warning"; // ✅ added warning
 
 export interface Notification {
-  id: number;
+  id:      number;
   message: string;
-  type: NotificationType;
+  type:    NotificationType;
 }
 
 interface NotificationContextType {
@@ -32,18 +32,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     type: NotificationType = "info"
   ) => {
     const id = Date.now() + Math.random();
+    setNotifications(prev => [...prev, { id, message, type }]);
 
-    setNotifications((prev) => [...prev, { id, message, type }]);
-
+    // Auto-remove after 4.3s (matches DURATION + exit animation)
     setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 3000);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 4300);
   };
 
-  // 🔥 connect global notify()
-  useEffect(() => {
-    setNotifier(addNotification);
-  }, []);
+  useEffect(() => { setNotifier(addNotification); }, []);
 
   return (
     <NotificationContext.Provider value={{ addNotification }}>
@@ -55,6 +52,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
 export const useNotification = () => {
   const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error("useNotification must be used inside provider");
+  if (!ctx) throw new Error("useNotification must be used inside NotificationProvider");
   return ctx;
 };

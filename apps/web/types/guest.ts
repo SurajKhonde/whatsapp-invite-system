@@ -1,10 +1,8 @@
-// apps/web/types/guest.ts — REPLACE your existing file
-
-// ── What frontend sends when adding a guest ──────────────
+export type Relation="friend" | "family" | "colleague";
 export type GuestInput = {
   name:     string;
   phone:    string;       // "+919876543210"
-  relation: "friend" | "family" | "colleague";
+  relation: Relation;
 };
 
 // ── What DB returns after insert (safe — no real phone) ──
@@ -13,7 +11,7 @@ export type Guest = {
   host_id:     string;
   name:        string;
   phone:       string;    // masked: "+91*****1234"
-  relation:    string;
+  relation:    "friend" | "family" | "colleague";
   phone_last4: string;
   created_at:  string;
 };

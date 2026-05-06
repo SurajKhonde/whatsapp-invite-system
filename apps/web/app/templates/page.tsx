@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useState } from "react";
 import { useGetTemplatesQuery } from "@/store/apiSlice";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -7,17 +9,22 @@ import { useSelector } from "react-redux";
 export default function TemplatesPage() {
   const { data, isLoading, isError } = useGetTemplatesQuery();
   const router = useRouter();
-
-  // ✅ get user from redux (adjust path if needed)
   const user = useSelector((state: any) => state.auth?.user);
 
   const templates = data?.data || [];
 
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  const filteredTemplates =
+    activeCategory === "all"
+      ? templates
+      : templates.filter((t: any) => t.category === activeCategory);
+
   // 🔄 Loading
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading templates...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#0d0810] text-white/50">
+        Loading templates...
       </div>
     );
   }
@@ -25,89 +32,210 @@ export default function TemplatesPage() {
   // ❌ Error
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Failed to load templates</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#0d0810] text-red-400">
+        Failed to load templates
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-8 py-10 relative">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0d0810",
+        color: "#f5f0ff",
+        position: "relative",
+        overflow: "hidden",
+        padding: "40px 32px",
+      }}
+    >
+      {/* ================= BACKGROUND EFFECT ================= */}
 
-      {/* 🔥 ADMIN BUTTON (TOP RIGHT) */}
+      {/* Floating glow balls */}
+      {[
+        { w: 500, h: 500, l: "-5%", t: "-10%", c: "#e91e8c", d: 0, dur: 18 },
+        { w: 350, h: 350, r: "-5%", b: "-5%", c: "#ff5252", d: 5, dur: 22 },
+        { w: 250, h: 250, l: "60%", t: "40%", c: "#9c27b0", d: 9, dur: 16 },
+        { w: 180, h: 180, l: "15%", t: "65%", c: "#ff9800", d: 13, dur: 20 },
+      ].map((b, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            borderRadius: "50%",
+            width: b.w,
+            height: b.h,
+            left: (b as any).l,
+            right: (b as any).r,
+            top: (b as any).t,
+            bottom: (b as any).b,
+            background: b.c,
+            filter: "blur(100px)",
+            opacity: 0.1,
+            animation: `floatBubble ${b.dur}s ease-in-out infinite`,
+            animationDelay: `${b.d}s`,
+            pointerEvents: "none",
+          }}
+        />
+      ))}
+
+      {/* Dot grid */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.04,
+          backgroundImage: "radial-gradient(circle, #f5f0ff 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Animations */}
+      <style>{`
+        @keyframes floatBubble {
+          0%   { transform: translateY(0) translateX(0) scale(1); }
+          33%  { transform: translateY(-30px) translateX(15px) scale(1.05); }
+          66%  { transform: translateY(10px) translateX(-10px) scale(0.97); }
+          100% { transform: translateY(0) translateX(0) scale(1); }
+        }
+      `}</style>
+
+      {/* ================= CONTENT ================= */}
+
+      {/* Header */}
+      <div style={{ marginBottom: 40, position: "relative", zIndex: 2 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 800 }}>
+          My Templates
+        </h1>
+        <p style={{ color: "rgba(245,240,255,0.4)", marginTop: 6 }}>
+          Thanks for being with me 💖
+        </p>
+      </div>
+
+      {/* Admin button */}
       {user?.role === "admin" && (
-        <div className="absolute top-6 right-8">
+        <div style={{ position: "absolute", top: 40, right: 32, zIndex: 2 }}>
           <button
             onClick={() => router.push("/templates/create")}
-            className="px-5 py-2 rounded-full text-white font-medium
-            bg-gradient-to-r from-pink-500 to-orange-500
-            shadow-md hover:shadow-xl hover:scale-105 transition"
+            style={{
+              padding: "10px 18px",
+              borderRadius: 999,
+              border: "none",
+              background: "linear-gradient(135deg,#e91e8c,#ff5252)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
           >
             + Create Template
           </button>
         </div>
       )}
 
-      {/* TITLE */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">
-        Choose a Template
-      </h1>
+      {/* Categories */}
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginBottom: 30,
+          flexWrap: "wrap",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        {[
+          { label: "All", value: "all" },
+          { label: "💍 Marriage", value: "wedding" },
+          { label: "🎂 Birthday", value: "birthday" },
+          { label: "🎉 Others", value: "other" },
+        ].map((cat) => (
+          <button
+            key={cat.value}
+            onClick={() => setActiveCategory(cat.value)}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.1)",
+              background:
+                activeCategory === cat.value
+                  ? "linear-gradient(135deg,#e91e8c,#ff5252)"
+                  : "rgba(255,255,255,0.05)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
-      {/* EMPTY STATE */}
-      {templates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-[60vh]">
-          <p className="text-gray-500 text-lg mb-4">
-            No templates added yet
-          </p>
-
-          {user?.role === "admin" && (
-            <button
-              onClick={() => router.push("/templates/create")}
-              className="px-6 py-3 rounded-full text-white
-              bg-gradient-to-r from-pink-500 to-orange-500"
-            >
-              Create First Template
-            </button>
-          )}
+      {/* Empty */}
+      {filteredTemplates.length === 0 ? (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 100,
+            color: "rgba(245,240,255,0.4)",
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          No templates found
         </div>
       ) : (
-        /* GRID */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {templates.map((template: any) => (
+        /* Grid */
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
+            gap: 20,
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          {filteredTemplates.map((template: any) => (
             <div
               key={template.id}
-              className="bg-white rounded-xl shadow-md p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 20,
+                padding: 20,
+                backdropFilter: "blur(20px)",
+              }}
             >
-              {/* IMAGE */}
-              <div className="h-40 bg-pink-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                {template.image ? (
-                  <img
-                    src={template.image}
-                    alt={template.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-pink-500 font-semibold">
-                    Preview
-                  </span>
-                )}
+              {/* Icon */}
+              <div style={{ fontSize: 30, marginBottom: 10 }}>
+                {template.category === "wedding" && "💍"}
+                {template.category === "birthday" && "🎂"}
+                {template.category === "other" && "🎉"}
               </div>
 
-              {/* CONTENT */}
-              <h2 className="text-lg font-semibold text-gray-800">
+              {/* Title */}
+              <h2 style={{ fontSize: 16, fontWeight: 600 }}>
                 {template.title}
               </h2>
 
-              <p className="text-sm text-gray-500 mt-1">
+              {/* Description */}
+              <p style={{ fontSize: 13, opacity: 0.6, marginTop: 4 }}>
                 {template.description}
               </p>
 
-              {/* ACTION */}
+              {/* Button */}
               <button
                 onClick={() =>
                   router.push(`/events?templateId=${template.id}`)
                 }
-                className="mt-4 w-full bg-gradient-to-r from-pink-500 to-orange-500 text-white py-2 rounded-lg hover:scale-105 transition"
+                style={{
+                  marginTop: 14,
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: "linear-gradient(135deg,#e91e8c,#ff5252)",
+                  color: "white",
+                  cursor: "pointer",
+                }}
               >
                 Use Template
               </button>
@@ -118,3 +246,5 @@ export default function TemplatesPage() {
     </div>
   );
 }
+
+

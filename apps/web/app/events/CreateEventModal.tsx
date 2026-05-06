@@ -76,7 +76,7 @@ export default function CreateEventModal({ templateId, onClose }: Props) {
           amount: order.amount,
           currency: order.currency,
           order_id: order.orderId,
-          name: "Mehfil Invites",
+          name: "pilooopu Invites",
           description: `${selectedGuests.length} guests · ${MESSAGE_TYPE}`,
           theme: { color: "#ec4899" },
 
