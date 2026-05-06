@@ -1,5 +1,3 @@
-// src/modules/invite/invite.routes.ts
-
 import express from "express";
 import { createInvite } from "./invite.controller";
 

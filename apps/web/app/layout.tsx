@@ -3,8 +3,13 @@ import "./globals.css";
 import Providers from "@/providers/Providers";
 import AppLayout from "@/components/layout/AppLayout";
 export const metadata: Metadata = {
-  title: "Mehfil",
-  description: "Send WhatsApp invites at where every gathering begins",
+  title: "pilooopu",
+  description: "Send beautiful invites",
+    icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

@@ -67,7 +67,7 @@ export const sendWhatsAppTemplate = async (payload: SendTemplatePayload) => {
         to,
         type: "text",
         text: {
-           body: "Hello from Suraj 👋 We launched our WhatsApp invite system (Mehfil). This is a test message. Please check out my app 🚀",
+           body: "Hello from Suraj 👋 We launched our WhatsApp invite system (pilooopu). This is a test message. Please check out my app 🚀",
         },
       },
       {
@@ -78,8 +78,7 @@ export const sendWhatsAppTemplate = async (payload: SendTemplatePayload) => {
       }
     );
 
-    console.log("✅ Message sent:", response.data);
-
+  
     return {
       success: true,
       messageId: response.data.messages?.[0]?.id,
