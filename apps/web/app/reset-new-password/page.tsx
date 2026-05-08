@@ -18,8 +18,7 @@ export default function ResetPasswordPage() {
 
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
-  const validatePassword = (pass: string) =>
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
+  const validatePassword = (pass: string) => /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
 
   const handleReset = async () => {
     setError("");
@@ -27,9 +26,7 @@ export default function ResetPasswordPage() {
     if (!password || !confirm) return setError("All fields are required");
     if (password !== confirm) return setError("Passwords do not match");
     if (!validatePassword(password))
-      return setError(
-        "Password must be 8+ chars, include uppercase, number & special char"
-      );
+      return setError("Password must be 8+ chars, include uppercase, number & special char");
     if (!email) return setError("Invalid reset link");
 
     try {
@@ -42,22 +39,14 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-rose-50 via-pink-100 to-red-100">
-
       {/* Card */}
       <div className="relative z-10 w-[380px] p-8 rounded-3xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_20px_60px_rgba(255,0,100,0.15)]">
+        <h2 className="text-3xl font-semibold text-center text-pink-600 mb-2">Reset Password</h2>
 
-        <h2 className="text-3xl font-semibold text-center text-pink-600 mb-2">
-          Reset Password
-        </h2>
-
-        <p className="text-center text-gray-500 mb-6 text-sm">
-          Create a new secure password 🔐
-        </p>
+        <p className="text-center text-gray-500 mb-6 text-sm">Create a new secure password 🔐</p>
 
         {/* Error */}
-        {error && (
-          <p className="text-red-500 text-sm mb-3 text-center">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm mb-3 text-center">{error}</p>}
 
         {/* New Password */}
         <div className="relative mb-4">

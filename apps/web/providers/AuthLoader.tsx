@@ -5,11 +5,7 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { setUser } from "@/store/authSlice";
 
-export default function AuthLoader({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthLoader({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = useGetMeQuery();
   const dispatch = useDispatch();
 

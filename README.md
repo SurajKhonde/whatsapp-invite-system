@@ -1,4 +1,4 @@
-# pilooopu — Bulk Personalized WhatsApp Invite Platform
+# పిloopu — Bulk Personalized WhatsApp Invite Platform
 
 > Send 1000 personalized WhatsApp invites reliably, with delivery tracking, PII protection, and zero message loss — built for weddings, birthdays, and business events in India.
 
@@ -23,7 +23,7 @@ The problems are obvious once you try it at scale:
 - No retry if a message fails — some guests are silently missed
 - Phone numbers of all your guests sitting in plain text
 
-pilooopu solves this. Upload your guest list, pick a template, and every guest receives a **personalized invite with their name** — reliably, with full delivery tracking, retries on failure, and all phone numbers encrypted at rest.
+పిloopu solves this. Upload your guest list, pick a template, and every guest receives a **personalized invite with their name** — reliably, with full delivery tracking, retries on failure, and all phone numbers encrypted at rest.
 
 ---
 
@@ -96,7 +96,7 @@ Failure isolation. If 1 guest fails, the other 999 continue unaffected. Each job
 A synchronous loop blocks the API, has no retry on failure, and can't be monitored. The queue gives you backpressure control, retry, observability, and the ability to scale workers independently.
 
 **Why encrypt phone numbers?**
-Your guests' phone numbers are PII. pilooopu encrypts every phone number with AES-256-CBC (unique IV per number) before storing. The plaintext is only available inside the worker at send-time, never in API responses or logs.
+Your guests' phone numbers are PII. పిloopu encrypts every phone number with AES-256-CBC (unique IV per number) before storing. The plaintext is only available inside the worker at send-time, never in API responses or logs.
 
 ---
 
@@ -174,7 +174,7 @@ This means even if your database is leaked, phone numbers are not readable witho
 ## Project Structure
 
 ```
-pilooopu/
+పిloopu/
 ├── apps/
 │   ├── backend/                    # Express API
 │   │   └── src/

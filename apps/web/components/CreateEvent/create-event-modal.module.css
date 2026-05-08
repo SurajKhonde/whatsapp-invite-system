@@ -1,0 +1,224 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.backropClosing {
+  animation: fadeOut 0.3s ease;
+}
+
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 16px;
+  animation: slideIn 0.3s ease;
+}
+
+.containerClosing {
+  animation: slideOut 0.3s ease;
+}
+
+.content {
+  background: #0d0810;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: #f5f0ff;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: rgba(233, 30, 140, 0.3);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: rgba(233, 30, 140, 0.5);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: #0d0810;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.stepText {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 240, 255, 0.5);
+}
+
+.progressDots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.dotActive {
+  background: #e91e8c;
+  width: 24px;
+  border-radius: 100px;
+}
+
+.closeBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(245, 240, 255, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(233, 30, 140, 0.1);
+  color: #e91e8c;
+  border-color: rgba(233, 30, 140, 0.3);
+}
+
+.body {
+  padding: 28px;
+}
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 20px 28px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 13px;
+  color: rgba(245, 240, 255, 0.6);
+  line-height: 1.6;
+}
+
+.footerStep5 {
+  background: rgba(233, 30, 140, 0.05);
+}
+
+.footerIcon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 12px;
+  }
+
+  .content {
+    border-radius: 16px;
+  }
+
+  .header {
+    padding: 16px 20px;
+  }
+
+  .body {
+    padding: 20px;
+  }
+
+  .footer {
+    padding: 16px 20px;
+  }
+
+  .closeBtn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .progress {
+    gap: 12px;
+  }
+
+  .stepText {
+    font-size: 11px;
+  }
+}

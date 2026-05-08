@@ -12,7 +12,7 @@ import { calculatePrice } from "@utils/pricing";
 // ─────────────────────────────────────────────
 export const createOrder = async (
   userId: string,
-  messageType: string,  // 'whatsapp_text' | 'whatsapp_image'
+  messageType: string,  // 'text_only' | 'image_only'
   guestCount: number
 ) => {
   // 1. Fetch live pricing from DB
@@ -20,7 +20,9 @@ export const createOrder = async (
     .select()
     .from(pricingConfig)
     .where(eq(pricingConfig.messageType, messageType));
-console.log(pricing,'__________________>001')
+
+  console.log(pricing,'__________________>001')
+  
   if (!pricing || !pricing.isActive) {
     throw new AppError("Invalid or unavailable message type", 400);
   }
@@ -31,35 +33,52 @@ console.log(pricing,'__________________>001')
     Number(pricing.profitPercent),
     guestCount
   );
-console.log(pricePerMessagePaise, totalAmountPaise ,'__________________>002')
+
+  console.log(pricePerMessagePaise, totalAmountPaise ,'__________________>002')
+  
   // 3. Create Razorpay order
   let razorpayOrder;
-try {
-  razorpayOrder = await razorpay.orders.create({
-    amount:   totalAmountPaise,
-    currency: "INR",
-    receipt: `rcpt_${Date.now()}`,
-    notes: {
-      userId,
-      messageType,
-      guestCount: String(guestCount),
-    },
-  });
-  console.log(razorpayOrder, '__________________>003');
-} catch (razorpayErr: any) {
-  // Razorpay throws non-standard errors — extract manually
-  console.error('Razorpay raw error:', razorpayErr);
-  console.error('Razorpay error message:', razorpayErr?.message);
-  console.error('Razorpay error statusCode:', razorpayErr?.statusCode);
-  console.error('Razorpay error code:', razorpayErr?.error?.code);
-  console.error('Razorpay error description:', razorpayErr?.error?.description);
-  console.error('Razorpay full JSON:', JSON.stringify(razorpayErr, Object.getOwnPropertyNames(razorpayErr)));
+  try {
+    razorpayOrder = await razorpay.orders.create({
+      amount:   totalAmountPaise,
+      currency: "INR",
+      receipt: `rcpt_${Date.now()}`,
+      notes: {
+        userId,
+        messageType,
+        guestCount: String(guestCount),
+      },
+    });
+    console.log(razorpayOrder, '__________________>003');
+  } catch (razorpayErr: any) {
+    // Razorpay throws non-standard errors — extract manually
+    console.error('Razorpay raw error:', razorpayErr);
+    console.error('Razorpay error message:', razorpayErr?.message);
+    console.error('Razorpay error statusCode:', razorpayErr?.statusCode);
+    console.error('Razorpay error code:', razorpayErr?.error?.code);
+    console.error('Razorpay error description:', razorpayErr?.error?.description);
+    console.error('Razorpay full JSON:', JSON.stringify(razorpayErr, Object.getOwnPropertyNames(razorpayErr)));
 
-  throw new AppError(
-    razorpayErr?.error?.description || razorpayErr?.message || 'Razorpay order creation failed',
-    razorpayErr?.statusCode || 500
-  );
-}
+    throw new AppError(
+      razorpayErr?.error?.description || razorpayErr?.message || 'Razorpay order creation failed',
+      razorpayErr?.statusCode || 500
+    );
+  }
+
+  // 4. Save order to DB
+  await db.insert(payments).values({
+    userId,
+    orderId: razorpayOrder.id,
+    razorpayOrderId: razorpayOrder.id,
+    amount: String((totalAmountPaise / 100).toFixed(2)),
+    currency: "INR",
+    messageType,
+    guestCount,
+    baseCostPaise: String(pricing.baseCostPaise),
+    pricePerMessagePaise: String(pricePerMessagePaise),
+    totalAmountPaise: String(totalAmountPaise),
+    status: "created",
+  });
 
   // 5. Return to frontend
   return {
@@ -87,7 +106,7 @@ export const verifyPayment = async (
   const [existingOrder] = await db
     .select()
     .from(payments)
-    .where(eq(payments.orderId, razorpay_order_id));
+    .where(eq(payments.razorpayOrderId, razorpay_order_id));
 
   if (!existingOrder) {
     throw new AppError("Order not found", 404);
@@ -107,8 +126,12 @@ export const verifyPayment = async (
   if (expectedSignature !== razorpay_signature) {
     await db
       .update(payments)
-      .set({ status: "failed", errorDescription: "Signature mismatch" })
-      .where(eq(payments.orderId, razorpay_order_id));
+      .set({ 
+        status: "failed", 
+        errorDescription: "Signature mismatch",
+        updatedAt: new Date(),
+      })
+      .where(eq(payments.razorpayOrderId, razorpay_order_id));
 
     throw new AppError("Payment verification failed. Please contact support.", 400);
   }
@@ -119,16 +142,24 @@ export const verifyPayment = async (
     .set({
       status:    "paid",
       paymentId: razorpay_payment_id,
+      razorpayPaymentId: razorpay_payment_id,
       signature: razorpay_signature,
+      razorpaySignature: razorpay_signature,
       updatedAt: new Date(),
     })
-    .where(eq(payments.orderId, razorpay_order_id));
+    .where(eq(payments.razorpayOrderId, razorpay_order_id));
+
+  // 5. Safe conversion: handle null and string
+  const totalAmountPaise = existingOrder.totalAmountPaise 
+    ? Number(existingOrder.totalAmountPaise) 
+    : 0;
+  const totalPaidRupees = (totalAmountPaise / 100).toFixed(2);
 
   return {
     success:      true,
     messageType:  existingOrder.messageType,
     guestCount:   existingOrder.guestCount,
-    totalPaid:    `₹${(existingOrder.totalAmountPaise / 100).toFixed(2)}`,
+    totalPaid:    `₹${totalPaidRupees}`,
     paymentId:    razorpay_payment_id,
   };
 };
@@ -161,9 +192,10 @@ export const handleWebhook = async (
         .set({
           status:    "paid",
           paymentId: payment.id,
+          razorpayPaymentId: payment.id,
           updatedAt: new Date(),
         })
-        .where(eq(payments.orderId, payment.order_id));
+        .where(eq(payments.razorpayOrderId, payment.order_id));
 
       console.log(`✅ Payment captured: ${payment.id}`);
       break;
@@ -180,7 +212,7 @@ export const handleWebhook = async (
           errorDescription: payment.error_description,
           updatedAt:        new Date(),
         })
-        .where(eq(payments.orderId, payment.order_id));
+        .where(eq(payments.razorpayOrderId, payment.order_id));
 
       console.log(`❌ Payment failed: ${payment.id} — ${payment.error_description}`);
       break;
@@ -209,10 +241,16 @@ export const getUserLatestPayment = async (userId: string) => {
     return null;
   }
 
+  // Safe conversion: handle null and string
+  const totalAmountPaise = latestPayment.totalAmountPaise 
+    ? Number(latestPayment.totalAmountPaise) 
+    : 0;
+  const totalPaidRupees = (totalAmountPaise / 100).toFixed(2);
+
   return {
     messageType:  latestPayment.messageType,
     guestCount:   latestPayment.guestCount,
-    totalPaid:    `₹${(latestPayment.totalAmountPaise / 100).toFixed(2)}`,
+    totalPaid:    `₹${totalPaidRupees}`,
     paidAt:       latestPayment.updatedAt,
   };
 };

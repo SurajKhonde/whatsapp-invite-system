@@ -40,10 +40,7 @@ export default function GuestForm({ onAdd }: Props) {
         onChange={(e) => setPhone(e.target.value)}
       />
 
-      <button
-        onClick={handleAdd}
-        className="bg-blue-500 text-white px-4 rounded"
-      >
+      <button onClick={handleAdd} className="bg-blue-500 text-white px-4 rounded">
         Add
       </button>
     </div>

@@ -1,96 +1,141 @@
-import { pool } from "@config/db";
+import { db } from "@/db/index";
+import { users } from "@/db/schema/user.schema";
+import { eq } from "drizzle-orm";
 
 export const findUserByEmail = async (email: string) => {
   const userEmail = email.toLowerCase().trim();
 
-  const res = await pool.query(
-    "SELECT * FROM users WHERE email = $1",
-    [userEmail]
-  );
-  return res.rows[0];
-};
-export const findUserById = async (id: string) => {
-  const res = await pool.query(
-    "SELECT * FROM users WHERE id = $1",
-    [id]
-  );
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, userEmail));
 
-  return res.rows[0];
+  return user || null;
 };
+
+export const findUserById = async (id: string) => {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id));
+
+  return user || null;
+};
+
 export const createUser = async ({
   email,
   password,
-  otp,
-  otpExpiry,
-  role,
-  purpose,
+  emailOtp,
+  otpExpiresAt,
+  role = "user",
+  otpPurpose,
 }: {
   email: string;
   password: string;
-  otp: number;
-  otpExpiry: Date;
-  role:string;
-  purpose: string;
+  emailOtp: string;
+  otpExpiresAt: Date;
+  role?: string;
+  otpPurpose: string;
 }) => {
-  const res = await pool.query(
-    `INSERT INTO users 
-     (email, password, email_otp, otp_expires_at,role,otp_purpose )
-     VALUES ($1, $2, $3, $4, $5,$6)
-     RETURNING id, email`,
-    [email, password, otp, otpExpiry, role, purpose]
-  );
+  const [user] = await db
+    .insert(users)
+    .values({
+      email: email.toLowerCase().trim(),
+      password,
+      emailOtp,
+      otpExpiresAt,
+      role,
+      otpPurpose,
+      isEmailVerified: false,
+    })
+    .returning({ id: users.id, email: users.email });
 
-  return res.rows[0];
+  return user;
 };
 
 export const verifySignupUser = async (email: string) => {
-  await pool.query(
-    `UPDATE users 
-     SET is_email_verified = true,
-         email_otp = NULL,
-         otp_expires_at = NULL,
-         otp_purpose = NULL
-     WHERE email = $1`,
-    [email]
-  );
+  const userEmail = email.toLowerCase().trim();
+
+  await db
+    .update(users)
+    .set({
+      isEmailVerified: true,
+      emailOtp: null,
+      otpExpiresAt: null,
+      otpPurpose: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, userEmail));
 };
 
 export const clearOtp = async (email: string) => {
-  await pool.query(
-    `UPDATE users 
-     SET email_otp = NULL,
-         otp_expires_at = NULL,
-         otp_purpose = NULL
-     WHERE email = $1`,
-    [email]
-  );
+  const userEmail = email.toLowerCase().trim();
+
+  await db
+    .update(users)
+    .set({
+      emailOtp: null,
+      otpExpiresAt: null,
+      otpPurpose: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, userEmail));
 };
+
 export const updateOtp = async (
   email: string,
-  otp: number,
-  otpExpiry: Date,
-  purpose: "signup" | "forgot-password"
+  emailOtp: string,
+  otpExpiresAt: Date,
+  otpPurpose: "signup" | "forgot-password"
 ) => {
-  await pool.query(
-    `UPDATE users 
-     SET email_otp = $1,
-         otp_expires_at = $2,
-         otp_purpose = $3
-     WHERE email = $4`,
-    [otp, otpExpiry, purpose, email]
-  );
+  const userEmail = email.toLowerCase().trim();
+
+  await db
+    .update(users)
+    .set({
+      emailOtp,
+      otpExpiresAt,
+      otpPurpose,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, userEmail));
 };
+
 export const updatePassword = async (
   email: string,
-  hashedPassword: string
+  password: string
 ) => {
-  await pool.query(
-    `UPDATE users 
-     SET password = $1,
-         email_otp = NULL,
-         otp_expires_at = NULL,
-         otp_purpose = NULL
-     WHERE email = $2`,
-    [hashedPassword, email]
-  );
+  const userEmail = email.toLowerCase().trim();
+
+  await db
+    .update(users)
+    .set({
+      password,
+      emailOtp: null,
+      otpExpiresAt: null,
+      otpPurpose: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.email, userEmail));
+};
+
+export const updateUser = async (
+  id: string,
+  data: {
+    name?: string;
+    phone?: string;
+    profileImageUrl?: string;
+    isActive?: boolean;
+  }
+) => {
+  const [user] = await db
+    .update(users)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  return user;
 };

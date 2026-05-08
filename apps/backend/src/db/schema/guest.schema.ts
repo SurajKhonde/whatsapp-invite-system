@@ -1,61 +1,58 @@
-// apps/backend/src/db/schema/guest.schema.ts
-
-import {
-  pgTable,
-  text,
-  uuid,
-  integer,
-  timestamp,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, integer, timestamp, boolean, index, foreignKey } from "drizzle-orm/pg-core";
 import { users } from "./user.schema";
 
 export const guests = pgTable(
   "guests",
   {
     // ── Identity ──────────────────────────────────────────
-    id: uuid("id").defaultRandom().primaryKey(),
-
-    hostId: uuid("host_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-
+    id: uuid("id").primaryKey().defaultRandom(),
+    hostId: uuid("host_id").notNull(),
+    
     // ── Contact Info ──────────────────────────────────────
-    name: text("name").notNull(),
-
-    // AES-256-CBC encrypted — never stored as plain text
+    name: varchar("name", { length: 255 }).notNull(),
     phone: text("phone").notNull(),
-
-    // ✅ ADDED — last 4 digits only, safe for masked display
+    email: varchar("email", { length: 255 }),
+    
+    // ✅ KEPT — last 4 digits only, safe for masked display
     // e.g. "+91*****1234"
-    // Populated at insert time from raw phone before encryption
-    phoneLast4: text("phone_last4").notNull(),
-
-    relation: text("relation").default("friend"),
+    phoneLast4: text("phone_last4"),
+    
+    countryCode: varchar("country_code", { length: 5 }).default("+91"),
+    
+    // ── Relation ──────────────────────────────────────────
+    relation: varchar("relation", { length: 50 }).default("friend"),
     // "friend" | "family" | "colleague"
-
+    
     // ── Status ────────────────────────────────────────────
-    status: text("status").default("ACTIVE"),
+    status: varchar("status", { length: 50 }).default("ACTIVE"),
     // "ACTIVE" | "INACTIVE" | "BLOCKED"
-
+    
+    // ── Verification ──────────────────────────────────────
+    isWhatsappVerified: boolean("is_whatsapp_verified").default(false),
+    
     // ── Invite Tracking ───────────────────────────────────
     // How many events this guest has been invited to
     inviteCount: integer("invite_count").default(0),
-    lastInvitedAt: timestamp("last_invited_at", { mode: "date" }),
-
+    lastInvitedAt: timestamp("last_invited_at"),
+    
     // ── Timestamps ────────────────────────────────────────
-    createdAt: timestamp("created_at", { mode: "date" })
-      .notNull()
-      .defaultNow(),
-
-    updatedAt: timestamp("updated_at", { mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => ({
-    hostIdx:       index("idx_guests_host").on(table.hostId),
-    phoneIdx:      index("idx_guests_phone").on(table.phone),
-    // ✅ ADDED — fast lookup for masked display
+    userIdFk: foreignKey({
+      columns: [table.hostId],
+      foreignColumns: [users.id],
+      name: "guests_user_id_fk",
+    }).onDelete("cascade"),
+    userIdIdx: index("idx_guests_user_id").on(table.hostId),
+    phoneIdx: index("idx_guests_phone").on(table.phone),
     phoneLast4Idx: index("idx_guests_phone_last4").on(table.phoneLast4),
+    emailIdx: index("idx_guests_email").on(table.email),
+    statusIdx: index("idx_guests_status").on(table.status),
+    createdAtIdx: index("idx_guests_created_at").on(table.createdAt),
   })
 );
+
+export type Guest = typeof guests.$inferSelect;
+export type InsertGuest = typeof guests.$inferInsert;

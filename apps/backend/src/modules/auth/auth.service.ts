@@ -68,15 +68,15 @@ export const signupService = async ({
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
   const otp = Math.floor(100000 + Math.random() * 900000);
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
   const user = await createUser({
     email,
     password: hashedPassword,
-    otp,
-    otpExpiry,
+    emailOtp: String(otp),
+    otpExpiresAt,
     role,
-    purpose: "signup",
+    otpPurpose: "signup",
   });
 
   await otpQueue.add("sendOTP", { email, otp, purpose: "signup" });
@@ -105,15 +105,15 @@ export const verifyOtpService = async ({
   const user = await findUserByEmail(email);
   if (!user) throw new AppError("User not found", 404);
 
-  if (Number(user.email_otp) !== Number(otp)) {
+  if (Number(user.emailOtp) !== Number(otp)) {
     throw new AppError("Invalid OTP", 400);
   }
 
-  if (user.otp_purpose !== purpose) {
+  if (user.otpPurpose !== purpose) {
     throw new AppError("Invalid OTP purpose", 400);
   }
 
-  if (!user.otp_expires_at || new Date(user.otp_expires_at) < new Date()) {
+  if (!user.otpExpiresAt || new Date(user.otpExpiresAt) < new Date()) {
     throw new AppError("OTP expired", 400);
   }
 
@@ -143,6 +143,11 @@ export const loginService = async ({
   const user = await findUserByEmail(email);
   if (!user) throw new AppError("Invalid credentials", 400);
 
+  // ✅ Check if passwordHash exists before bcrypt
+  if (!user.password) {
+    throw new AppError("Invalid credentials", 400);
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new AppError("Invalid credentials", 400);
 
@@ -171,9 +176,9 @@ export const forgotPasswordService = async ({
   if (!user) throw new AppError("User not found", 404);
 
   const otp = Math.floor(100000 + Math.random() * 900000);
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-  await updateOtp(email, otp, otpExpiry, "forgot-password");
+  await updateOtp(email, String(otp), otpExpiresAt, "forgot-password");
 
   await otpQueue.add("sendOTP", {
     email,
@@ -199,6 +204,11 @@ export const changePasswordService = async ({
 
   const user = await findUserById(userId);
   if (!user) throw new AppError("User not found", 404);
+
+  // ✅ Check if passwordHash exists before bcrypt
+  if (!user.password) {
+    throw new AppError("Old password is incorrect", 400);
+  }
 
   const isMatch = await bcrypt.compare(oldPassword, user.password);
   if (!isMatch) throw new AppError("Old password is incorrect", 400);
@@ -233,23 +243,27 @@ export const resendOtpService = async ({
     throw new AppError("User not found", 404);
   }
 
-  if (user.otp_purpose !== purpose) {
+  if (user.otpPurpose !== purpose) {
     throw new AppError("Invalid OTP purpose", 400);
   }
 
-  let otp = user.email_otp;
-  let otpExpiry = user.otp_expires_at;
+  let otp = user.emailOtp;
+  let otpExpiresAt = user.otpExpiresAt;
 
-  if (!otpExpiry || new Date(otpExpiry) < new Date()) {
-    otp = Math.floor(100000 + Math.random() * 900000);
-    otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  if (!otpExpiresAt || new Date(otpExpiresAt) < new Date()) {
+    const newOtp = Math.floor(100000 + Math.random() * 900000);
+    otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await updateOtp(email, otp, otpExpiry, purpose);
+    await updateOtp(email, String(newOtp), otpExpiresAt, purpose);
+    otp = String(newOtp);
   }
+
+  // Convert to number for queue
+  const otpNumber = typeof otp === "string" ? parseInt(otp, 10) : otp;
 
   await otpQueue.add("sendOTP", {
     email,
-    otp,
+    otp: otpNumber,
     purpose,
   });
 

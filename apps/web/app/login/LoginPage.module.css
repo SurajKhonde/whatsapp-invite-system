@@ -1,0 +1,511 @@
+/* LoginPage.module.css */
+
+.page {
+  min-height: 100vh;
+  background: #0d0810;
+  color: #f5f0ff;
+  overflow: hidden;
+  position: relative;
+  font-family: var(--font-dm-sans);
+}
+
+/* ======================================== */
+/* GRID */
+/* ======================================== */
+
+.grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: radial-gradient(circle, #f5f0ff 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* ======================================== */
+/* BUBBLES */
+/* ======================================== */
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  animation: bubbleFloat 20s ease-in-out infinite;
+}
+
+.b1 {
+  width: 500px;
+  height: 500px;
+  top: -10%;
+  left: -5%;
+  background: #e91e8c;
+  opacity: 0.12;
+  animation-duration: 18s;
+  animation-delay: 0s;
+}
+
+.b2 {
+  width: 350px;
+  height: 350px;
+  right: -5%;
+  bottom: -5%;
+  background: #ff5252;
+  opacity: 0.1;
+  animation-duration: 22s;
+  animation-delay: 2s;
+}
+
+.b3 {
+  width: 250px;
+  height: 250px;
+  top: 40%;
+  left: 60%;
+  margin-left: -125px;
+  margin-top: -125px;
+  background: #9c27b0;
+  opacity: 0.1;
+  animation-duration: 16s;
+  animation-delay: 4s;
+}
+
+.b4 {
+  width: 180px;
+  height: 180px;
+  top: 70%;
+  left: 15%;
+  margin-left: -90px;
+  margin-top: -90px;
+  background: #ff9800;
+  opacity: 0.08;
+  animation-duration: 20s;
+  animation-delay: 1s;
+}
+
+@keyframes floatY {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 10px -18px;
+  }
+  50% {
+    translate: 0 -32px;
+  }
+  75% {
+    translate: -12px -12px;
+  }
+}
+
+@keyframes bubbleFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.12;
+  }
+  25% {
+    transform: translate(15px, -25px) scale(1.05);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate(8px, -45px) scale(1);
+    opacity: 0.12;
+  }
+  75% {
+    transform: translate(-12px, -30px) scale(0.95);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.12;
+  }
+}
+
+/* ======================================== */
+/* STARS */
+/* ======================================== */
+
+.star {
+  position: absolute;
+  width: 1.5px;
+  height: 1.5px;
+  background: #f5f0ff;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: twinkle linear infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ======================================== */
+/* NAVBAR */
+/* ======================================== */
+
+.navbar {
+  position: relative;
+  z-index: 10;
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  background: rgba(13, 8, 16, 0.6);
+}
+
+.logo {
+  text-decoration: none;
+  font-family: var(--font-playfair);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.logoPink {
+  color: #e91e8c;
+}
+
+.logoWhite {
+  color: #f5f0ff;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(245, 240, 255, 0.4);
+}
+
+/* ======================================== */
+/* MAIN */
+/* ======================================== */
+
+.main {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ======================================== */
+/* BADGE */
+/* ======================================== */
+
+.badgeWrap {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: rgba(233, 30, 140, 0.12);
+  border: 1px solid rgba(233, 30, 140, 0.25);
+  font-size: 12px;
+  color: rgba(245, 240, 255, 0.6);
+}
+
+/* ======================================== */
+/* HEADING */
+/* ======================================== */
+
+.heading {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.heading h1 {
+  font-size: clamp(36px, 6vw, 52px);
+  font-weight: 900;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f5f0ff 0%,
+    #e91e8c 30%,
+    #ff9800 50%,
+    #e91e8c 70%,
+    #f5f0ff 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+.subHeading {
+  color: rgba(245, 240, 255, 0.8);
+  font-size: 0.65em;
+  font-style: italic;
+  font-weight: 400;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ======================================== */
+/* CARD */
+/* ======================================== */
+
+.card {
+  padding: 36px 32px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* ======================================== */
+/* ERROR BOX */
+/* ======================================== */
+
+.errorBox {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: rgba(248, 113, 113, 0.85);
+  font-size: 13px;
+  margin-bottom: 20px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================== */
+/* FIELD */
+/* ======================================== */
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 240, 255, 0.4);
+}
+
+.field input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  outline: none;
+  color: #f5f0ff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.field input::placeholder {
+  color: rgba(245, 240, 255, 0.3);
+}
+
+.field input:focus {
+  border-color: rgba(233, 30, 140, 0.5);
+  background: rgba(233, 30, 140, 0.06);
+  box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.12);
+}
+
+/* ======================================== */
+/* PASSWORD */
+/* ======================================== */
+
+.passwordWrap {
+  position: relative;
+}
+
+.showBtn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #e91e8c;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.showBtn:hover {
+  opacity: 0.8;
+}
+
+/* ======================================== */
+/* FORGOT */
+/* ======================================== */
+
+.forgotWrap {
+  text-align: right;
+  margin-bottom: 28px;
+}
+
+/* ======================================== */
+/* BUTTON */
+/* ======================================== */
+
+.primaryBtn {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #e91e8c, #ff5252);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(233, 30, 140, 0.3);
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 8px 36px rgba(233, 30, 140, 0.5);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.linkBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #e91e8c;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.linkBtn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* ======================================== */
+/* DIVIDER */
+/* ======================================== */
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.divider div {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.divider span {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(245, 240, 255, 0.2);
+}
+
+/* ======================================== */
+/* FOOTER */
+/* ======================================== */
+
+.footerText {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(245, 240, 255, 0.4);
+  margin: 0;
+}
+
+/* ======================================== */
+/* TRUST BADGES */
+/* ======================================== */
+
+.trustBadges {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.trustItem {
+  font-size: 11px;
+  color: rgba(245, 240, 255, 0.25);
+}
+
+/* ======================================== */
+/* RESPONSIVE */
+/* ======================================== */
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 18px 20px;
+  }
+
+  .card {
+    padding: 28px 22px;
+  }
+
+  .navRight {
+    display: none;
+  }
+
+  .heading h1 {
+    font-size: clamp(28px, 5vw, 40px);
+  }
+}

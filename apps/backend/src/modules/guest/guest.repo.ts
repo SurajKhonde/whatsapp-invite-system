@@ -10,7 +10,7 @@ export type GuestInput = {
 
 export type GuestRow = {
   id:          string;
-  host_id:     string;
+  hostId:     string;
   name:        string;
   relation:    string;
   phone_last4: string;

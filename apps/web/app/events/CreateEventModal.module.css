@@ -1,0 +1,283 @@
+/* ============================================
+   MODAL OVERLAY & CONTAINER
+   ============================================ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: white;
+  width: 520px;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: scaleIn 0.2s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   TITLE
+   ============================================ */
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #000;
+}
+
+/* ============================================
+   FORM SECTIONS
+   ============================================ */
+
+.section {
+  margin-bottom: 16px;
+}
+
+.label {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.labelWithCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count {
+  margin-left: 8px;
+  color: #ec4899;
+  font-weight: 500;
+}
+
+/* ============================================
+   SELECT INPUTS
+   ============================================ */
+
+.select {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #000;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.select:hover {
+  border-color: #ec4899;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+}
+
+/* ============================================
+   TEMPLATE DISPLAY
+   ============================================ */
+
+.templateDisplay {
+  background: #fdf2f8;
+  border: 1px solid #fbcfe8;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* ============================================
+   GUEST LIST
+   ============================================ */
+
+.guestListContainer {
+  margin-bottom: 16px;
+}
+
+.guestList {
+  max-height: 192px;
+  overflow-y: auto;
+  space: 8px;
+}
+
+.guestList > * + * {
+  margin-top: 8px;
+}
+
+.guestItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.guestItem:hover {
+  background-color: #fdf2f8;
+}
+
+.guestInfo {
+  flex: 1;
+}
+
+.guestName {
+  font-weight: 500;
+  color: #000;
+  font-size: 14px;
+}
+
+.guestPhone {
+  font-size: 13px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.guestCheckbox {
+  accent-color: #ec4899;
+  cursor: pointer;
+}
+
+/* ============================================
+   PRICE PREVIEW
+   ============================================ */
+
+.pricePreview {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.priceText {
+  font-size: 13px;
+}
+
+.priceSubtext {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* ============================================
+   ERROR MESSAGE
+   ============================================ */
+
+.error {
+  color: #ef4444;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitBtn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(to right, #ec4899, #f97316);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.loading {
+  color: #999;
+  font-size: 13px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .modal {
+    width: calc(100vw - 32px);
+    max-width: 520px;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancelBtn,
+  .submitBtn {
+    width: 100%;
+  }
+}

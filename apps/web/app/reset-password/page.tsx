@@ -17,22 +17,17 @@ export default function ChangePasswordPage() {
 
   const [changeOldPassword, { isLoading }] = useChangeOldPasswordMutation();
 
-  const validatePassword = (pass: string) =>
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
+  const validatePassword = (pass: string) => /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
 
   const handleChange = async () => {
     setError("");
 
-    if (!oldPassword || !password || !confirm)
-      return setError("All fields are required");
+    if (!oldPassword || !password || !confirm) return setError("All fields are required");
 
-    if (password !== confirm)
-      return setError("Passwords do not match");
+    if (password !== confirm) return setError("Passwords do not match");
 
     if (!validatePassword(password))
-      return setError(
-        "Password must be 8+ chars, include uppercase, number & special char"
-      );
+      return setError("Password must be 8+ chars, include uppercase, number & special char");
 
     if (!email) return setError("Invalid request");
     try {
@@ -51,14 +46,9 @@ export default function ChangePasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-pink-100 to-red-100">
       <div className="w-[380px] p-8 rounded-3xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-pink-600 mb-4">Change Password</h2>
 
-        <h2 className="text-2xl font-bold text-center text-pink-600 mb-4">
-          Change Password
-        </h2>
-
-        {error && (
-          <p className="text-red-500 text-sm text-center mb-3">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm text-center mb-3">{error}</p>}
 
         {/* Old Password */}
         <input
@@ -87,10 +77,7 @@ export default function ChangePasswordPage() {
         />
 
         {/* Show toggle */}
-        <button
-          onClick={() => setShow(!show)}
-          className="text-sm text-pink-500 mb-4"
-        >
+        <button onClick={() => setShow(!show)} className="text-sm text-pink-500 mb-4">
           {show ? "Hide" : "Show"} Passwords
         </button>
 
@@ -103,9 +90,7 @@ export default function ChangePasswordPage() {
           {isLoading ? "Updating..." : "Update Password"}
         </button>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          Keep your account secure 🔐
-        </p>
+        <p className="text-center text-xs text-gray-400 mt-4">Keep your account secure 🔐</p>
       </div>
     </div>
   );

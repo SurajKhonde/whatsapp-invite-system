@@ -1,0 +1,514 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+/* ============================================
+   PAGE CONTAINER & LAYOUT
+   ============================================ */
+
+.page {
+  min-height: 100vh;
+  background: #0d0810;
+  color: #f5f0ff;
+  font-family: 'DM Sans', sans-serif;
+  padding: 36px 28px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Dot grid background */
+.page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(245,240,255,0.025) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+}
+
+/* Floating blobs */
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+  animation: float 18s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   TOP BAR & TITLE
+   ============================================ */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.titleHighlight {
+  color: #e91e8c;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: rgba(245,240,255,0.35);
+  margin-top: 4px;
+}
+
+.newBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #e91e8c, #ff5252);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(233,30,140,0.3);
+  white-space: nowrap;
+}
+
+.newBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(233,30,140,0.45);
+}
+
+.newBtnIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* ============================================
+   STATISTICS ROW
+   ============================================ */
+
+.stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 14px 20px;
+  flex: 1;
+  min-width: 120px;
+  transition: border-color 0.2s;
+}
+
+.stat:hover {
+  border-color: rgba(233,30,140,0.2);
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: #f5f0ff;
+}
+
+.statValuePink {
+  color: #e91e8c;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245,240,255,0.28);
+  margin-bottom: 5px;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 12px;
+  color: rgba(245,240,255,0.25);
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(233,30,140,0.2);
+  border-top-color: #e91e8c;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  text-align: center;
+  gap: 14px;
+}
+
+.emptyIcon {
+  font-size: 64px;
+  opacity: 0.25;
+  animation: float 4s ease-in-out infinite;
+}
+
+.emptyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(245,240,255,0.6);
+}
+
+.emptyText {
+  font-size: 13px;
+  color: rgba(245,240,255,0.3);
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+.emptyBtn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #e91e8c, #ff5252);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(233,30,140,0.3);
+  margin-top: 8px;
+}
+
+.emptyBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(233,30,140,0.45);
+}
+
+/* ============================================
+   EVENTS GRID
+   ============================================ */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* ============================================
+   EVENT CARD
+   ============================================ */
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  padding: 22px 20px;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+  animation: cardIn 0.3s ease both;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(233,30,140,0.25);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card header */
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cardIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(233,30,140,0.1);
+  border: 1px solid rgba(233,30,140,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Card type and template */
+.cardType {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245,240,255,0.3);
+  margin-bottom: 4px;
+}
+
+.cardTemplate {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f5f0ff;
+  margin-bottom: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(245,240,255,0.3);
+  margin-bottom: 6px;
+}
+
+.progressTrack {
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #e91e8c, #ff5252);
+  transition: width 0.8s ease;
+}
+
+/* ============================================
+   STATUS PILLS
+   ============================================ */
+
+.pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid;
+}
+
+.pillSent {
+  background: rgba(52,211,153,0.08);
+  color: #34d399;
+  border-color: rgba(52,211,153,0.2);
+}
+
+.pillFailed {
+  background: rgba(248,113,113,0.08);
+  color: #f87171;
+  border-color: rgba(248,113,113,0.2);
+}
+
+.pillPending {
+  background: rgba(251,191,36,0.08);
+  color: #fbbf24;
+  border-color: rgba(251,191,36,0.2);
+}
+
+.pillDefault {
+  background: rgba(255,255,255,0.04);
+  color: rgba(245,240,255,0.35);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* ============================================
+   CARD BUTTON
+   ============================================ */
+
+.cardBtn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(233,30,140,0.2);
+  background: rgba(233,30,140,0.1);
+  color: #e91e8c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.cardBtn:hover {
+  background: rgba(233,30,140,0.18);
+  box-shadow: 0 4px 16px rgba(233,30,140,0.2);
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 24px 16px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .newBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats {
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat {
+    min-width: unset;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .cardTemplate {
+    font-size: 14px;
+  }
+
+  .pills {
+    gap: 4px;
+  }
+
+  .pill {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .emptyIcon {
+    font-size: 48px;
+  }
+
+  .emptyTitle {
+    font-size: 18px;
+  }
+
+  .emptyBtn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

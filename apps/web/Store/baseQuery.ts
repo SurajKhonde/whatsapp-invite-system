@@ -17,8 +17,7 @@ export const baseQueryWithNotify = async (args: any, api: any, extraOptions: any
     if (status === 429) notify("Too many requests", "error");
     else if (status === 401) notify("Session expired, login again", "error");
     else if (status === 404) notify("Route not found", "error");
-    else if (typeof status === "number" && status >= 500)
-      notify("Server error", "error");
+    else if (typeof status === "number" && status >= 500) notify("Server error", "error");
     else notify(errData?.message || "Something went wrong", "error");
   }
 

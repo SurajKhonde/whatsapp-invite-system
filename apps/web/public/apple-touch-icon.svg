@@ -1,0 +1,36 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e91e8c;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ff5252;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff1744;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="shadowFilter2">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="0.3" flood-color="#e91e8c"/>
+    </filter>
+  </defs>
+  
+  <!-- Rounded corners background -->
+  <rect x="0" y="0" width="180" height="180" rx="39" fill="url(#bgGrad2)" filter="url(#shadowFilter2)"/>
+  
+  <!-- Glossy overlay -->
+  <ellipse cx="90" cy="50" rx="65" ry="35" fill="white" opacity="0.15"/>
+  
+  <!-- Border rings -->
+  <rect x="0" y="0" width="180" height="180" rx="39" fill="none" stroke="#ff88cc" stroke-width="1.2" opacity="0.4"/>
+  
+  <!-- Inner dark circle for contrast -->
+  <circle cx="90" cy="90" r="72" fill="#0d0810" opacity="0.5"/>
+  
+  <!-- Glow ring -->
+  <circle cx="90" cy="90" r="70" fill="none" stroke="#ff88cc" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Telugu "పి" -->
+  <text x="90" y="110" font-family="'Playfair Display', 'Georgia', serif" font-size="78" font-weight="900" fill="#ff88cc" text-anchor="middle" dominant-baseline="middle" filter="url(#shadowFilter2)">
+    పి
+  </text>
+  
+  <!-- Bottom shine -->
+  <ellipse cx="90" cy="145" rx="45" ry="12" fill="white" opacity="0.08"/>
+</svg>
