@@ -1,233 +1,461 @@
-import { db } from "@/db/index";
-import { events } from "@/db/schema/events.schema";
-import { eventGuests } from "@/db/schema/events-guests";
 
-import { guests } from "@/db/schema/guest.schema";
-import { eq, and } from "drizzle-orm";
-import { inviteQueue } from "@queue/invite.queue";
-import { whatsappTemplateService } from "@modules/whatsapp/whatsapp-templates.service";
-import { AppError } from "@core/errors/AppError";
-import { logger } from "@core/logger/logger";
 
-type CreateEventPayload = {
-  userId: string;
-  whatsappTemplateId: string;
-  messageType: "text_only" | "image_only" | "image_and_text";
-  templateParams: Record<string, string>; // { groomName, brideName, eventDate, venue, etc. }
-  imageUrl?: string; // Optional: generated image URL
-  guestIds: string[];
-  paymentId: string;
-};
+import { AppError }
+from "@core/errors/AppError";
+
+import { logger }
+from "@core/logger/logger";
+
+import { db }
+from "@/db/index";
+
+import {
+  eq,
+  and,
+} from "drizzle-orm";
+
+import { events }
+from "@/db/schema/events.schema";
+
+import {
+  textTemplateRepository
+} from "@modules/textmessageTemplate/text-template.repository";
+
+import {
+  generateFinalInviteImage,
+} from "@modules/image-generation/generate-final-image.service";
+
+import {
+  inviteQueue,
+} from "@queue/invite.queue";
+
+import {
+  getGuestById,
+} from "@modules/guest/guest.repo";
 
 export class EventService {
-  /**
-   * Create event and queue WhatsApp message sending
-   */
-  async createEvent(payload: CreateEventPayload) {
+
+  async createEvent(payload: {
+    userId: string;
+    templateId?: string;
+    messageType:
+      | "text_only"
+      | "image_only"
+      | "image_and_text";
+
+    templateParams: Record<
+      string,
+      string
+    >;
+
+    guestIds: string[];
+  }) {
     try {
-      // 1️⃣ Validate WhatsApp template exists
-      const template = await whatsappTemplateService.getTemplate(
-        payload.whatsappTemplateId
-      );
+      const {
+        userId,
+        templateId,
+        messageType,
+        templateParams,
+        guestIds,
+      } = payload;
 
-      if (!template) {
-        throw new AppError("WhatsApp template not found", 404);
-      }
-
-      logger.info(
-        { templateId: payload.whatsappTemplateId },
-        "Template validated"
-      );
-
-      // 2️⃣ Validate template parameters
-      const validation = whatsappTemplateService.validateParameters(
-        template.data,
-        payload.templateParams
-      );
-
-      if (!validation.valid) {
+      if (
+        ![
+          "text_only",
+          "image_only",
+          "image_and_text",
+        ].includes(messageType)
+      ) {
         throw new AppError(
-          `Missing template parameters: ${validation.missingFields.join(", ")}`,
+          "Invalid message type",
           400
         );
       }
 
-      logger.info({}, "Template parameters validated");
+      let selectedTemplate: any =
+        null;
 
-      // 3️⃣ Determine event type from template
-      const eventType = template.data.category; // "wedding", "birthday", etc.
+      if (templateId) {
+        const result = await textTemplateRepository.getTemplateById(templateId);
 
-      // 4️⃣ Create event
-      const [event] = await db
-        .insert(events)
-        .values({
-          userId: payload.userId,
-          templateId: "placeholder-template-id", // From UI template (image template)
-          eventType,
-          whatsappTemplateId: payload.whatsappTemplateId,
-          messageType: payload.messageType,
-          templateParams: payload.templateParams,
-          imageUrl: payload.imageUrl || null,
-          imageApprovedAt: payload.imageUrl ? new Date() : null,
-          status: "processing",
-          totalGuests: payload.guestIds.length,
-        })
-        .returning();
+        selectedTemplate =result;
 
-      logger.info(
-        { eventId: event.id, totalGuests: payload.guestIds.length },
-        "Event created"
+        if (!selectedTemplate) {
+          throw new AppError(
+            "Template not found",
+            404
+          );
+        }
+      }
+
+
+      if (selectedTemplate) {
+        const validation =
+          textTemplateRepository.validateParameters(
+            selectedTemplate,
+            templateParams
+          );
+
+        if (!validation.valid) {
+          throw new AppError(
+            `Missing fields: ${validation.missingFields.join(
+              ", "
+            )}`,
+            400
+          );
+        }
+      }
+
+
+      let finalImageUrl:
+        | string
+        | null = null;
+
+      if (
+        selectedTemplate?.type ===
+        "image"
+      ) {
+        const imageResult =
+          await generateFinalInviteImage(
+            {
+              category:
+                selectedTemplate.category,
+
+              htmlTemplateName:
+                selectedTemplate.htmlTemplateName,
+
+              templateParams,
+            }
+          );
+
+        finalImageUrl =
+          imageResult.imageUrl;
+      }
+
+
+      const [event] =
+        await db
+          .insert(events)
+          .values({
+            userId,
+
+            templateId:
+              templateId ||
+              null,
+
+            templateName:
+              selectedTemplate?.templateName ||
+              null,
+
+            whatsappTemplateId:
+              selectedTemplate?.whatsappTemplateId ||
+              "",
+
+            messageType,
+
+            imageUrl:
+              finalImageUrl ||
+              undefined,
+
+            templateParams,
+
+            totalGuests:
+              guestIds.length,
+          })
+          .returning();
+
+      let orderedParameters:
+        string[] = [];
+
+      if (
+        selectedTemplate?.parameters
+      ) {
+        orderedParameters =
+          (
+            selectedTemplate.parameters as any[]
+          )
+            .sort(
+              (
+                a: any,
+                b: any
+              ) =>
+                a.index -
+                b.index
+            )
+            .map(
+              (param: any) =>
+                templateParams[
+                  param.key
+                ] || ""
+            );
+      }
+
+
+      for (const guestId of guestIds) {
+        const guest =
+          await getGuestById(
+            guestId
+          );
+
+        if (!guest) {
+          continue;
+        }
+
+        await inviteQueue.add(
+          "send-invite",
+          {
+            eventId:
+              event.id,
+
+            guestId,
+
+            guestPhone:
+              guest.phone,
+
+            guestName:
+              guest.name,
+
+            messageType,
+
+            templateId:
+              selectedTemplate?.id ||
+              undefined,
+
+            templateName:
+              selectedTemplate?.templateName ||
+              undefined,
+
+            whatsappTemplateId:
+              selectedTemplate?.whatsappTemplateId ||
+              undefined,
+
+            whatsappLanguageCode:
+              selectedTemplate?.whatsappLanguageCode ||
+              "en",
+
+            parameters:
+              orderedParameters,
+
+            templateParams,
+
+            imageUrl:
+              finalImageUrl ||
+              undefined,
+
+            hasImage:
+              !!finalImageUrl,
+          }
+        );
+      }
+
+      return {
+        success: true,
+
+        message:
+          "Event created successfully",
+
+        data: {
+          event,
+
+          imageUrl:
+            finalImageUrl,
+
+          totalGuests:
+            guestIds.length,
+        },
+      };
+    } catch (error) {
+      logger.error(
+        { error },
+        "Create event failed"
       );
 
-      // 5️⃣ Create event-guest relationships
-      const insertedGuests = await db
-        .insert(eventGuests)
-        .values(
-          payload.guestIds.map((guestId) => ({
-            eventId: event.id,
-            guestId,
-            status: "pending",
-          }))
+      throw error;
+    }
+  }
+
+  /**
+   * ============================================
+   * GET EVENTS
+   * ============================================
+   */
+
+  async getEvents(
+    userId: string
+  ) {
+    const result =
+      await db
+        .select()
+        .from(events)
+        .where(
+          eq(
+            events.userId,
+            userId
+          )
+        );
+
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+  /**
+   * ============================================
+   * GET EVENT BY ID
+   * ============================================
+   */
+
+  async getEventById(
+    userId: string,
+    eventId: string
+  ) {
+    const result =
+      await db
+        .select()
+        .from(events)
+        .where(
+          and(
+            eq(
+              events.id,
+              eventId
+            ),
+
+            eq(
+              events.userId,
+              userId
+            )
+          )
+        );
+
+    const event =
+      result[0];
+
+    if (!event) {
+      throw new AppError(
+        "Event not found",
+        404
+      );
+    }
+
+    return {
+      success: true,
+      data: event,
+    };
+  }
+
+  /**
+   * ============================================
+   * GET EVENT STATUS
+   * ============================================
+   */
+
+  async getEventStatus(
+    userId: string,
+    eventId: string
+  ) {
+    return this.getEventById(
+      userId,
+      eventId
+    );
+  }
+
+  /**
+   * ============================================
+   * UPDATE EVENT
+   * ============================================
+   */
+
+  async updateEvent(
+    userId: string,
+    eventId: string,
+    payload: any
+  ) {
+    await this.getEventById(
+      userId,
+      eventId
+    );
+
+    const [updatedEvent] =
+      await db
+        .update(events)
+        .set({
+          ...payload,
+          updatedAt:
+            new Date(),
+        })
+        .where(
+          eq(
+            events.id,
+            eventId
+          )
         )
         .returning();
 
-      logger.info(
-        { eventId: event.id, count: insertedGuests.length },
-        "Event guests created"
-      );
-
-      // 6️⃣ Queue WhatsApp jobs for each guest
-      // 6️⃣ Queue WhatsApp jobs for each guest
-const queuedJobs = await Promise.all(
-  insertedGuests.map((eventGuest) =>
-    inviteQueue.add("send-invite", {
-      eventId: event.id,
-      eventGuestId: eventGuest.id,
-      userId: payload.userId,
-      guestPhone: "", // Will be decrypted in worker
-      guestName: "", // Will be fetched in worker
-      
-      // ✨ NEW: Use template data
-      templateId: event.templateId || "", // Placeholder template ID
-      templateName: template.data.templateName || "", // Fallback for null
-      whatsappTemplateId: payload.whatsappTemplateId,
-      
-      // Template parameters
-      templateParams: payload.templateParams,
-      whatsappLanguageCode: template.data.whatsappLanguageCode || "en",
-      
-      // Image handling
-      imageUrl: payload.imageUrl || undefined,
-      hasImage: !!payload.imageUrl,
-      
-      // Not a retry
-      isRetry: false,
-    })
-  )
-); 
-
-      logger.info(
-        { eventId: event.id, queuedCount: queuedJobs.length },
-        "WhatsApp jobs queued"
-      );
-
-      return {
-        message: `Event created! Sending ${payload.guestIds.length} WhatsApp invites...`,
-        data: {
-          eventId: event.id,
-          totalGuests: payload.guestIds.length,
-          status: "processing",
-        },
-        notify: true,
-      };
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-      logger.error({ error }, "Error creating event");
-      throw new AppError("Failed to create event", 500);
-    }
+    return {
+      success: true,
+      message:
+        "Event updated successfully",
+      data: updatedEvent,
+    };
   }
 
   /**
-   * Get event status with real-time delivery counts
+   * ============================================
+   * DELETE EVENT
+   * ============================================
    */
-  async getEventStatus(userId: string, eventId: string) {
-    try {
-      // Get event
-      const [event] = await db
-        .select()
-        .from(events)
-        .where(and(eq(events.id, eventId), eq(events.userId, userId)));
 
-      if (!event) {
-        throw new AppError("Event not found", 404);
-      }
+  async deleteEvent(
+    userId: string,
+    eventId: string
+  ) {
+    await this.getEventById(
+      userId,
+      eventId
+    );
 
-      // Get guest list with statuses
-      const guestList = await db
-        .select({
-          id: eventGuests.id,
-          name: guests.name,
-          phone: guests.phone,
-          status: eventGuests.status,
-          whatsappStatus: eventGuests.whatsappStatus,
-          deliveredAt: eventGuests.deliveredAt,
-          readAt: eventGuests.readAt,
-          errorMessage: eventGuests.errorMessage,
-        })
-        .from(eventGuests)
-        .leftJoin(guests, eq(eventGuests.guestId, guests.id))
-        .where(eq(eventGuests.eventId, eventId));
+    await db
+      .delete(events)
+      .where(
+        eq(
+          events.id,
+          eventId
+        )
+      );
 
-      // Calculate summary
-      const summary = {
-        total: guestList.length,
-        pending: guestList.filter((g) => g.status === "pending").length,
-        sent: guestList.filter((g) => g.whatsappStatus === "sent").length,
-        delivered: guestList.filter((g) => g.whatsappStatus === "delivered").length,
-        read: guestList.filter((g) => g.whatsappStatus === "read").length,
-        failed: guestList.filter((g) => g.status === "failed").length,
-      };
-
-      logger.info({ eventId, summary }, "Event status fetched");
-
-      return {
-        message: "Event status fetched",
-        data: {
-          event,
-          summary,
-          guests: guestList,
-        },
-        notify: false,
-      };
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-      logger.error({ eventId, error }, "Error fetching event status");
-      throw new AppError("Failed to fetch event status", 500);
-    }
+    return {
+      success: true,
+      message:
+        "Event deleted successfully",
+    };
   }
 
   /**
-   * Get all events for a user
+   * ============================================
+   * RESEND EVENT
+   * ============================================
    */
-  async getEvents(userId: string) {
-    try {
-      const userEvents = await db
-        .select()
-        .from(events)
-        .where(eq(events.userId, userId));
 
-      logger.info({ userId, count: userEvents.length }, "Events fetched");
+  async resendEvent(
+    userId: string,
+    eventId: string
+  ) {
+    const eventResult =
+      await this.getEventById(
+        userId,
+        eventId
+      );
 
-      return {
-        message: "Events fetched",
-        data: userEvents,
-        notify: false,
-      };
-    } catch (error) {
-      logger.error({ userId, error }, "Error fetching events");
-      throw new AppError("Failed to fetch events", 500);
-    }
+    return {
+      success: true,
+      message:
+        "Event resend queued",
+      data:
+        eventResult.data,
+    };
   }
 }
 
-export const eventService = new EventService();
+export const eventService =
+  new EventService();

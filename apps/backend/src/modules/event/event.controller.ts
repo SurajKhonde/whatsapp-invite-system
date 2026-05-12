@@ -1,224 +1,287 @@
-import { Request, Response, NextFunction } from "express";
-import { whatsappTemplateService } from "@modules/whatsapp/whatsapp-templates.service";
-import { imageGenerationService } from "@modules/image-generation/image-generation.service";
-import { eventService } from "@modules/event/event.service";
-import { sendResponse } from "@utils/response";
-import { AppError } from "@core/errors/AppError";
-import { logger } from "@core/logger/logger";
+// src/modules/event/event.controller.ts
 
-// ============================================
-// WhatsApp Templates Controller
-// ============================================
+import {
+  Request,
+  Response,
+  NextFunction,
+} from "express";
 
-export const getWhatsappTemplates = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+import { eventService }
+from "./event.service";
+
+import { sendResponse }
+from "@utils/response";
+
+import { AppError }
+from "@core/errors/AppError";
+
+import { logger }
+from "@core/logger/logger";
+
+/**
+ * ============================================
+ * GET USER ID
+ * ============================================
+ */
+
+const getUserId = (
+  req: Request
 ) => {
-  try {
-    const result = await whatsappTemplateService.getAllTemplates();
-    return sendResponse({ res, statusCode: 200, ...result });
-  } catch (err) {
-    next(err);
+  const userId =
+    req.user?.userId;
+
+  if (!userId) {
+    throw new AppError(
+      "Unauthorized",
+      401
+    );
   }
+
+  return userId;
 };
 
-export const getWhatsappTemplate = async (
-  req: Request<{ templateId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { templateId } = req.params;
-    const result = await whatsappTemplateService.getTemplate(templateId);
-    return sendResponse({ res, statusCode: 200, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
+/**
+ * ============================================
+ * CREATE EVENT
+ * ============================================
+ */
 
-// ============================================
-// Image Generation Controller
-// ============================================
+export const createEvent =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const result =
+        await eventService.createEvent({
+          userId:
+            getUserId(req),
 
-export const generateImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
-    }
+          ...req.body,
+        });
 
-    const {
-      eventType,
-      groomName,
-      brideName,
-      celebrantName,
-      eventName,
-      eventDate,
-      eventTime,
-      venueName,
-      venueAddress,
-      schoolName,
-      location,
-    } = req.body;
-
-    // Validate required fields
-    if (!eventType || !eventDate || !venueName) {
-      throw new AppError(
-        "Missing required fields: eventType, eventDate, venueName",
-        400
+      return sendResponse({
+        res,
+        statusCode: 201,
+        ...result,
+        notify: true,
+      });
+    } catch (error) {
+      logger.error(
+        { error },
+        "Create event failed"
       );
+
+      next(error);
     }
+  };
 
-    const result = await imageGenerationService.generateImage({
-      userId,
-      eventType,
-      groomName,
-      brideName,
-      celebrantName,
-      eventName,
-      eventDate,
-      eventTime,
-      venueName,
-      venueAddress,
-      schoolName,
-      location,
-    });
+/**
+ * ============================================
+ * GET EVENTS
+ * ============================================
+ */
 
-    return sendResponse({
-      res,
-      statusCode: 200,
-      message: "Image generation queued",
-      data: result,
-      notify: true,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+export const getEvents =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const result =
+        await eventService.getEvents(
+          getUserId(req)
+        );
 
-export const getImageStatus = async (
-  req: Request<{ jobId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { jobId } = req.params;
-
-    const result = await imageGenerationService.getJobStatus(jobId);
-
-    return sendResponse({
-      res,
-      statusCode: 200,
-      message: "Image status fetched",
-      data: result,
-      notify: false,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ============================================
-// Event Controller
-// ============================================
-
-export const createEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const {
-      whatsappTemplateId,
-      messageType,
-      templateParams,
-      imageUrl,
-      guestIds,
-      paymentId,
-    } = req.body;
+/**
+ * ============================================
+ * GET EVENT BY ID
+ * ============================================
+ */
 
-    // Validate required fields
-    if (!whatsappTemplateId || !messageType || !templateParams || !guestIds || !paymentId) {
-      throw new AppError(
-        "Missing required fields: whatsappTemplateId, messageType, templateParams, guestIds, paymentId",
-        400
-      );
+export const getEventById =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const idParam =
+        req.params.id;
+        const id =
+        Array.isArray(idParam)
+          ? idParam[0]
+          : idParam;
+
+      const result =
+        await eventService.getEventById(
+          getUserId(req),
+          id
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const result = await eventService.createEvent({
-      userId,
-      whatsappTemplateId,
-      messageType,
-      templateParams,
-      imageUrl,
-      guestIds,
-      paymentId,
-    });
+/**
+ * ============================================
+ * GET EVENT STATUS
+ * ============================================
+ */
 
-    return sendResponse({
-      res,
-      statusCode: 201,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+export const getEventStatus =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const idevent =
+        req.params.eventId;
+        const id =
+        Array.isArray(idevent)
+          ? idevent[0]
+          : idevent;
 
-export const getEventStatus = async (
-  req: Request<{ eventId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
+      const result =
+        await eventService.getEventStatus(
+          getUserId(req),
+          id
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const { eventId } = req.params;
+/**
+ * ============================================
+ * UPDATE EVENT
+ * ============================================
+ */
 
-    const result = await eventService.getEventStatus(userId, eventId);
+export const updateEvent =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const idParam =
+        req.params.id;
+      const id =
+        Array.isArray(idParam)
+          ? idParam[0]
+          : idParam;
+      const result =
+        await eventService.updateEvent(
+          getUserId(req),
+          id,
+          req.body
+        );
 
-    return sendResponse({
-      res,
-      statusCode: 200,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getEvents = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const result = await eventService.getEvents(userId);
+/**
+ * ============================================
+ * DELETE EVENT
+ * ============================================
+ */
 
-    return sendResponse({
-      res,
-      statusCode: 200,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+export const deleteEvent =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+       const idParam =
+        req.params.id;
+
+      const id =
+        Array.isArray(idParam)
+          ? idParam[0]
+          : idParam;
+      const result =
+        await eventService.deleteEvent(
+          getUserId(req),
+         id
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+/**
+ * ============================================
+ * RESEND EVENT
+ * ============================================
+ */
+
+export const resendEvent =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+       const idParam =
+        req.params.id;
+
+      const id =
+        Array.isArray(idParam)
+          ? idParam[0]
+          : idParam;
+      const result =
+        await eventService.resendEvent(
+          getUserId(req),
+          id
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+        notify: true,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };

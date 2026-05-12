@@ -1,132 +1,375 @@
-import { AppError } from "@core/errors/AppError";
+
+import * as fs from "fs/promises";
+import * as path from "path";
+import { db } from "@/db/index";
+import { templates } from "@/db/schema/template.schema";
+import { eq }from "drizzle-orm";
 import { logger } from "@core/logger/logger";
-import { imageGenerationQueue, ImageGenerationJob } from "@queue/image-generation.queue";
+
+import {renderHtmlToMultipleSizes} from "@utils/renderHtmlToPng";
+
+import {
+  TemplatePreviewJob,
+  imageGenerationQueue,
+} from "@core/queue/image-generation.queue";
+
+const PREVIEW_DIMENSIONS = {
+  thumbnail: {
+    width: 400,
+    height: 600,
+  },
+
+  fullCard: {
+    width: 800,
+    height: 1100,
+  },
+};
 
 export class ImageGenerationService {
   /**
-   * Queue an image generation job
-   * Returns jobId immediately (non-blocking)
+   * ============================================
+   * REGISTER TEMPLATE
+   * ============================================
    */
-  async generateImage(payload: ImageGenerationJob) {
+
+  async registerImageTemplate(
+    payload: {
+      title: string;
+      category: string;
+      htmlTemplateName: string;
+      placeholders: string[];
+    }
+  ) {
     try {
-      const job = await imageGenerationQueue.add(
-        "generate",
+      logger.info(
         payload,
+        "🚀 Register image template"
+      );
+
+      const [createdTemplate] =
+        await db
+          .insert(templates)
+          .values({
+            title: payload.title,
+
+            category:
+              payload.category,
+
+            type: "image",
+
+            htmlTemplateName:
+              payload.htmlTemplateName,
+
+            placeholders:
+              payload.placeholders,
+
+            isActive: true,
+
+            whatsappStatus:
+              "APPROVED",
+          })
+          .returning();
+
+      // ======================================
+      // ADD QUEUE JOB
+      // ======================================
+
+      await imageGenerationQueue.add(
+        "generate-template-preview",
+
         {
-          jobId: `img-${payload.userId}-${Date.now()}`,
+          jobType:
+            "template-preview",
+
+          templateId:
+            createdTemplate.id,
+
+          htmlTemplateName:
+            payload.htmlTemplateName,
+
+          category:
+            payload.category,
         }
       );
 
-      logger.info(
-        {
-          jobId: job.id,
-          eventType: payload.eventType,
-          userId: payload.userId,
-        },
-        "Image generation job queued"
-      );
-
       return {
-        jobId: job.id,
-        status: "processing",
+        templateId:
+          createdTemplate.id,
+
+        status:
+          "processing",
+
+        message:
+          "Template queued successfully",
       };
     } catch (error) {
       logger.error(
-        { userId: payload.userId, error },
-        "Error queuing image generation"
-      );
-      throw new AppError("Failed to queue image generation", 500);
-    }
-  }
-
-  /**
-   * Get image generation job status
-   */
-  async getJobStatus(jobId: string) {
-    try {
-      const job = await imageGenerationQueue.getJob(jobId);
-
-      if (!job) {
-        throw new AppError("Job not found", 404);
-      }
-
-      const state = await job.getState();
-      const progress = job.progress;
-      const data = job.data;
-
-      let status = "processing";
-      let imageUrl = null;
-      let error = null;
-
-      if (state === "completed") {
-        status = "completed";
-        // Job result is in job.returnvalue
-        imageUrl = job.returnvalue?.imageUrl || null;
-      } else if (state === "failed") {
-        status = "failed";
-        error = job.failedReason || "Image generation failed";
-      }
-
-      logger.info(
-        { jobId, status, progress },
-        "Fetched job status"
+        { error },
+        "❌ Register image template failed"
       );
 
-      return {
-        jobId,
-        status,
-        progress,
-        imageUrl,
-        error,
-        data,
-      };
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-      logger.error({ jobId, error }, "Error fetching job status");
-      throw new AppError("Failed to fetch job status", 500);
-    }
-  }
-
-  /**
-   * Mock image generation (for now)
-   * In real implementation, this would use Puppeteer/Playwright to render HTML to image
-   * or use an image processing library
-   */
-  async mockGenerateImage(
-    payload: ImageGenerationJob
-  ): Promise<{
-    imageUrl: string;
-    fileName: string;
-  }> {
-    // In production, you would:
-    // 1. Load HTML template based on eventType
-    // 2. Replace placeholders with actual data
-    // 3. Use Puppeteer to render to image
-    // 4. Upload to Cloudinary
-    // 5. Return the URL
-
-    try {
-      // For now, simulate image generation with a delay
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-
-      // Mock URL (replace with real Cloudinary upload)
-      const fileName = `event-${payload.userId}-${Date.now()}.png`;
-      const imageUrl = `https://cloudinary.com/placeholder/${fileName}`;
-
-      logger.info(
-        { fileName, eventType: payload.eventType },
-        "Mock image generated"
-      );
-
-      return {
-        imageUrl,
-        fileName,
-      };
-    } catch (error) {
-      logger.error({ error }, "Error in mock image generation");
       throw error;
     }
   }
+
+  /**
+   * ============================================
+   * GENERATE IMAGES
+   * ============================================
+   */
+
+  async generatePreviewImages(
+    payload: TemplatePreviewJob
+  ) {
+    try {
+      logger.info(
+        payload,
+        "🎨 Start image generation"
+      );
+
+      // ======================================
+      // LOAD HTML FILE
+      // ======================================
+
+      const htmlFilePath =
+        path.join(
+          process.cwd(),
+
+          "src/HTML-template",
+
+          payload.category,
+
+          `${payload.htmlTemplateName}.html`
+        );
+
+      const htmlContent =
+        await fs.readFile(
+          htmlFilePath,
+          "utf-8"
+        );
+
+      // ======================================
+      // CHECK CLOUDINARY
+      // ======================================
+
+      const exists =
+        await this.checkCloudinaryExists(
+          payload.htmlTemplateName
+        );
+
+      if (exists) {
+        logger.info(
+          {},
+          "☁️ Already exists in Cloudinary"
+        );
+
+        const urls =
+          await this.getCloudinaryUrls(
+            payload.htmlTemplateName
+          );
+
+        await this.updateTemplateUrls(
+          payload.templateId,
+
+          urls.thumbnail,
+
+          urls.fullCard
+        );
+
+        return {
+          previewImageUrl:
+            urls.thumbnail,
+
+          previewImageUrlFull:
+            urls.fullCard,
+        };
+      }
+
+      // ======================================
+      // GENERATE PNG
+      // ======================================
+
+      const [
+        thumbnailBuffer,
+
+        fullCardBuffer,
+      ] =
+        await renderHtmlToMultipleSizes(
+          htmlContent,
+
+          [
+            PREVIEW_DIMENSIONS.thumbnail,
+
+            PREVIEW_DIMENSIONS.fullCard,
+          ]
+        );
+
+      // ======================================
+      // CLOUDINARY UPLOAD
+      // ======================================
+
+      const thumbnailUrl =
+        await this.uploadToCloudinary(
+          thumbnailBuffer,
+
+          `invites/previews/${payload.htmlTemplateName}-thumbnail`
+        );
+
+      const fullCardUrl =
+        await this.uploadToCloudinary(
+          fullCardBuffer,
+
+          `invites/previews/${payload.htmlTemplateName}-fullcard`
+        );
+
+      await this.updateTemplateUrls(
+        payload.templateId,
+
+        thumbnailUrl,
+
+        fullCardUrl
+      );
+
+      return {
+        previewImageUrl:
+          thumbnailUrl,
+
+        previewImageUrlFull:
+          fullCardUrl,
+      };
+    } catch (error) {
+      logger.error(
+        { error },
+        "❌ Image generation failed"
+      );
+
+      throw error;
+    }
+  }
+
+  // ============================================
+  // HELPERS
+  // ============================================
+
+  private async checkCloudinaryExists(
+    htmlTemplateName: string
+  ) {
+    try {
+      const cloudinary =
+        require("cloudinary").v2;
+
+      await cloudinary.api.resource(
+        `invites/previews/${htmlTemplateName}-thumbnail`
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async getCloudinaryUrls(
+    htmlTemplateName: string
+  ) {
+    const cloudinary =
+      require("cloudinary").v2;
+
+    const thumbnail =
+      await cloudinary.api.resource(
+        `invites/previews/${htmlTemplateName}-thumbnail`
+      );
+
+    const fullCard =
+      await cloudinary.api.resource(
+        `invites/previews/${htmlTemplateName}-fullcard`
+      );
+
+    return {
+      thumbnail:
+        thumbnail.secure_url,
+
+      fullCard:
+        fullCard.secure_url,
+    };
+  }
+
+  private async uploadToCloudinary(
+    buffer: Buffer,
+
+    publicId: string
+  ): Promise<string> {
+    return new Promise(
+      (resolve, reject) => {
+        const cloudinary =
+          require("cloudinary").v2;
+
+        const uploadStream =
+          cloudinary.uploader.upload_stream(
+            {
+              public_id:
+                publicId,
+
+              resource_type:
+                "image",
+
+              format: "png",
+
+              overwrite: true,
+            },
+
+            (
+              error: any,
+              result: any
+            ) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve(
+                result.secure_url
+              );
+            }
+          );
+
+        const { Readable } =
+          require("stream");
+
+        Readable.from(
+          buffer
+        ).pipe(uploadStream);
+      }
+    );
+  }
+
+  private async updateTemplateUrls(
+    templateId: string,
+
+    thumbnailUrl: string,
+
+    fullCardUrl: string
+  ) {
+    await db
+      .update(templates)
+      .set({
+        previewImageUrl:
+          thumbnailUrl,
+
+        previewImageUrlFull:
+          fullCardUrl,
+
+        hasImage: true,
+
+        updatedAt: new Date(),
+      })
+      .where(
+        eq(
+          templates.id,
+          templateId
+        )
+      );
+  }
 }
 
-export const imageGenerationService = new ImageGenerationService();
+export const imageGenerationService =
+  new ImageGenerationService();

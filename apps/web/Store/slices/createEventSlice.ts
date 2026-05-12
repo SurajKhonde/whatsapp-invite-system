@@ -1,128 +1,170 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface EventDetails {
-  groomName: string;
-  brideName: string;
-  eventDate: string;
-  eventTime: string;
-  venueName: string;
-  venueAddress: string;
+// =====================================================
+// TYPES
+// =====================================================
+
+export interface SelectedTemplate {
+  id: string;
+  title?: string;
+  name?: string;
+  category: string;
+  type?: string;
+  hasImage?: boolean;
+  textContent?: string;
+  imageUrl?: string;
+  previewImageUrl?: string;
+  parameters?: any;
+  placeholders?: any;
+  [key: string]: any;
 }
 
-interface ImageGeneration {
-  jobId: string | null;
-  status: "idle" | "loading" | "completed" | "failed";
-  imageUrl: string | null;
-  error: string | null;
+export interface EventDetails {
+  groomName?: string;
+  brideName?: string;
+  eventDate?: string;
+  eventTime?: string;
+  venueName?: string;
+  venueAddress?: string;
+  templateParams?: any;
+  [key: string]: any;
 }
 
-interface CreateEventState {
-  // Step 1
-  selectedTemplate: {
-    id: string;
-    name: string;
-    category: string;
-  } | null;
+export interface ImageGeneration {
+  status: "idle" | "generating" | "success" | "error";
+  jobId?: string;
+  imageUrl?: string;
+  error?: string;
+}
 
-  // Step 2
+export interface Pricing {
+  baseCost: number;
+  perGuestCost: number;
+  profit: number;
+  total: number;
+  [key: string]: any;
+}
+
+export interface SendingStatus {
+  sentCount: number;
+  deliveredCount: number;
+  readCount: number;
+  failedCount: number;
+  pendingCount: number;
+}
+
+export interface CreateEventState {
+  // =====================================================
+  // STEP 1: TEMPLATE SELECTION
+  // =====================================================
+  selectedTemplate: SelectedTemplate | null;
+  templates: SelectedTemplate[];
+
+  // =====================================================
+  // STEP 2: EVENT DETAILS
+  // =====================================================
   eventDetails: EventDetails;
   messageType: "text_only" | "image_only" | "image_and_text";
   imageGeneration: ImageGeneration;
 
-  // Step 3
-  selectedGuests: string[]; // guest IDs
-  whatsappTemplateId: string | null;
+  // =====================================================
+  // STEP 3: GUEST SELECTION
+  // =====================================================
+  selectedGuests: string[];
+  guests: any[];
+  whatsappTemplateId: string;
 
-  // Step 4
-  pricing: {
-    baseCost: number;
-    perGuestCost: number;
-    totalGuests: number;
-    profit: number;
-    total: number;
-  };
-  paymentId: string | null;
+  // =====================================================
+  // STEP 4: PAYMENT
+  // =====================================================
+  pricing: Pricing;
+  paymentId: string;
 
-  // Sending
-  eventId: string | null;
-  sending: {
-    status: "idle" | "sending" | "completed";
-    sentCount: number;
-    deliveredCount: number;
-    readCount: number;
-    failedCount: number;
-    pendingCount: number;
-  };
+  // =====================================================
+  // STEP 5: EVENT TRACKING
+  // =====================================================
+  eventId: string;
+  sending: SendingStatus;
 
+  // =====================================================
   // UI
+  // =====================================================
   currentStep: 1 | 2 | 3 | 4 | 5;
   loading: boolean;
   error: string | null;
 }
 
+// =====================================================
+// INITIAL STATE
+// =====================================================
+
 const initialState: CreateEventState = {
   selectedTemplate: null,
-  eventDetails: {
-    groomName: "",
-    brideName: "",
-    eventDate: "",
-    eventTime: "",
-    venueName: "",
-    venueAddress: "",
-  },
+  templates: [],
+
+  eventDetails: {},
   messageType: "text_only",
   imageGeneration: {
-    jobId: null,
     status: "idle",
-    imageUrl: null,
-    error: null,
   },
+
   selectedGuests: [],
-  whatsappTemplateId: null,
+  guests: [],
+  whatsappTemplateId: "",
+
   pricing: {
-    baseCost: 100,
-    perGuestCost: 1,
-    totalGuests: 0,
+    baseCost: 0,
+    perGuestCost: 0,
     profit: 0,
     total: 0,
   },
-  paymentId: null,
-  eventId: null,
+  paymentId: "",
+
+  eventId: "",
   sending: {
-    status: "idle",
     sentCount: 0,
     deliveredCount: 0,
     readCount: 0,
     failedCount: 0,
     pendingCount: 0,
   },
+
   currentStep: 1,
   loading: false,
   error: null,
 };
 
+// =====================================================
+// SLICE
+// =====================================================
+
 const createEventSlice = createSlice({
   name: "createEvent",
   initialState,
   reducers: {
-    // Step 1: Select Template
-    selectTemplate: (
-      state,
-      action: PayloadAction<{
-        id: string;
-        name: string;
-        category: string;
-      }>
-    ) => {
+    // =====================================================
+    // STEP 1: TEMPLATE
+    // =====================================================
+
+    selectTemplate: (state, action: PayloadAction<SelectedTemplate>) => {
       state.selectedTemplate = action.payload;
     },
 
-    // Step 2: Update Event Details
-    updateEventDetails: (state, action: PayloadAction<Partial<EventDetails>>) => {
-      state.eventDetails = { ...state.eventDetails, ...action.payload };
+    setTemplates: (state, action: PayloadAction<SelectedTemplate[]>) => {
+      state.templates = action.payload;
     },
 
-    // Step 2: Select Message Type
+    // =====================================================
+    // STEP 2: EVENT DETAILS
+    // =====================================================
+
+    updateEventDetails: (state, action: PayloadAction<EventDetails>) => {
+      state.eventDetails = {
+        ...state.eventDetails,
+        ...action.payload,
+      };
+    },
+
     selectMessageType: (
       state,
       action: PayloadAction<"text_only" | "image_only" | "image_and_text">
@@ -130,79 +172,88 @@ const createEventSlice = createSlice({
       state.messageType = action.payload;
     },
 
-    // Step 2: Start Image Generation
+    // =====================================================
+    // IMAGE GENERATION
+    // =====================================================
+
     startImageGeneration: (state, action: PayloadAction<string>) => {
-      state.imageGeneration.status = "loading";
-      state.imageGeneration.jobId = action.payload;
-      state.imageGeneration.error = null;
+      state.imageGeneration = {
+        status: "generating",
+        jobId: action.payload,
+      };
     },
 
-    // Step 2: Image Generation Completed
     imageGenerationSuccess: (state, action: PayloadAction<string>) => {
-      state.imageGeneration.status = "completed";
-      state.imageGeneration.imageUrl = action.payload;
-      state.imageGeneration.error = null;
+      state.imageGeneration = {
+        status: "success",
+        imageUrl: action.payload,
+      };
     },
 
-    // Step 2: Image Generation Failed
     imageGenerationFailed: (state, action: PayloadAction<string>) => {
-      state.imageGeneration.status = "failed";
-      state.imageGeneration.error = action.payload;
+      state.imageGeneration = {
+        status: "error",
+        error: action.payload,
+      };
     },
 
-    // Step 3: Select Guests
+    // =====================================================
+    // STEP 3: GUESTS
+    // =====================================================
+
+    setGuests: (state, action: PayloadAction<any[]>) => {
+      state.guests = action.payload;
+    },
+
     selectGuests: (state, action: PayloadAction<string[]>) => {
       state.selectedGuests = action.payload;
-      // Recalculate pricing
-      const totalGuests = action.payload.length;
-      state.pricing.totalGuests = totalGuests;
-      state.pricing.profit = Math.floor(
-        (state.pricing.baseCost + state.pricing.perGuestCost * totalGuests) * 0.2
-      );
-      state.pricing.total =
-        state.pricing.baseCost + state.pricing.perGuestCost * totalGuests + state.pricing.profit;
     },
 
-    // Step 3: Select WhatsApp Template
+    // =====================================================
+    // WHATSAPP TEMPLATE
+    // =====================================================
+
     selectWhatsappTemplate: (state, action: PayloadAction<string>) => {
       state.whatsappTemplateId = action.payload;
     },
 
-    // Step 4: Payment Success
+    // =====================================================
+    // STEP 4: PAYMENT
+    // =====================================================
+
+    setPricing: (state, action: PayloadAction<Pricing>) => {
+      state.pricing = action.payload;
+    },
+
     paymentSuccess: (state, action: PayloadAction<string>) => {
       state.paymentId = action.payload;
     },
 
-    // After Payment: Event Created
+    // =====================================================
+    // STEP 5: EVENT & SENDING
+    // =====================================================
+
     eventCreated: (state, action: PayloadAction<string>) => {
       state.eventId = action.payload;
-      state.currentStep = 5; // Go to Tracking
-      state.sending.status = "sending";
     },
 
-    // Step 5: Update Sending Status
-    updateSendingStatus: (
-      state,
-      action: PayloadAction<{
-        sentCount: number;
-        deliveredCount: number;
-        readCount: number;
-        failedCount: number;
-        pendingCount: number;
-      }>
-    ) => {
-      state.sending = { ...state.sending, ...action.payload };
+    updateSendingStatus: (state, action: PayloadAction<SendingStatus>) => {
+      state.sending = action.payload;
     },
 
-    // Step 5: Sending Completed
     sendingCompleted: (state) => {
-      state.sending.status = "completed";
+      state.sending = {
+        sentCount: state.selectedGuests.length,
+        deliveredCount: state.selectedGuests.length,
+        readCount: 0,
+        failedCount: 0,
+        pendingCount: 0,
+      };
     },
 
-    // Navigation
-    goToStep: (state, action: PayloadAction<1 | 2 | 3 | 4 | 5>) => {
-      state.currentStep = action.payload;
-    },
+    // =====================================================
+    // NAVIGATION
+    // =====================================================
 
     nextStep: (state) => {
       if (state.currentStep < 5) {
@@ -216,7 +267,16 @@ const createEventSlice = createSlice({
       }
     },
 
-    // Reset
+    goToStep: (state, action: PayloadAction<1 | 2 | 3 | 4 | 5>) => {
+      if (action.payload >= 1 && action.payload <= 5) {
+        state.currentStep = action.payload;
+      }
+    },
+
+    // =====================================================
+    // RESET & UI
+    // =====================================================
+
     resetCreateEvent: (state) => {
       return initialState;
     },
@@ -231,22 +291,29 @@ const createEventSlice = createSlice({
   },
 });
 
+// =====================================================
+// EXPORTS
+// =====================================================
+
 export const {
   selectTemplate,
+  setTemplates,
   updateEventDetails,
   selectMessageType,
   startImageGeneration,
   imageGenerationSuccess,
   imageGenerationFailed,
+  setGuests,
   selectGuests,
   selectWhatsappTemplate,
+  setPricing,
   paymentSuccess,
   eventCreated,
   updateSendingStatus,
   sendingCompleted,
-  goToStep,
   nextStep,
   previousStep,
+  goToStep,
   resetCreateEvent,
   setLoading,
   setError,

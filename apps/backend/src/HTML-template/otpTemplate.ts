@@ -11,7 +11,7 @@ export const getOtpTemplate = ({
     <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
       <div style="max-width: 500px; margin: auto; background: #ffffff; border-radius: 12px; padding: 30px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
         
-        <h1 style="color: #6b46c1; margin-bottom: 10px;">పిloopu</h1>
+        <h1 style="color: #6b46c1; margin-bottom: 10px;">పిlooopu</h1>
         
         <h2 style="margin: 10px 0;">${title}</h2>
         <p style="color: #555; font-size: 14px;">
@@ -44,7 +44,7 @@ export const getOtpTemplate = ({
       </div>
 
       <p style="text-align:center; font-size: 12px; color: #999; margin-top: 15px;">
-        © ${new Date().getFullYear()} పిloopu. All rights reserved.
+        © ${new Date().getFullYear()} పిlooopu. All rights reserved.
       </p>
     </div>
     `,

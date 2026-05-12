@@ -1,224 +1,193 @@
-import { Request, Response, NextFunction } from "express";
-import { whatsappTemplateService } from "@modules/whatsapp/whatsapp-templates.service";
-import { imageGenerationService } from "@modules/image-generation/image-generation.service";
-import { eventService } from "@modules/event/event.service";
-import { sendResponse } from "@utils/response";
-import { AppError } from "@core/errors/AppError";
-import { logger } from "@core/logger/logger";
+// src/modules/whatsapp/whatsapp.controller.ts
 
-// ============================================
-// WhatsApp Templates Controller
-// ============================================
+import {
+  Request,
+  Response,
+  NextFunction,
+} from "express";
 
-export const getWhatsappTemplates = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const result = await whatsappTemplateService.getAllTemplates();
-    return sendResponse({ res, statusCode: 200, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
+import { whatsappTemplateService }
+from "@modules/whatsapp/whatsapp-templates.service";
 
-export const getWhatsappTemplate = async (
-  req: Request<{ templateId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { templateId } = req.params;
-    const result = await whatsappTemplateService.getTemplate(templateId);
-    return sendResponse({ res, statusCode: 200, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
 
-// ============================================
-// Image Generation Controller
-// ============================================
 
-export const generateImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
+import { sendResponse }
+from "@utils/response";
+
+import { AppError }
+from "@core/errors/AppError";
+
+import { logger }
+from "@core/logger/logger";
+
+/**
+ * ============================================
+ * GET ALL WHATSAPP TEMPLATES
+ * ============================================
+ */
+
+export const getWhatsappTemplates =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const result =
+        await whatsappTemplateService.getAllTemplates();
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (err) {
+      next(err);
     }
+  };
 
-    const {
-      eventType,
-      groomName,
-      brideName,
-      celebrantName,
-      eventName,
-      eventDate,
-      eventTime,
-      venueName,
-      venueAddress,
-      schoolName,
-      location,
-    } = req.body;
+/**
+ * ============================================
+ * GET SINGLE TEMPLATE
+ * ============================================
+ */
 
-    // Validate required fields
-    if (!eventType || !eventDate || !venueName) {
-      throw new AppError(
-        "Missing required fields: eventType, eventDate, venueName",
-        400
-      );
+export const getWhatsappTemplate =
+  async (
+    req: Request<{
+      templateId: string;
+    }>,
+
+    res: Response,
+
+    next: NextFunction
+  ) => {
+    try {
+      const {
+        templateId,
+      } = req.params;
+
+      const result =
+        await whatsappTemplateService.getTemplate(
+          templateId
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (err) {
+      next(err);
     }
+  };
+import {
+  Request,
+  Response,
+  NextFunction,
+} from "express";
 
-    const result = await imageGenerationService.generateImage({
-      userId,
-      eventType,
-      groomName,
-      brideName,
-      celebrantName,
-      eventName,
-      eventDate,
-      eventTime,
-      venueName,
-      venueAddress,
-      schoolName,
-      location,
-    });
+import {
+  whatsappTemplateService,
+} from "@modules/whatsapp/whatsapp-templates.service";
 
-    return sendResponse({
-      res,
-      statusCode: 200,
-      message: "Image generation queued",
-      data: result,
-      notify: true,
-    });
-  } catch (err) {
-    next(err);
+import {
+  eventService,
+} from "@modules/whatsapp/event.service";
+
+import {
+  sendResponse,
+} from "@utils/response";
+
+import {
+  AppError,
+} from "@core/errors/AppError";
+
+import {
+  logger,
+} from "@core/logger/logger";
+
+/**
+ * ============================================
+ * HELPERS
+ * ============================================
+ */
+
+const getUserId = (
+  req: Request
+): string => {
+  const userId =
+    req.user?.userId;
+
+  if (!userId) {
+    throw new AppError(
+      "Unauthorized",
+      401
+    );
   }
+
+  return userId;
 };
 
-export const getImageStatus = async (
-  req: Request<{ jobId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { jobId } = req.params;
+/**
+ * ============================================
+ * GET ALL WHATSAPP TEMPLATES
+ * ============================================
+ */
 
-    const result = await imageGenerationService.getJobStatus(jobId);
+export const getWhatsappTemplates =
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const result =
+        await whatsappTemplateService.getAllTemplates();
 
-    return sendResponse({
-      res,
-      statusCode: 200,
-      message: "Image status fetched",
-      data: result,
-      notify: false,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ============================================
-// Event Controller
-// ============================================
-
-export const createEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const {
-      whatsappTemplateId,
-      messageType,
-      templateParams,
-      imageUrl,
-      guestIds,
-      paymentId,
-    } = req.body;
+/**
+ * ============================================
+ * GET SINGLE TEMPLATE
+ * ============================================
+ */
 
-    // Validate required fields
-    if (!whatsappTemplateId || !messageType || !templateParams || !guestIds || !paymentId) {
-      throw new AppError(
-        "Missing required fields: whatsappTemplateId, messageType, templateParams, guestIds, paymentId",
-        400
-      );
+export const getWhatsappTemplate =
+  async (
+    req: Request<{
+      templateId: string;
+    }>,
+
+    res: Response,
+
+    next: NextFunction
+  ) => {
+    try {
+      const {
+        templateId,
+      } = req.params;
+
+      const result =
+        await whatsappTemplateService.getTemplate(
+          templateId
+        );
+
+      return sendResponse({
+        res,
+        statusCode: 200,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
     }
+  };
 
-    const result = await eventService.createEvent({
-      userId,
-      whatsappTemplateId,
-      messageType,
-      templateParams,
-      imageUrl,
-      guestIds,
-      paymentId,
-    });
-
-    return sendResponse({
-      res,
-      statusCode: 201,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getEventStatus = async (
-  req: Request<{ eventId: string }>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
-    }
-
-    const { eventId } = req.params;
-
-    const result = await eventService.getEventStatus(userId, eventId);
-
-    return sendResponse({
-      res,
-      statusCode: 200,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getEvents = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      throw new AppError("Unauthorized", 401);
-    }
-
-    const result = await eventService.getEvents(userId);
-
-    return sendResponse({
-      res,
-      statusCode: 200,
-      ...result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};

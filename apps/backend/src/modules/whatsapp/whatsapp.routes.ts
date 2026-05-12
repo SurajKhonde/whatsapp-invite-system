@@ -1,36 +1,38 @@
+// src/modules/whatsapp/whatsapp.routes.ts
+
 import { Router } from "express";
-import { authMiddleware } from "@middlewares/auth.middleware";
+
+import { authMiddleware }
+from "@middlewares/auth.middleware";
+
 import {
   getWhatsappTemplates,
   getWhatsappTemplate,
-  generateImage,
-  getImageStatus,
-  createEvent,
-  getEventStatus,
-  getEvents,
+ 
 } from "./whatsapp.controller";
 
 const router = Router();
 
+/**
+ * ============================================
+ * TEMPLATE ROUTES
+ * ============================================
+ */
 
-router.get("/templates", authMiddleware, getWhatsappTemplates);
+router.get(
+  "/templates",
+  authMiddleware,
+  getWhatsappTemplates
+);
 
+router.get(
+  "/templates/:templateId",
+  authMiddleware,
+  getWhatsappTemplate
+);
 
-router.get("/templates/:templateId", authMiddleware, getWhatsappTemplate);
+/**
 
-
-router.post("/images/generate", authMiddleware, generateImage);
-
-
-router.get("/images/:jobId/status", authMiddleware, getImageStatus);
-
-
-router.post("/events", authMiddleware, createEvent);
-
-
-router.get("/events/:eventId/status", authMiddleware, getEventStatus);
-
-
-router.get("/events", authMiddleware, getEvents);
 
 export default router;
+

@@ -51,11 +51,11 @@ export const useCreateEvent = () => {
     selectTemplate: (templateId: string) => {
       const template = (state.templates || []).find((t: any) => t.id === templateId);
       if (template) {
-        dispatch(selectTemplateAction({ id: template.id, name: template.title, category: template.category }));
+        dispatch(selectTemplateAction({ id: template.id, title: template.title, category: template.category }));
       }
     },
 
-    setTemplate: (template: { id: string; name: string; category: string }) =>
+    setTemplate: (template: any) =>
       dispatch(selectTemplateAction(template)),
 
     setTemplates: (list: any[]) => dispatch(setTemplatesAction(list)),
@@ -90,13 +90,7 @@ export const useCreateEvent = () => {
     setEventCreated: (eventId: string) => dispatch(eventCreated(eventId)),
 
     // ==================== STEP 5: SENDING STATUS ====================
-    updateSendingStatus: (status: {
-      sentCount: number;
-      deliveredCount: number;
-      readCount: number;
-      failedCount: number;
-      pendingCount: number;
-    }) => dispatch(updateSendingStatus(status)),
+    updateSendingStatus: (status: any) => dispatch(updateSendingStatus(status)),
 
     sendingCompleted: () => dispatch(sendingCompleted()),
 
@@ -104,12 +98,7 @@ export const useCreateEvent = () => {
     goNext: () => dispatch(nextStep()),
     nextStep: () => dispatch(nextStep()),
     goPrev: () => dispatch(previousStep()),
-    goToStep: (step: 1 | 2 | 3 | 4 | 5) => {
-      // You can implement this if you add goToStep to reducers
-      if (step >= 1 && step <= 5) {
-        dispatch(nextStep()); // placeholder
-      }
-    },
+    previousStep: () => dispatch(previousStep()),
 
     // ==================== RESET ====================
     resetCreateEvent: () => dispatch(resetCreateEvent()),

@@ -71,6 +71,20 @@
       "when": 1778145404946,
       "tag": "0009_hard_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1778259190329,
+      "tag": "0010_special_jack_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1778306472646,
+      "tag": "0011_boring_firebird",
+      "breakpoints": true
     }
   ]
 }

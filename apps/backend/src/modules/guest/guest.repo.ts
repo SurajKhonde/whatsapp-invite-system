@@ -94,3 +94,32 @@ export const revealGuestPhones = async (
     phone: decrypt(g.phone),
   }));
 };
+
+export const getGuestById = async (
+  guestId: string
+) => {
+  const result = await pool.query(
+    `
+    SELECT
+      id,
+      name,
+      phone
+    FROM guests
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [guestId]
+  );
+
+  if (!result.rows[0]) {
+    return null;
+  }
+
+  const guest = result.rows[0];
+
+  return {
+    id: guest.id,
+    name: guest.name,
+    phone: decrypt(guest.phone),
+  };
+};

@@ -13,12 +13,6 @@ export interface SendWhatsAppPayload {
   messageType?: "text_only" | "image_only" | "image_and_text";
 }
 
-/**
- * Send WhatsApp message with PRE-APPROVED TEMPLATE
- * Template name like: "wedding_classic_en"
- * Parameters: { guestName: "Raj", groomName: "Raj Kumar", brideName: "Priya", eventDate: "15 May", venue: "Grand Hotel" }
- * WhatsApp API replaces {{1}}, {{2}}, etc. with the parameters
- */
 export const sendWhatsAppTemplate = async (
   payload: SendWhatsAppPayload
 ): Promise<{ success: boolean; messageId?: string; error?: string }> => {
@@ -30,9 +24,6 @@ export const sendWhatsAppTemplate = async (
       "Sending WhatsApp template"
     );
 
-    // Build parameters array for WhatsApp API
-    // Parameters are sent as an array: [param1, param2, param3, ...]
-    // They will replace {{1}}, {{2}}, {{3}}, etc. in the template
     const parameters: any[] = [
       { type: "text", text: templateParams.guestName || "" },
       { type: "text", text: templateParams.groomName || templateParams.celebrantName || templateParams.eventName || "" },

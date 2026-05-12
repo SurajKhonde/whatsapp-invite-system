@@ -19,7 +19,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/dashboard" className={styles.logo}>
           <span className={styles.logoP}>పి</span>
-          <span className={styles.logoRest}>loopu</span>
+          <span className={styles.logoRest}>looopu</span>
         </Link>
 
         {/* Nav links */}

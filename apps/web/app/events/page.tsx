@@ -1,310 +1,1386 @@
+// "use client";
+
+// import {
+//   useSearchParams,
+// } from "next/navigation";
+
+// import {
+//   useEffect,
+//   useState,
+// } from "react";
+
+// import CreateEventModal
+// from "@/components/CreateEvent/CreateEventModal";
+
+// import EventDetailsModal
+// from "./EventDetailsModal";
+
+// import {
+//   useGetEventsQuery,
+// } from "@/store/apiSlice";
+
+// import styles
+// from "./Events.module.css";
+
+// export default function EventsPage() {
+//   // =====================================================
+//   // STATE
+//   // =====================================================
+
+//   const params =
+//     useSearchParams();
+
+//   const templateId =
+//     params.get(
+//       "templateId"
+//     );
+
+//   const [open, setOpen] =
+//     useState(false);
+
+//   const [
+//     selectedEvent,
+//     setSelectedEvent,
+//   ] = useState<any>(
+//     null
+//   );
+
+//   // =====================================================
+//   // API
+//   // =====================================================
+
+//   const {
+//     data,
+//     isLoading,
+//   } =
+//     useGetEventsQuery();
+
+//   const events =
+//     data?.data || [];
+
+//   // =====================================================
+//   // EFFECTS
+//   // =====================================================
+
+//   useEffect(() => {
+//     if (templateId) {
+//       setOpen(true);
+//     }
+//   }, [templateId]);
+
+//   // =====================================================
+//   // HELPERS
+//   // =====================================================
+
+//   const getEventStatus =
+//     (event: any) => {
+//       const pending =
+//         event.pendingCount ||
+//         0;
+
+//       if (pending > 0) {
+//         return {
+//           label:
+//             "In Progress",
+
+//           color:
+//             "#f59e0b",
+
+//           bg:
+//             "rgba(245,158,11,0.1)",
+
+//           border:
+//             "rgba(245,158,11,0.25)",
+//         };
+//       }
+
+//       if (
+//         event.failedCount >
+//         0
+//       ) {
+//         return {
+//           label:
+//             "Has Failures",
+
+//           color:
+//             "#f87171",
+
+//           bg:
+//             "rgba(248,113,113,0.1)",
+
+//           border:
+//             "rgba(248,113,113,0.25)",
+//         };
+//       }
+
+//       return {
+//         label:
+//           "Completed",
+
+//         color:
+//           "#34d399",
+
+//         bg:
+//           "rgba(52,211,153,0.1)",
+
+//         border:
+//           "rgba(52,211,153,0.25)",
+//       };
+//     };
+
+//   const getEventTypeIcon =
+//     (
+//       category: string
+//     ) => {
+//       const lower =
+//         category?.toLowerCase() ||
+//         "";
+
+//       if (
+//         lower.includes(
+//           "wedding"
+//         )
+//       )
+//         return "💍";
+
+//       if (
+//         lower.includes(
+//           "birthday"
+//         )
+//       )
+//         return "🎂";
+
+//       if (
+//         lower.includes(
+//           "business"
+//         )
+//       )
+//         return "🏢";
+
+//       return "🎉";
+//     };
+
+//   const getSentPercentage =
+//     (event: any) => {
+//       return event.totalGuests >
+//         0
+//         ? Math.round(
+//             (event.sentCount /
+//               event.totalGuests) *
+//               100
+//           )
+//         : 0;
+//     };
+
+//   // =====================================================
+//   // STATS
+//   // =====================================================
+
+//   const statistics = [
+//     {
+//       label:
+//         "Total Events",
+
+//       value:
+//         events.length,
+
+//       isPink: false,
+//     },
+
+//     {
+//       label:
+//         "Total Guests",
+
+//       value:
+//         events.reduce(
+//           (
+//             acc: number,
+//             event: any
+//           ) =>
+//             acc +
+//             (event.totalGuests ||
+//               0),
+//           0
+//         ),
+
+//       isPink: false,
+//     },
+
+//     {
+//       label:
+//         "Invites Sent",
+
+//       value:
+//         events.reduce(
+//           (
+//             acc: number,
+//             event: any
+//           ) =>
+//             acc +
+//             (event.sentCount ||
+//               0),
+//           0
+//         ),
+
+//       isPink: true,
+//     },
+
+//     {
+//       label:
+//         "Failed",
+
+//       value:
+//         events.reduce(
+//           (
+//             acc: number,
+//             event: any
+//           ) =>
+//             acc +
+//             (event.failedCount ||
+//               0),
+//           0
+//         ),
+
+//       isPink: false,
+//     },
+//   ];
+
+//   // =====================================================
+//   // RENDER
+//   // =====================================================
+
+//   return (
+//     <>
+//       {/* BLOBS */}
+
+//       <div
+//         className={
+//           styles.blob
+//         }
+//         style={{
+//           width: 500,
+//           height: 500,
+//           left: "-10%",
+//           top: "-10%",
+//           background:
+//             "#e91e8c",
+//         }}
+//       />
+
+//       <div
+//         className={
+//           styles.blob
+//         }
+//         style={{
+//           width: 350,
+//           height: 350,
+//           right: "-8%",
+//           bottom: "10%",
+//           background:
+//             "#ff5252",
+//           animationDelay:
+//             "6s",
+//         }}
+//       />
+
+//       {/* PAGE */}
+
+//       <div
+//         className={
+//           styles.page
+//         }
+//       >
+//         <div
+//           className={
+//             styles.inner
+//           }
+//         >
+//           {/* TOPBAR */}
+
+//           <div
+//             className={
+//               styles.topbar
+//             }
+//           >
+//             <div>
+//               <h1
+//                 className={
+//                   styles.title
+//                 }
+//               >
+//                 Your{" "}
+//                 <span
+//                   className={
+//                     styles.titleHighlight
+//                   }
+//                 >
+//                   Events
+//                 </span>
+//               </h1>
+
+//               <p
+//                 className={
+//                   styles.subtitle
+//                 }
+//               >
+//                 Manage and
+//                 track all
+//                 your invite
+//                 campaigns
+//               </p>
+//             </div>
+
+//             <button
+//               className={
+//                 styles.newBtn
+//               }
+//               onClick={() =>
+//                 setOpen(
+//                   true
+//                 )
+//               }
+//             >
+//               <span
+//                 className={
+//                   styles.newBtnIcon
+//                 }
+//               >
+//                 +
+//               </span>
+
+//               New Event
+//             </button>
+//           </div>
+
+//           {/* STATS */}
+
+//           {!isLoading && (
+//             <div
+//               className={
+//                 styles.stats
+//               }
+//             >
+//               {statistics.map(
+//                 (
+//                   stat
+//                 ) => (
+//                   <div
+//                     key={
+//                       stat.label
+//                     }
+//                     className={
+//                       styles.stat
+//                     }
+//                   >
+//                     <div
+//                       className={
+//                         styles.statLabel
+//                       }
+//                     >
+//                       {
+//                         stat.label
+//                       }
+//                     </div>
+
+//                     <div
+//                       className={`${styles.statValue} ${
+//                         stat.isPink
+//                           ? styles.statValuePink
+//                           : ""
+//                       }`}
+//                     >
+//                       {
+//                         stat.value
+//                       }
+//                     </div>
+//                   </div>
+//                 )
+//               )}
+//             </div>
+//           )}
+
+//           {/* LOADING */}
+
+//           {isLoading && (
+//             <div
+//               className={
+//                 styles.loading
+//               }
+//             >
+//               <div
+//                 className={
+//                   styles.spinner
+//                 }
+//               />
+
+//               Loading
+//               events...
+//             </div>
+//           )}
+
+//           {/* EMPTY */}
+
+//           {!isLoading &&
+//             events.length ===
+//               0 && (
+//               <div
+//                 className={
+//                   styles.empty
+//                 }
+//               >
+//                 <div
+//                   className={
+//                     styles.emptyIcon
+//                   }
+//                 >
+//                   📭
+//                 </div>
+
+//                 <h2
+//                   className={
+//                     styles.emptyTitle
+//                   }
+//                 >
+//                   No events
+//                   yet
+//                 </h2>
+
+//                 <p
+//                   className={
+//                     styles.emptyText
+//                   }
+//                 >
+//                   Create your
+//                   first invite
+//                   campaign.
+//                 </p>
+
+//                 <button
+//                   className={
+//                     styles.emptyBtn
+//                   }
+//                   onClick={() =>
+//                     setOpen(
+//                       true
+//                     )
+//                   }
+//                 >
+//                   🚀 Create
+//                   First Event
+//                 </button>
+//               </div>
+//             )}
+
+//           {/* GRID */}
+
+//           {!isLoading &&
+//             events.length >
+//               0 && (
+//               <div
+//                 className={
+//                   styles.grid
+//                 }
+//               >
+//                 {events.map(
+//                   (
+//                     event: any,
+//                     index: number
+//                   ) => {
+//                     const status =
+//                       getEventStatus(
+//                         event
+//                       );
+
+//                     const sentPct =
+//                       getSentPercentage(
+//                         event
+//                       );
+
+//                     return (
+//                       <div
+//                         key={
+//                           event.id
+//                         }
+//                         className={
+//                           styles.card
+//                         }
+//                         style={{
+//                           animationDelay: `${index * 60}ms`,
+//                         }}
+//                       >
+//                         {/* HEADER */}
+
+//                         <div
+//                           className={
+//                             styles.cardTop
+//                           }
+//                         >
+//                           <div
+//                             className={
+//                               styles.cardIcon
+//                             }
+//                           >
+//                             {getEventTypeIcon(
+//                               event
+//                                 ?.template
+//                                 ?.category
+//                             )}
+//                           </div>
+
+//                           <span
+//                             className={
+//                               styles.statusBadge
+//                             }
+//                             style={{
+//                               color:
+//                                 status.color,
+
+//                               background:
+//                                 status.bg,
+
+//                               borderColor:
+//                                 status.border,
+//                             }}
+//                           >
+//                             {
+//                               status.label
+//                             }
+//                           </span>
+//                         </div>
+
+//                         {/* CONTENT */}
+
+//                         <div
+//                           className={
+//                             styles.cardType
+//                           }
+//                         >
+//                           {
+//                             event
+//                               ?.template
+//                               ?.category
+//                           }
+//                         </div>
+
+//                         <div
+//                           className={
+//                             styles.cardTemplate
+//                           }
+//                         >
+//                           {
+//                             event
+//                               ?.template
+//                               ?.title
+//                           }
+//                         </div>
+
+//                         {/* PROGRESS */}
+
+//                         <div
+//                           className={
+//                             styles.progressLabel
+//                           }
+//                         >
+//                           <span>
+//                             Delivery
+//                             progress
+//                           </span>
+
+//                           <span>
+//                             {
+//                               sentPct
+//                             }
+//                             %
+//                           </span>
+//                         </div>
+
+//                         <div
+//                           className={
+//                             styles.progressTrack
+//                           }
+//                         >
+//                           <div
+//                             className={
+//                               styles.progressFill
+//                             }
+//                             style={{
+//                               width: `${sentPct}%`,
+//                             }}
+//                           />
+//                         </div>
+
+//                         {/* PILLS */}
+
+//                         <div
+//                           className={
+//                             styles.pills
+//                           }
+//                         >
+//                           <span
+//                             className={`${styles.pill} ${styles.pillSent}`}
+//                           >
+//                             ✓{" "}
+//                             {
+//                               event.sentCount
+//                             }{" "}
+//                             sent
+//                           </span>
+
+//                           {event.failedCount >
+//                             0 && (
+//                             <span
+//                               className={`${styles.pill} ${styles.pillFailed}`}
+//                             >
+//                               ✕{" "}
+//                               {
+//                                 event.failedCount
+//                               }{" "}
+//                               failed
+//                             </span>
+//                           )}
+
+//                           {event.pendingCount >
+//                             0 && (
+//                             <span
+//                               className={`${styles.pill} ${styles.pillPending}`}
+//                             >
+//                               ⏳{" "}
+//                               {
+//                                 event.pendingCount
+//                               }{" "}
+//                               pending
+//                             </span>
+//                           )}
+
+//                           <span
+//                             className={`${styles.pill} ${styles.pillDefault}`}
+//                           >
+//                             👥{" "}
+//                             {
+//                               event.totalGuests
+//                             }{" "}
+//                             total
+//                           </span>
+//                         </div>
+
+//                         {/* BUTTON */}
+
+//                         <button
+//                           className={
+//                             styles.cardBtn
+//                           }
+//                           onClick={() =>
+//                             setSelectedEvent(
+//                               event
+//                             )
+//                           }
+//                         >
+//                           View
+//                           Details →
+//                         </button>
+//                       </div>
+//                     );
+//                   }
+//                 )}
+//               </div>
+//             )}
+//         </div>
+//       </div>
+
+//       {/* MODALS */}
+
+//       {selectedEvent && (
+//         <EventDetailsModal
+//           eventId={
+//             selectedEvent.id
+//           }
+//           onClose={() =>
+//             setSelectedEvent(
+//               null
+//             )
+//           }
+//         />
+//       )}
+
+//       {open && (
+//         <CreateEventModal
+//           templateId={
+//             templateId
+//           }
+//           onClose={() =>
+//             setOpen(false)
+//           }
+//         />
+//       )}
+//     </>
+//   );
+// }
+
+
+
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import CreateEventModal from "@/components/CreateEvent/CreateEventModal";
-import EventDetailsModal from "./EventDetailsModal";
-import { useGetEventsQuery } from "@/store/apiSlice";
-import styles from "./Events.module.css";
+import {
+  useSearchParams,
+} from "next/navigation";
 
-/**
- * Events Page Component
- * Displays user's events with delivery tracking and status
- * 
- * Features:
- * - List all events with statistics
- * - Real-time delivery tracking
- * - Event status indicators
- * - Create new events
- * - View event details
- */
+import { useRouter } from "next/navigation";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import CreateEventModal
+from "@/components/CreateEvent/CreateEventModal";
+
+import EventDetailsModal
+from "./EventDetailsModal";
+
+import {
+  useGetEventsQuery,
+} from "@/store/apiSlice";
+
+import styles
+from "./Events.module.css";
+
 export default function EventsPage() {
-  // ==================== NAVIGATION & STATE ====================
-  const params = useSearchParams();
-  const templateId = params.get("templateId");
+  const router = useRouter();
 
-  const [open, setOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const params =
+    useSearchParams();
 
-  // ==================== QUERIES ====================
-  const { data, isLoading } = useGetEventsQuery();
-  const events = data?.data || [];
+  const templateId =
+    params.get(
+      "templateId"
+    );
 
-  // ==================== EFFECTS ====================
-  /**
-   * Open create event modal if templateId is in URL
-   */
+  const [open, setOpen] =
+    useState(false);
+
+  const [
+    selectedEvent,
+    setSelectedEvent,
+  ] = useState<any>(
+    null
+  );
+
+  const {
+    data,
+    isLoading,
+  } =
+    useGetEventsQuery();
+
+  const events =
+    data?.data || [];
+
   useEffect(() => {
-    if (templateId) setOpen(true);
+    if (templateId) {
+      setOpen(true);
+    }
   }, [templateId]);
 
-  // ==================== HELPERS ====================
+  const getEventStatus =
+    (event: any) => {
+      const pending =
+        event.pendingCount ||
+        0;
 
-  /**
-   * Determine event status based on delivery progress
-   */
-  const getEventStatus = (event: any) => {
-    const pending = event.totalGuests - event.sentCount - event.failedCount;
+      if (pending > 0) {
+        return {
+          label:
+            "In Progress",
 
-    if (pending > 0) {
+          color:
+            "#f59e0b",
+
+          bg:
+            "rgba(245,158,11,0.1)",
+
+          border:
+            "rgba(245,158,11,0.25)",
+        };
+      }
+
+      if (
+        event.failedCount >
+        0
+      ) {
+        return {
+          label:
+            "Has Failures",
+
+          color:
+            "#f87171",
+
+          bg:
+            "rgba(248,113,113,0.1)",
+
+          border:
+            "rgba(248,113,113,0.25)",
+        };
+      }
+
       return {
-        label: "In Progress",
-        color: "#f59e0b",
-        bg: "rgba(245,158,11,0.1)",
-        border: "rgba(245,158,11,0.25)",
-      };
-    }
+        label:
+          "Completed",
 
-    if (event.failedCount > 0) {
-      return {
-        label: "Has Failures",
-        color: "#f87171",
-        bg: "rgba(248,113,113,0.1)",
-        border: "rgba(248,113,113,0.25)",
-      };
-    }
+        color:
+          "#34d399",
 
-    return {
-      label: "Completed",
-      color: "#34d399",
-      bg: "rgba(52,211,153,0.1)",
-      border: "rgba(52,211,153,0.25)",
+        bg:
+          "rgba(52,211,153,0.1)",
+
+        border:
+          "rgba(52,211,153,0.25)",
+      };
     };
-  };
 
-  /**
-   * Get emoji icon based on event type
-   */
-  const getEventTypeIcon = (type: string) => {
-    const lowerType = type?.toLowerCase() || "";
+  const getEventTypeIcon =
+    (
+      category: string
+    ) => {
+      const lower =
+        category?.toLowerCase() ||
+        "";
 
-    if (lowerType.includes("wedding")) return "💍";
-    if (lowerType.includes("birthday")) return "🎂";
-    if (lowerType.includes("business")) return "🏢";
-    return "🎉";
-  };
+      if (
+        lower.includes(
+          "wedding"
+        )
+      )
+        return "💍";
 
-  /**
-   * Calculate sent percentage
-   */
-  const getSentPercentage = (event: any) => {
-    return event.totalGuests > 0
-      ? Math.round((event.sentCount / event.totalGuests) * 100)
-      : 0;
-  };
+      if (
+        lower.includes(
+          "birthday"
+        )
+      )
+        return "🎂";
 
-  /**
-   * Calculate pending count
-   */
-  const getPendingCount = (event: any) => {
-    return event.totalGuests - event.sentCount - event.failedCount;
-  };
+      if (
+        lower.includes(
+          "business"
+        )
+      )
+        return "🏢";
 
-  // ==================== STATISTICS ====================
+      return "🎉";
+    };
+
+  const getSentPercentage =
+    (event: any) => {
+      return event.totalGuests >
+        0
+        ? Math.round(
+            (event.sentCount /
+              event.totalGuests) *
+              100
+          )
+        : 0;
+    };
+
   const statistics = [
     {
-      label: "Total Events",
-      value: events.length,
+      label:
+        "Total Events",
+
+      value:
+        events.length,
+
       isPink: false,
     },
+
     {
-      label: "Total Guests",
-      value: events.reduce((acc: number, event: any) => acc + event.totalGuests, 0),
+      label:
+        "Total Guests",
+
+      value:
+        events.reduce(
+          (
+            acc: number,
+            event: any
+          ) =>
+            acc +
+            (event.totalGuests ||
+              0),
+          0
+        ),
+
       isPink: false,
     },
+
     {
-      label: "Invites Sent",
-      value: events.reduce((acc: number, event: any) => acc + event.sentCount, 0),
+      label:
+        "Invites Sent",
+
+      value:
+        events.reduce(
+          (
+            acc: number,
+            event: any
+          ) =>
+            acc +
+            (event.sentCount ||
+              0),
+          0
+        ),
+
       isPink: true,
     },
+
     {
-      label: "Failed",
-      value: events.reduce((acc: number, event: any) => acc + event.failedCount, 0),
+      label:
+        "Failed",
+
+      value:
+        events.reduce(
+          (
+            acc: number,
+            event: any
+          ) =>
+            acc +
+            (event.failedCount ||
+              0),
+          0
+        ),
+
       isPink: false,
     },
   ];
 
-  // ==================== RENDER ====================
-
   return (
     <>
-      {/* Background blobs */}
       <div
-        className={styles.blob}
+        className={
+          styles.blob
+        }
         style={{
           width: 500,
           height: 500,
           left: "-10%",
           top: "-10%",
-          background: "#e91e8c",
+          background:
+            "#e91e8c",
         }}
       />
+
       <div
-        className={styles.blob}
+        className={
+          styles.blob
+        }
         style={{
           width: 350,
           height: 350,
           right: "-8%",
           bottom: "10%",
-          background: "#ff5252",
-          animationDelay: "6s",
+          background:
+            "#ff5252",
+          animationDelay:
+            "6s",
         }}
       />
 
-      <div className={styles.page}>
-        <div className={styles.inner}>
-          {/* ========== TOP BAR ========== */}
-          <div className={styles.topbar}>
+      <div
+        className={
+          styles.page
+        }
+      >
+        <div
+          className={
+            styles.inner
+          }
+        >
+          <div
+            className={
+              styles.topbar
+            }
+          >
             <div>
-              <h1 className={styles.title}>
-                Your <span className={styles.titleHighlight}>Events</span>
+              <h1
+                className={
+                  styles.title
+                }
+              >
+                Your{" "}
+                <span
+                  className={
+                    styles.titleHighlight
+                  }
+                >
+                  Events
+                </span>
               </h1>
-              <p className={styles.subtitle}>
-                Manage and track all your invite campaigns
+
+              <p
+                className={
+                  styles.subtitle
+                }
+              >
+                Manage and
+                track all
+                your invite
+                campaigns
               </p>
             </div>
-            <button className={styles.newBtn} onClick={() => setOpen(true)}>
-              <span className={styles.newBtnIcon}>+</span>
-              New Event
+
+            <button
+              className={
+                styles.newBtn
+              }
+              onClick={() => {
+                router.push('/templates');
+              }}
+            >
+              <span
+                className={
+                  styles.newBtnIcon
+                }
+              >
+                +
+              </span>
+
+              Create Event
             </button>
           </div>
 
-          {/* ========== STATISTICS ========== */}
           {!isLoading && (
-            <div className={styles.stats}>
-              {statistics.map((stat) => (
-                <div key={stat.label} className={styles.stat}>
-                  <div className={styles.statLabel}>{stat.label}</div>
+            <div
+              className={
+                styles.stats
+              }
+            >
+              {statistics.map(
+                (
+                  stat
+                ) => (
                   <div
-                    className={`${styles.statValue} ${
-                      stat.isPink ? styles.statValuePink : ""
-                    }`}
+                    key={
+                      stat.label
+                    }
+                    className={
+                      styles.stat
+                    }
                   >
-                    {stat.value}
+                    <div
+                      className={
+                        styles.statLabel
+                      }
+                    >
+                      {
+                        stat.label
+                      }
+                    </div>
+
+                    <div
+                      className={`${styles.statValue} ${
+                        stat.isPink
+                          ? styles.statValuePink
+                          : ""
+                      }`}
+                    >
+                      {
+                        stat.value
+                      }
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
 
-          {/* ========== LOADING STATE ========== */}
           {isLoading && (
-            <div className={styles.loading}>
-              <div className={styles.spinner} />
-              Loading events...
+            <div
+              className={
+                styles.loading
+              }
+            >
+              <div
+                className={
+                  styles.spinner
+                }
+              />
+
+              Loading
+              events...
             </div>
           )}
 
-          {/* ========== EMPTY STATE ========== */}
-          {!isLoading && events.length === 0 && (
-            <div className={styles.empty}>
-              <div className={styles.emptyIcon}>📭</div>
-              <h2 className={styles.emptyTitle}>No events yet</h2>
-              <p className={styles.emptyText}>
-                Create your first invite campaign. Pick a template, add guests, and send.
-              </p>
-              <button className={styles.emptyBtn} onClick={() => setOpen(true)}>
-                🚀 Create First Event
-              </button>
-            </div>
-          )}
+          {!isLoading &&
+            events.length ===
+              0 && (
+              <div
+                className={
+                  styles.empty
+                }
+              >
+                <div
+                  className={
+                    styles.emptyIcon
+                  }
+                >
+                  📭
+                </div>
 
-          {/* ========== EVENTS GRID ========== */}
-          {!isLoading && events.length > 0 && (
-            <div className={styles.grid}>
-              {events.map((event: any, index: number) => {
-                const status = getEventStatus(event);
-                const sentPct = getSentPercentage(event);
-                const pending = getPendingCount(event);
+                <h2
+                  className={
+                    styles.emptyTitle
+                  }
+                >
+                  No events
+                  yet
+                </h2>
 
-                return (
-                  <div
-                    key={event.id}
-                    className={styles.card}
-                    style={{ animationDelay: `${index * 60}ms` }}
-                  >
-                    {/* Card header */}
-                    <div className={styles.cardTop}>
-                      <div className={styles.cardIcon}>
-                        {getEventTypeIcon(event.eventType)}
-                      </div>
-                      <span
-                        className={styles.statusBadge}
+                <p
+                  className={
+                    styles.emptyText
+                  }
+                >
+                  Create your
+                  first invite
+                  campaign.
+                </p>
+
+                <button
+                  className={
+                    styles.emptyBtn
+                  }
+                  onClick={() => {
+                    router.push('/templates');
+                  }}
+                >
+                  🚀 Create
+                  First Event
+                </button>
+              </div>
+            )}
+
+          {!isLoading &&
+            events.length >
+              0 && (
+              <div
+                className={
+                  styles.grid
+                }
+              >
+                {events.map(
+                  (
+                    event: any,
+                    index: number
+                  ) => {
+                    const status =
+                      getEventStatus(
+                        event
+                      );
+
+                    const sentPct =
+                      getSentPercentage(
+                        event
+                      );
+
+                    return (
+                      <div
+                        key={
+                          event.id
+                        }
+                        className={
+                          styles.card
+                        }
                         style={{
-                          color: status.color,
-                          background: status.bg,
-                          borderColor: status.border,
+                          animationDelay: `${index * 60}ms`,
                         }}
                       >
-                        {status.label}
-                      </span>
-                    </div>
+                        <div
+                          className={
+                            styles.cardTop
+                          }
+                        >
+                          <div
+                            className={
+                              styles.cardIcon
+                            }
+                          >
+                            {getEventTypeIcon(
+                              event
+                                ?.template
+                                ?.category
+                            )}
+                          </div>
 
-                    {/* Event info */}
-                    <div className={styles.cardType}>{event.eventType}</div>
-                    <div className={styles.cardTemplate}>
-                      {event.templateName || "Custom Template"}
-                    </div>
+                          <span
+                            className={
+                              styles.statusBadge
+                            }
+                            style={{
+                              color:
+                                status.color,
 
-                    {/* Progress section */}
-                    <div className={styles.progressLabel}>
-                      <span>Delivery progress</span>
-                      <span>{sentPct}%</span>
-                    </div>
-                    <div className={styles.progressTrack}>
-                      <div
-                        className={styles.progressFill}
-                        style={{ width: `${sentPct}%` }}
-                      />
-                    </div>
+                              background:
+                                status.bg,
 
-                    {/* Status pills */}
-                    <div className={styles.pills}>
-                      <span className={`${styles.pill} ${styles.pillSent}`}>
-                        ✓ {event.sentCount} sent
-                      </span>
+                              borderColor:
+                                status.border,
+                            }}
+                          >
+                            {
+                              status.label
+                            }
+                          </span>
+                        </div>
 
-                      {event.failedCount > 0 && (
-                        <span className={`${styles.pill} ${styles.pillFailed}`}>
-                          ✕ {event.failedCount} failed
-                        </span>
-                      )}
+                        <div
+                          className={
+                            styles.cardType
+                          }
+                        >
+                          {
+                            event
+                              ?.template
+                              ?.category
+                          }
+                        </div>
 
-                      {pending > 0 && (
-                        <span className={`${styles.pill} ${styles.pillPending}`}>
-                          ⏳ {pending} pending
-                        </span>
-                      )}
+                        <div
+                          className={
+                            styles.cardTemplate
+                          }
+                        >
+                          {
+                            event
+                              ?.template
+                              ?.title
+                          }
+                        </div>
 
-                      <span className={`${styles.pill} ${styles.pillDefault}`}>
-                        👥 {event.totalGuests} total
-                      </span>
-                    </div>
+                        <div
+                          className={
+                            styles.progressLabel
+                          }
+                        >
+                          <span>
+                            Delivery
+                            progress
+                          </span>
 
-                    {/* CTA button */}
-                    <button
-                      className={styles.cardBtn}
-                      onClick={() => setSelectedEvent(event)}
-                    >
-                      View Details →
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                          <span>
+                            {
+                              sentPct
+                            }
+                            %
+                          </span>
+                        </div>
+
+                        <div
+                          className={
+                            styles.progressTrack
+                          }
+                        >
+                          <div
+                            className={
+                              styles.progressFill
+                            }
+                            style={{
+                              width: `${sentPct}%`,
+                            }}
+                          />
+                        </div>
+
+                        <div
+                          className={
+                            styles.pills
+                          }
+                        >
+                          <span
+                            className={`${styles.pill} ${styles.pillSent}`}
+                          >
+                            ✓{" "}
+                            {
+                              event.sentCount
+                            }{" "}
+                            sent
+                          </span>
+
+                          {event.failedCount >
+                            0 && (
+                            <span
+                              className={`${styles.pill} ${styles.pillFailed}`}
+                            >
+                              ✕{" "}
+                              {
+                                event.failedCount
+                              }{" "}
+                              failed
+                            </span>
+                          )}
+
+                          {event.pendingCount >
+                            0 && (
+                            <span
+                              className={`${styles.pill} ${styles.pillPending}`}
+                            >
+                              ⏳{" "}
+                              {
+                                event.pendingCount
+                              }{" "}
+                              pending
+                            </span>
+                          )}
+
+                          <span
+                            className={`${styles.pill} ${styles.pillDefault}`}
+                          >
+                            👥{" "}
+                            {
+                              event.totalGuests
+                            }{" "}
+                            total
+                          </span>
+                        </div>
+
+                        <button
+                          className={
+                            styles.cardBtn
+                          }
+                          onClick={() =>
+                            setSelectedEvent(
+                              event
+                            )
+                          }
+                        >
+                          View
+                          Details →
+                        </button>
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            )}
         </div>
       </div>
 
-      {/* ========== MODALS ========== */}
       {selectedEvent && (
         <EventDetailsModal
-          eventId={selectedEvent.id}
-          onClose={() => setSelectedEvent(null)}
+          eventId={
+            selectedEvent.id
+          }
+          onClose={() =>
+            setSelectedEvent(
+              null
+            )
+          }
         />
       )}
+
       {open && (
-        <CreateEventModal templateId={templateId} onClose={() => setOpen(false)} />
+        <CreateEventModal
+          templateId={
+            templateId
+          }
+          onClose={() =>
+            setOpen(false)
+          }
+        />
       )}
     </>
   );

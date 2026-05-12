@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 appleWebApp: {
   capable: true,
   statusBarStyle: "black-translucent",
-  title: "పిloopu",
+  title: "పిlooopu",
 },
 };
 

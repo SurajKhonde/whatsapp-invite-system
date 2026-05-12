@@ -1,50 +1,205 @@
-import cloudinary from "cloudinary";
-import { Readable } from "stream";
 
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  timeout: 60000, // ✅ 60 seconds timeout
-});
+import { Readable }
+from "stream";
 
-export const saveCloudinaryImage = (
-  buffer: Buffer,
-  retries = 3
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const attempt = (triesLeft: number) => {
-      console.log(`Cloudinary upload attempt... (${4 - triesLeft}/3)`);
+import cloudinary
+from "@config/cloudinary";
 
-      const uploadStream = cloudinary.v2.uploader.upload_stream(
-        {
-          folder: "invites",
-          resource_type: "image",
-          format: "png",
-          timeout: 60000, // ✅ also set per-request
-        },
-        (error, result) => {
-          if (error) {
-            console.error(`Cloudinary attempt failed:`, error.message);
+import { logger }
+from "@core/logger/logger";
 
-            if (triesLeft > 1) {
-              console.log(`Retrying... ${triesLeft - 1} attempts left`);
-              setTimeout(() => attempt(triesLeft - 1), 2000); // wait 2s before retry
-            } else {
-              console.error("All Cloudinary attempts exhausted");
-              reject(error);
-            }
-            return;
+export interface CloudinaryUploadResult {
+  secureUrl: string;
+
+  publicId: string;
+
+  width?: number;
+
+  height?: number;
+
+  bytes?: number;
+}
+
+/**
+ * ============================================
+ * SAVE IMAGE TO CLOUDINARY
+ * ============================================
+ */
+
+export const saveCloudinaryImage =
+  async (
+    buffer: Buffer,
+
+    options?: {
+      folder?: string;
+
+      fileName?: string;
+
+      retries?: number;
+    }
+  ): Promise<CloudinaryUploadResult> => {
+    const folder =
+      options?.folder || "mahfil";
+
+    const retries =
+      options?.retries || 3;
+
+    const fileName =
+      options?.fileName;
+
+    const upload =
+      (
+        triesLeft: number
+      ): Promise<CloudinaryUploadResult> => {
+        return new Promise(
+          (
+            resolve,
+            reject
+          ) => {
+            logger.info(
+              {
+                retriesLeft:
+                  triesLeft,
+              },
+
+              "☁️ Cloudinary upload started"
+            );
+
+            const uploadStream =
+              cloudinary.uploader.upload_stream(
+                {
+                  folder,
+
+                  resource_type:
+                    "image",
+
+                  format:
+                    "png",
+
+                  public_id:
+                    fileName,
+
+                  timeout:
+                    60000,
+                },
+
+                (
+                  error,
+
+                  result
+                ) => {
+                  // ======================
+                  // ERROR
+                  // ======================
+
+                  if (
+                    error
+                  ) {
+                    logger.error(
+                      {
+                        error:
+                          error.message,
+
+                        triesLeft,
+                      },
+
+                      "❌ Cloudinary upload failed"
+                    );
+
+                    if (
+                      triesLeft > 1
+                    ) {
+                      logger.info(
+                        {},
+                        "🔁 Retrying upload"
+                      );
+
+                      return setTimeout(
+                        async () => {
+                          try {
+                            const retryResult =
+                              await upload(
+                                triesLeft - 1
+                              );
+
+                            resolve(
+                              retryResult
+                            );
+                          } catch (
+                            retryError
+                          ) {
+                            reject(
+                              retryError
+                            );
+                          }
+                        },
+
+                        2000
+                      );
+                    }
+
+                    return reject(
+                      error
+                    );
+                  }
+
+                  // ======================
+                  // SAFETY
+                  // ======================
+
+                  if (
+                    !result
+                  ) {
+                    return reject(
+                      new Error(
+                        "Cloudinary upload returned empty result"
+                      )
+                    );
+                  }
+
+                  logger.info(
+                    {
+                      secureUrl:
+                        result.secure_url,
+
+                      publicId:
+                        result.public_id,
+                    },
+
+                    "✅ Cloudinary upload success"
+                  );
+
+                  // ======================
+                  // SUCCESS
+                  // ======================
+
+                  resolve({
+                    secureUrl:
+                      result.secure_url,
+
+                    publicId:
+                      result.public_id,
+
+                    width:
+                      result.width,
+
+                    height:
+                      result.height,
+
+                    bytes:
+                      result.bytes,
+                  });
+                }
+              );
+
+            Readable
+              .from(buffer)
+              .pipe(uploadStream);
           }
+        );
+      };
 
-          console.log("Cloudinary upload OK:", result?.secure_url);
-          resolve(result!.secure_url);
-        }
-      );
-
-      Readable.from(buffer).pipe(uploadStream);
-    };
-
-    attempt(retries);
-  });
-};
+    return upload(
+      retries
+    );
+  };
