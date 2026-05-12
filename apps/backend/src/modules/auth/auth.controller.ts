@@ -7,9 +7,10 @@ import {
   forgotPasswordService,
   changePasswordService,
   resetNewPassword,
+  getMeService,
 } from "./auth.service";
 import { sendResponse } from "@utils/response";
-
+import {invalidateUserCache} from "@utils/invalidateRedis"
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -18,7 +19,11 @@ const cookieOptions = {
 };
 
 // ✅ SIGNUP
-export const signupController = async (req: Request, res: Response, next: NextFunction) => {
+export const signupController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await signupService(req.body);
 
@@ -38,7 +43,11 @@ export const signupController = async (req: Request, res: Response, next: NextFu
 };
 
 // ✅ VERIFY OTP
-export const verifyOtpController = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyOtpController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await verifyOtpService(req.body);
 
@@ -52,7 +61,11 @@ export const verifyOtpController = async (req: Request, res: Response, next: Nex
 };
 
 // ✅ RESEND OTP
-export const resendOtpController = async (req: Request, res: Response, next: NextFunction) => {
+export const resendOtpController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await resendOtpService(req.body);
 
@@ -66,7 +79,11 @@ export const resendOtpController = async (req: Request, res: Response, next: Nex
 };
 
 // ✅ LOGIN
-export const loginController = async (req: Request, res: Response, next: NextFunction) => {
+export const loginController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await loginService(req.body);
 
@@ -77,6 +94,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 
     return sendResponse({
       res,
+      statusCode: 200,
       ...result,
     });
   } catch (err) {
@@ -85,7 +103,11 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 };
 
 // ✅ FORGOT PASSWORD
-export const forgotPasswordController = async (req: Request, res: Response, next: NextFunction) => {
+export const forgotPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await forgotPasswordService(req.body);
 
@@ -99,9 +121,29 @@ export const forgotPasswordController = async (req: Request, res: Response, next
 };
 
 // ✅ CHANGE PASSWORD
-export const changePasswordController = async (req: Request, res: Response, next: NextFunction) => {
+// ⚠️ PROTECTED ROUTE - Requires authentication
+export const changePasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const result = await changePasswordService(req.body);
+    // ✅ Extract userId from auth middleware
+    const userId = (req as any).user?.userId;
+    
+    if (!userId) {
+      return sendResponse({
+        res,
+        statusCode: 401,
+        message: "Unauthorized - User ID not found",
+        notify: true,
+      });
+    }
+
+    const result = await changePasswordService({
+      ...req.body,
+      userId, // ← Pass extracted userId
+    });
 
     return sendResponse({
       res,
@@ -113,7 +155,12 @@ export const changePasswordController = async (req: Request, res: Response, next
 };
 
 // ✅ RESET PASSWORD
-export const resetPasswordController = async (req: Request, res: Response, next: NextFunction) => {
+// For forgot password flow (after OTP verified)
+export const resetPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const result = await resetNewPassword(req.body);
 
@@ -127,22 +174,76 @@ export const resetPasswordController = async (req: Request, res: Response, next:
 };
 
 // ✅ LOGOUT
-export const logoutController = (req: Request, res: Response) => {
-  res.clearCookie("access_token", cookieOptions);
-
-  return sendResponse({
-    res,
-    message: "Logged out successfully",
-    notify: true,
-  });
+// ⚠️ PROTECTED ROUTE - Requires authentication
+export const logoutController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).user?.userId;
+ 
+     if (!userId) {
+      return sendResponse({
+        res,
+        statusCode: 401,
+        message: "Unauthorized - User ID not found",
+        notify: true,
+      });
+    }
+ 
+    // ✅ CLEAR USER CACHE FROM REDIS
+    // Remove the user's verification cache so it can't be reused
+    await invalidateUserCache(userId);
+ 
+    console.log(`✅ User ${userId} logged out - cache cleared`);
+ 
+    // ✅ CLEAR HTTPONLY COOKIE
+    // Backend clears the cookie by sending empty value
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+ 
+    // ✅ RETURN SUCCESS
+    res.json({
+      message: "Logged out successfully",
+      data: { success: true },
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-// ✅ GET ME (NO TOAST 🔥)
-export const getMe = (req: Request, res: Response) => {
-  return sendResponse({
-    res,
-    message: "User fetched",
-    data: req.user,
-    notify: false,
-  });
+export const getMeController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // ✅ Extract userId from auth middleware
+    const userId = (req as any).user?.userId;
+
+    if (!userId) {
+      return sendResponse({
+        res,
+        statusCode: 401,
+        message: "Unauthorized - User ID not found",
+        notify: true,
+      });
+    }
+
+    // ✅ Call service with userId
+    const result = await getMeService(userId);
+
+    return sendResponse({
+      res,
+      statusCode: 200,
+      ...result,
+    });
+  } catch (err) {
+    next(err);
+  }
 };

@@ -743,7 +743,7 @@ import {
 
 import styles
 from "./Events.module.css";
-
+import VerificationBanner from "@/components/VerificationBanner-Simple"
 export default function EventsPage() {
   const router = useRouter();
 
@@ -951,6 +951,7 @@ export default function EventsPage() {
 
   return (
     <>
+    <VerificationBanner/>
       <div
         className={
           styles.blob

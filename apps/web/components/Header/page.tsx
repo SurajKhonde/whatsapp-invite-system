@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 import styles from "./header.module.css";
 
 export default function Header() {
   const pathname = usePathname();
+  const { isConnected, isChecking } = useConnectionMonitor();
 
   const navItems = [
     { name: "Home", path: "/dashboard", icon: "⌂" },
@@ -18,7 +20,7 @@ export default function Header() {
       <div className={styles.inner}>
         {/* Logo */}
         <Link href="/dashboard" className={styles.logo}>
-          <span className={styles.logoP}>పి</span>
+          <span className={styles.logoP}>పി</span>
           <span className={styles.logoRest}>looopu</span>
         </Link>
 
@@ -38,10 +40,26 @@ export default function Header() {
 
         {/* Right */}
         <div className={styles.right}>
-          <div className={styles.live}>
-            <div className={styles.dot} />
-            Live
+          {/* STATUS INDICATOR WITH GLOW */}
+          <div className={styles.statusContainer}>
+            {isChecking ? (
+              <div className={styles.statusChecking}>
+                <span className={`${styles.statusDot} ${styles.dotAnimating}`} />
+                <span className={styles.statusText}>Checking...</span>
+              </div>
+            ) : isConnected ? (
+              <div className={styles.statusOnline}>
+                <span className={styles.statusDot} />
+                <span className={styles.statusText}>Live</span>
+              </div>
+            ) : (
+              <div className={styles.statusOffline}>
+                <span className={styles.statusDot} />
+                <span className={styles.statusText}>Server Down</span>
+              </div>
+            )}
           </div>
+
           <Link href="/logout" className={styles.logout}>
             ↩ Logout
           </Link>

@@ -32,7 +32,7 @@ export default function GlobalError({
   };
 
   const mailBody = encodeURIComponent(
-    `Hi Pilupoo Support,\n\nI ran into an issue on the app.\n\nError: ${error.message}\nDigest: ${error.digest || "N/A"}\nPage: ${typeof window !== "undefined" ? window.location.href : ""}\nTime: ${new Date().toISOString()}\n\nPlease help!`
+    `Hi పిlooopu Support,\n\nI ran into an issue on the app.\n\nError: ${error.message}\nDigest: ${error.digest || "N/A"}\nPage: ${typeof window !== "undefined" ? window.location.href : ""}\nTime: ${new Date().toISOString()}\n\nPlease help!`
   );
 
   return (

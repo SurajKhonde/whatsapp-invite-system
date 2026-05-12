@@ -8,7 +8,7 @@ import { useAddGuestsMutation, useGetGuestsQuery } from "@/store/apiSlice";
 import { GuestInput, Relation } from "@/types/guest";
 import styles from "./Dashboard.module.css";
 
-
+import VerificationBanner from "@/components/VerificationBanner-Simple";
 export default function Dashboard() {
   // ==================== STATE ====================
   const [draftGuests, setDraftGuests] = useState<GuestInput[]>([]);
@@ -86,6 +86,7 @@ export default function Dashboard() {
 
   return (
     <div className={styles.page}>
+      <VerificationBanner />
       <div className={styles.inner}>
         {/* ========== TOP BAR ========== */}
         <div className={styles.topbar}>
@@ -97,7 +98,7 @@ export default function Dashboard() {
               Add and manage guests for your events
             </div>
           </div>
-          <div className={styles.badge}>💌 Pilupoo Dashboard</div>
+          <div className={styles.badge}>💌 పిlooopu Dashboard</div>
         </div>
 
         {/* ========== STATISTICS CARDS ========== */}

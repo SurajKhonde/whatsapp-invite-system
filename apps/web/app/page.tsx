@@ -142,7 +142,7 @@ export default function LandingPage() {
         <div className={styles.heroContent}>
           <div className={styles.badge}>
             <span>💌</span>
-            <span>పిలుపు (Pilupoo) — Invitation in Telugu</span>
+            <span>పిలుపు (పిlooopu) — Invitation in Telugu</span>
           </div>
 
           <h1 className={styles.heroTitle}>
@@ -190,7 +190,7 @@ export default function LandingPage() {
       <section className={styles.featuresSection}>
         <Reveal>
           <div className={styles.sectionHeader}>
-            <p className={styles.sectionLabel}>Why Pilupoo</p>
+            <p className={styles.sectionLabel}>Why పిlooopu</p>
             <h2 className={styles.sectionTitle}>
               Everything you need to
               <br />
@@ -249,7 +249,7 @@ export default function LandingPage() {
           <Reveal>
             <div className={styles.sectionHeader}>
               <p className={styles.sectionLabel}>Simple as 1-2-3</p>
-              <h2 className={styles.sectionTitle}>How Pilupoo Works</h2>
+              <h2 className={styles.sectionTitle}>How పిlooopu Works</h2>
             </div>
           </Reveal>
 
@@ -405,7 +405,7 @@ export default function LandingPage() {
               ))}
             </div>
             <p className={styles.calculatorNote}>
-              Compare: Printing + courier for 500 cards = ₹5,000+. Pilupoo = ₹300. 🙂
+              Compare: Printing + courier for 500 cards = ₹5,000+. పిlooopu = ₹300. 🙂
             </p>
           </div>
         </Reveal>
@@ -433,7 +433,7 @@ export default function LandingPage() {
                 language problem — it's an India problem.
               </p>
               <p className={styles.aboutPara}>
-                The name Pilupoo comes from పిలుపు — the Telugu word for "invitation." We chose it
+                The name పిlooopu comes from పిలుపు — the Telugu word for "invitation." We chose it
                 because across every language in India, the meaning is the same:{" "}
                 <em>you are called, you are welcome, you belong here.</em>
               </p>
@@ -469,7 +469,7 @@ export default function LandingPage() {
                 {
                   icon: "💌",
                   title: "Telugu Roots, Indian Soul",
-                  desc: "Pilupoo = పిలుపు = Invitation. The name is Telugu. The product is for every Indian.",
+                  desc: "పిlooopu = పిలుపు = Invitation. The name is Telugu. The product is for every Indian.",
                 },
                 {
                   icon: "🛠",
@@ -507,7 +507,7 @@ export default function LandingPage() {
             {
               name: "Ramesh Kumar",
               role: "School Principal, Bangalore",
-              text: "We use Pilupoo for every annual day and parent meeting. 600 parents, all notified instantly. Game changer.",
+              text: "We use పిlooopu for every annual day and parent meeting. 600 parents, all notified instantly. Game changer.",
               avatar: "🎓",
             },
             {
@@ -624,7 +624,7 @@ export default function LandingPage() {
 
         <div className={styles.footerBottom}>
           <p className={styles.footerCopy}>
-            © 2025 Pilupoo. Built with ❤️ in Bangalore, India.
+            © 2025 పిlooopu. Built with ❤️ in Bangalore, India.
           </p>
           <div className={styles.footerStatus}>
             <div className={styles.statusDot} />

@@ -1,21 +1,35 @@
-import { Router } from "express";
-import { addGuests, getGuests,revealController } from "./guest.controller";
-import {authMiddleware} from "@middlewares/auth.middleware";
-import { rateLimiter } from "@middlewares/rateLimiter";
-const router = Router();
+// src/modules/guest/guest.routes.ts
 
-router.post("/bulk",authMiddleware, addGuests);
-router.get("/", authMiddleware, getGuests);
+import { Router } from "express";
+import { addGuests, getGuests, revealController } from "./guest.controller";
+import { authMiddleware } from "@middlewares/auth.middleware";
+import { verifyUserMiddleware } from "@middlewares/verifyuser.middleware";
+import { rateLimiter} from "@middlewares/enhancedratelimiter.middleware";
+
+const router = Router();
 
 
 router.post(
+  "/bulk",
+  authMiddleware,                   
+  verifyUserMiddleware,             
+  rateLimiter("EVENT", "addGuest"),
+  addGuests                        
+);
+
+
+router.get(
+  "/",
+  authMiddleware,                        
+  rateLimiter("EVENT", "list"),   
+  getGuests                       
+);
+
+router.post(
   "/guests/reveal",
-  rateLimiter({
-    limit: 5,         
-    windowSec: 60,     
-    keyPrefix: "rate:reveal",
-  }),
-  revealController
+  authMiddleware,
+  rateLimiter("EVENT", "addGuest"), 
+  revealController                  
 );
 
 export default router;

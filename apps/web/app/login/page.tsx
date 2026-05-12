@@ -1,13 +1,17 @@
-"use client";
 
+"use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLoginMutation } from "Store/apiSlice";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store/store";
+import { useLoginMutation } from "@/store/apiSlice";
+import { setUser, setAuthenticated } from "@/store/slices/authSlice";
 import { getErrorMessage } from "@/lib/errors";
 import styles from "./LoginPage.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,14 +43,32 @@ export default function LoginPage() {
     }
 
     if (!validatePassword(password)) {
-      return setError("Password must be 8+ chars, include uppercase, number & special char");
+      return setError(
+        "Password must be 8+ chars, include uppercase, number & special char"
+      );
     }
 
     try {
-      await login({
+      const response = await login({
         email,
         password,
       }).unwrap();
+
+      if (response?.data?.user) {
+        dispatch(
+          setUser({
+            userId: response.data.user.id,
+            email: response.data.user.email,
+            name: response.data.user.name,
+            role: response.data.user.role || "user",
+            isEmailVerified: response.data.user.isEmailVerified || false,
+            isActive: response.data.user.isActive || true,
+            profileImageUrl: response.data.user.profileImageUrl,
+          })
+        );
+
+        dispatch(setAuthenticated(true));
+      }
 
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -103,7 +125,7 @@ export default function LoginPage() {
           <div className={styles.badgeWrap}>
             <div className={styles.badge}>
               <span>💌</span>
-              <span>Welcome back to Pilupoo</span>
+              <span>Welcome back to పిlooopu</span>
             </div>
           </div>
 
@@ -130,6 +152,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                autoComplete="email"
               />
             </div>
 
@@ -143,6 +166,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -170,7 +194,7 @@ export default function LoginPage() {
               onClick={handleLogin}
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Login to Pilupoo →"}
+              {isLoading ? "Signing in..." : "Login to పిlooopu →"}
             </button>
 
             {/* Divider */}

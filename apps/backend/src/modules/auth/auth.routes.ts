@@ -8,45 +8,71 @@ import {
   resetPasswordController,
   changePasswordController,
   logoutController,
-  getMe
+  getMeController
 } from "./auth.controller";
-import { rateLimiter } from "@middlewares/rateLimiter";
 import { authMiddleware } from "@middlewares/auth.middleware";
 import { validateSignup } from "@middlewares/validate.middleware";
+import { rateLimiter  } from "@middlewares/enhancedratelimiter.middleware";
 const router = Router();
+router.post(
+  "/signup",
+  rateLimiter("AUTH", "signup"), 
+  validateSignup,
+  signupController
+);
+router.post(
+  "/login",
+  rateLimiter("AUTH", "login"), 
+  loginController
+);
 
-router.post("/signup", validateSignup, signupController);
 
-router.post("/verify-otp",rateLimiter({
-    limit: 3,
-    windowSec: 60,
-    keyPrefix: "verify:otp",
-  }), verifyOtpController);
+router.post(
+  "/verify-otp",
+  rateLimiter("AUTH", "verifyOtp"),
+  verifyOtpController
+);
 
-router.post("/resend-otp",  rateLimiter({
-    limit: 3,
-    windowSec: 600,
-    keyPrefix: "rate:otp",
-  }),resendOtpController);
+router.post(
+  "/resend-otp",
+  rateLimiter("AUTH", "signup"), 
+  resendOtpController
+);
 
-router.post("/login",  rateLimiter({
-    limit: 5,
-    windowSec: 300,
-    keyPrefix: "rate:login",
-  }),loginController);
-router.get("/me", authMiddleware, getMe);
-router.post("/forgot-password", rateLimiter({
-    limit: 5,
-    windowSec: 60,
-    keyPrefix: "rate:forgot-password",
-  }),forgotPasswordController);
-router.post("/reset-password",rateLimiter({
-    limit: 4,
-    windowSec: 60,
-    keyPrefix: "verify:otp",
-  }), resetPasswordController);
-router.post("/reset-old-password",authMiddleware, changePasswordController);
 
-router.post("/logout", authMiddleware, logoutController);
+router.post(
+  "/forgot-password",
+  rateLimiter("AUTH", "forgotPassword"), 
+  forgotPasswordController
+);
+
+router.post(
+  "/reset-password",
+  rateLimiter("AUTH", "resetPassword"),
+  resetPasswordController
+);
+
+
+router.get(
+  "/me",
+  authMiddleware,
+  rateLimiter("GENERAL", "default"), 
+  getMeController
+);
+
+
+router.post(
+  "/reset-old-password",
+  authMiddleware,
+  rateLimiter("AUTH", "resetPassword"),
+  changePasswordController
+);
+
+router.post(
+  "/logout",
+  authMiddleware,
+  rateLimiter("GENERAL", "default"),
+  logoutController
+);
 
 export default router;

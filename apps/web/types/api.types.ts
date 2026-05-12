@@ -2,11 +2,19 @@ export interface ApiErrorResponse {
   message?: string;
 }
 
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  role: "user" | "admin";
+  isEmailVerified: boolean;
+  isActive: boolean;
+  profileImageUrl?: string | null;
+};
+
 export type MeResponse = {
   success: boolean;
+  message: string;
   data: User;
-};
-export type User = {
-  userId: string;
-  role: "user" | "admin";
+  notify: boolean;
 };

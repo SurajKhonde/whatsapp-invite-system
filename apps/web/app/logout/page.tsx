@@ -135,7 +135,7 @@ export default function LogoutPage() {
             />
 
             <p className={styles.hint}>
-              Your feedback shapes Pilupoo's roadmap 🛠
+              Your feedback shapes పిlooopu's roadmap 🛠
             </p>
 
             {/* Buttons */}
@@ -159,7 +159,7 @@ export default function LogoutPage() {
           {/* Footer message */}
           <div className={`${styles.message} ${styles.fadeUp4}`}>
             <p>
-              Thanks for being part of Pilupoo ❤️
+              Thanks for being part of పిlooopu ❤️
               <br />
               Your moments matter. Come back anytime.
             </p>
@@ -170,7 +170,7 @@ export default function LogoutPage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
-          © 2025 Pilupoo. Built with ❤️ in Bangalore.
+          © 2025 పిlooopu. Built with ❤️ in Bangalore.
         </p>
         <div className={styles.statusGroup}>
           <div className={styles.statusLight} />

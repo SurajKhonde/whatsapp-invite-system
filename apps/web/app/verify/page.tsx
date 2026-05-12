@@ -1,15 +1,21 @@
-"use client";
 
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useVerifyOtpMutation, useResendOtpMutation } from "@/store/apiSlice";
 import styles from "./Verify.module.css";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store/store";
+import { setUser, setError as setAuthError } from "@/store/slices/authSlice";
+import { getErrorMessage } from "@/lib/errors";
 
 type Purpose = "signup" | "forgot-password";
 
 export default function VerifyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dispatch = useDispatch<AppDispatch>();
+
   const email = searchParams.get("email");
   const purpose = searchParams.get("purpose") as Purpose;
 
@@ -17,11 +23,17 @@ export default function VerifyPage() {
   const [resendOtp, { isLoading: resendLoading }] = useResendOtpMutation();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [timer, setTimer] = useState(40);
   const [resendCount, setResendCount] = useState(true);
   const [mounted, setMounted] = useState(false);
+  
+  // ✅ NEW: Track failed attempts
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  // ✅ NEW: Show "Continue without verification" after 3 failed attempts
+  const MAX_FAILED_ATTEMPTS = 3;
+  const showContinueButton = failedAttempts >= MAX_FAILED_ATTEMPTS;
 
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -56,7 +68,10 @@ export default function VerifyPage() {
     inputsRef.current[0]?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
@@ -65,21 +80,50 @@ export default function VerifyPage() {
   const handleVerify = async () => {
     const finalOtp = otp.join("");
     if (finalOtp.length < 6) {
-      setError(true);
+      setError("");
       return;
     }
 
     try {
-      await verifyOtp({ email: email!, otp: finalOtp, purpose }).unwrap();
+      const response = await verifyOtp({
+        email: email!,
+        otp: finalOtp,
+        purpose,
+      }).unwrap();
+
+      // ✅ Email verified successfully
+      if (response?.data?.user) {
+        dispatch(
+          setUser({
+            userId: response.data.user.id,
+            email: response.data.user.email,
+            name: response.data.user.name,
+            role: response.data.user.role || "user",
+            isEmailVerified: response.data.user.isEmailVerified,
+            isActive: response.data.user.isActive || true,
+            profileImageUrl: response.data.user.profileImageUrl,
+          })
+        );
+      }
+
       setIsVerified(true);
       resetOtpState();
+
       setTimeout(() => {
         if (purpose === "signup") router.replace("/dashboard");
         else if (purpose === "forgot-password")
           router.replace(`/reset-new-password?email=${email}`);
       }, 1500);
     } catch (err) {
-      setError(true);
+      // ✅ OTP verification failed
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      dispatch(setAuthError(errorMessage));
+
+      // ✅ Track failed attempts
+      setFailedAttempts((prev) => prev + 1);
+
+      // Reset OTP input
       resetOtpState();
     }
   };
@@ -88,14 +132,24 @@ export default function VerifyPage() {
     try {
       await resendOtp({ email: email!, purpose }).unwrap();
       setResendCount(true);
+      setFailedAttempts(0); // ✅ Reset attempts when resending
       resetOtpState();
       setTimer(40);
+      setError(""); // Clear any previous errors
     } catch (err: any) {
       if (err?.status === 429) setResendCount(false);
     }
   };
 
-  const handleSkip = () => router.replace("/dashboard");
+  const handleContinueWithoutVerification = () => {
+
+    if (purpose === "signup") {
+      router.replace("/dashboard");
+    } else if (purpose === "forgot-password") {
+
+      router.replace("/login");
+    }
+  };
 
   const timerPct = (timer / 40) * 100;
   const circumference = 2 * Math.PI * 20;
@@ -136,7 +190,8 @@ export default function VerifyPage() {
           position: "absolute",
           inset: 0,
           opacity: 0.04,
-          backgroundImage: "radial-gradient(circle, #f5f0ff 1px, transparent 1px)",
+          backgroundImage:
+            "radial-gradient(circle, #f5f0ff 1px, transparent 1px)",
           backgroundSize: "40px 40px",
           pointerEvents: "none",
         }}
@@ -199,7 +254,9 @@ export default function VerifyPage() {
                   <span className={styles.shimmering}>Enter your</span>
                   <br />
                   <span className={styles.subtitle}>
-                    {purpose === "signup" ? "verification code" : "reset code"}
+                    {purpose === "signup"
+                      ? "verification code"
+                      : "reset code"}
                   </span>
                 </h1>
               </div>
@@ -222,11 +279,13 @@ export default function VerifyPage() {
                         maxLength={1}
                         value={digit}
                         onChange={(e) => {
-                          setError(false);
+                          setError("");
                           handleChange(e.target.value, i);
                         }}
                         onKeyDown={(e) => handleKeyDown(e, i)}
-                        className={`${styles.otpInput} ${error ? styles.otpError : digit ? styles.otpFilled : ""}`}
+                        className={`${styles.otpInput} ${
+                          error ? styles.otpError : digit ? styles.otpFilled : ""
+                        }`}
                       />
                     ))}
                   </div>
@@ -236,6 +295,13 @@ export default function VerifyPage() {
                     <div className={styles.errorMessage}>
                       <span>⚠</span>
                       <span>Invalid OTP — please try again</span>
+                    </div>
+                  )}
+                  {failedAttempts > 0 && failedAttempts < MAX_FAILED_ATTEMPTS && (
+                    <div className={styles.attemptCount}>
+                      {MAX_FAILED_ATTEMPTS - failedAttempts} attempt
+                      {MAX_FAILED_ATTEMPTS - failedAttempts !== 1 ? "s" : ""}{" "}
+                      remaining
                     </div>
                   )}
                 </div>
@@ -268,7 +334,11 @@ export default function VerifyPage() {
                   {timer > 0 ? (
                     <div className={styles.timerContainer}>
                       <div className={styles.timerRing}>
-                        <svg width="52" height="52" style={{ transform: "rotate(-90deg)" }}>
+                        <svg
+                          width="52"
+                          height="52"
+                          style={{ transform: "rotate(-90deg)" }}
+                        >
                           <circle
                             cx="26"
                             cy="26"
@@ -285,14 +355,19 @@ export default function VerifyPage() {
                             stroke="#e91e8c"
                             strokeWidth="3"
                             strokeDasharray={circumference}
-                            strokeDashoffset={circumference - (timerPct / 100) * circumference}
+                            strokeDashoffset={
+                              circumference -
+                              (timerPct / 100) * circumference
+                            }
                             strokeLinecap="round"
                             style={{ transition: "stroke-dashoffset 1s linear" }}
                           />
                         </svg>
                         <div className={styles.timerText}>{timer}</div>
                       </div>
-                      <p className={styles.timerLabel}>Resend available in {timer}s</p>
+                      <p className={styles.timerLabel}>
+                        Resend available in {timer}s
+                      </p>
                     </div>
                   ) : resendCount ? (
                     <button
@@ -310,11 +385,26 @@ export default function VerifyPage() {
                       )}
                     </button>
                   ) : (
+                    // ✅ NEW: Show this after 3 failed attempts or resend limit
                     <div className={styles.skipSection}>
-                      <p className={styles.skipText}>Not receiving the code?</p>
-                      <button className={styles.skipBtn} onClick={handleSkip}>
-                        Continue anyway →
+                      <p className={styles.skipText}>
+                        {showContinueButton
+                          ? "Can't verify now?"
+                          : "Not receiving the code?"}
+                      </p>
+                      <button
+                        className={styles.skipBtn}
+                        onClick={handleContinueWithoutVerification}
+                      >
+                        {showContinueButton
+                          ? "Continue anyway →"
+                          : "Continue to dashboard →"}
                       </button>
+                      {showContinueButton && (
+                        <p className={styles.skipSubtext}>
+                          You can verify email anytime from dashboard banner
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -341,7 +431,7 @@ export default function VerifyPage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
-          © 2025 Pilupoo. Built with ❤️ in Bangalore.
+          © 2025 పిlooopu. Built with ❤️ in Bangalore.
         </p>
         <div className={styles.statusGroup}>
           <div className={styles.statusLight} />

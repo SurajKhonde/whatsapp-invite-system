@@ -3,12 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSignupMutation } from "Store/apiSlice";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store/store";
 import { getErrorMessage } from "@/lib/errors";
+import {
+  setLoading,
+  setError as setAuthError,
+} from "@/store/slices/authSlice";
 import styles from "./signup.module.css";
 
 export default function SignupPage() {
   const router = useRouter();
-
+ const dispatch = useDispatch<AppDispatch>();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,24 +34,35 @@ export default function SignupPage() {
 
   const handleSignup = async () => {
     setError("");
+    dispatch(setLoading(true));
 
     if (!name || !email || !password) {
-      return setError("All fields are required");
+       setError("All fields are required");
+       dispatch(setLoading(false));
+       return;
     }
 
     if (!validateEmail(email)) {
-      return setError("Invalid email format");
+      setError("Invalid email format");
+      dispatch(setLoading(false));
+      return;
     }
 
-    if (!validatePassword(password)) {
-      return setError("Password must be 8+ chars, include uppercase, number & special char");
+     if (!validatePassword(password)) {
+      setError("Password must be 8+ chars, include uppercase, number & special char");
+      dispatch(setLoading(false));
+      return;
     }
 
     try {
       await signup({ name, email, password, role: "user" }).unwrap();
       router.replace(`/verify?email=${encodeURIComponent(email)}&purpose=signup`);
     } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      dispatch(setAuthError(errorMessage));
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -117,7 +134,7 @@ export default function SignupPage() {
           <div className={styles.fadeUp1}>
             <div className={styles.badge}>
               <span>🚀</span>
-              <span>Join thousands sending invites with Pilupoo</span>
+              <span>Join thousands sending invites with పిlooopu</span>
             </div>
           </div>
 
@@ -244,7 +261,7 @@ export default function SignupPage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p className={styles.footerText}>
-          © 2025 Pilupoo. Built with ❤️ in Bangalore.
+          © 2025 పిlooopu. Built with ❤️ in Bangalore.
         </p>
         <div className={styles.statusGroup}>
           <div className={styles.statusLight} />

@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
               />
               <p className={styles.hint}>
-                Enter the email linked to your Pilupoo account
+                Enter the email linked to your పిlooopu account
               </p>
             </div>
 

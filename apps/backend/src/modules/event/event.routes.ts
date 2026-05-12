@@ -1,7 +1,5 @@
-// src/modules/event/event.routes.ts
 
 import { Router } from "express";
-
 import {
   createEvent,
   getEvents,
@@ -12,93 +10,62 @@ import {
   resendEvent,
 } from "./event.controller";
 
-import { authMiddleware }
-from "@middlewares/auth.middleware";
+import { authMiddleware } from "@middlewares/auth.middleware";
+import { verifyUserMiddleware } from "@middlewares/verifyuser.middleware";
+import { rateLimiter } from "@middlewares/enhancedratelimiter.middleware";
 
 const router = Router();
-
-/**
- * ============================================
- * CREATE EVENT
- * ============================================
- */
-
 router.post(
   "/",
-  authMiddleware,
-  createEvent
+  authMiddleware,                
+  verifyUserMiddleware,            
+  rateLimiter("EVENT", "create"),  
+  createEvent                     
 );
-
-/**
- * ============================================
- * GET ALL EVENTS
- * ============================================
- */
 
 router.get(
   "/",
-  authMiddleware,
-  getEvents
+  authMiddleware,                          
+  rateLimiter("EVENT", "list"),   
+  getEvents                       
 );
-
-/**
- * ============================================
- * GET SINGLE EVENT
- * ============================================
- */
 
 router.get(
   "/:id",
-  authMiddleware,
-  getEventById
+  authMiddleware,                           
+  rateLimiter("EVENT", "list"),   
+  getEventById                 
 );
-
-/**
- * ============================================
- * GET EVENT STATUS
- * ============================================
- */
 
 router.get(
   "/:eventId/status",
-  authMiddleware,
-  getEventStatus
+  authMiddleware,                            
+  rateLimiter("EVENT", "list"),   
+  getEventStatus               
 );
-
-/**
- * ============================================
- * UPDATE EVENT
- * ============================================
- */
 
 router.patch(
   "/:id",
-  authMiddleware,
-  updateEvent
+  authMiddleware,                 
+  verifyUserMiddleware,           
+  rateLimiter("EVENT", "update"), 
+  updateEvent                   
 );
-
-/**
- * ============================================
- * DELETE EVENT
- * ============================================
- */
 
 router.delete(
   "/:id",
-  authMiddleware,
-  deleteEvent
+  authMiddleware,       
+  verifyUserMiddleware,     
+  rateLimiter("EVENT", "delete"),
+  deleteEvent                     
 );
-
-/**
- * ============================================
- * RESEND EVENT
- * ============================================
- */
 
 router.post(
   "/:id/resend",
-  authMiddleware,
-  resendEvent
+  authMiddleware,                 
+  verifyUserMiddleware,           
+  rateLimiter("EVENT", "addGuest"),
+  resendEvent                
 );
 
 export default router;

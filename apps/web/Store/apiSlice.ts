@@ -150,20 +150,19 @@ export const apiSlice =
           }),
           invalidatesTags: ["User"],
         }),
+        getMe: builder.query<User, void>({
+  query: () => "/api/auth/me",
 
-      getMe:
-        builder.query<User, void>({
-          query: () => ({
-            url: "/api/auth/me",
-          }),
-          transformResponse: (response: MeResponse) =>
-            response.data,
-          providesTags: ["User"],
-        }),
+  transformResponse: (response: MeResponse) => {
+    return {
+      ...response.data,
+      profileImageUrl:
+        response.data.profileImageUrl || null,
+    };
+  },
 
-      // =========================================================
-      // GUESTS
-      // =========================================================
+  providesTags: ["User"],
+}),
 
       getGuests:
         builder.query<GuestResponse, void>({

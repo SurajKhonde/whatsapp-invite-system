@@ -25,12 +25,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔥 Logging (dev only)
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
 
-// 🔥 Health check
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
