@@ -5,6 +5,7 @@ import { baseQueryWithNotify } from "@/lib/baseQueryWithNotify";
 import {
   MeResponse,
   User,
+  LoginResponse
 } from "@/types/api.types";
 
 import {
@@ -49,22 +50,14 @@ export const apiSlice =
           }),
         }),
 
-      login:
-        builder.mutation<
-          void,
-          {
-            email: string;
-            password: string;
-          }
-        >({
-          query: (body) => ({
-            url: "/api/auth/login",
-            method: "POST",
-            body,
-          }),
-          invalidatesTags: ["User"],
-        }),
-
+login: builder.mutation<LoginResponse, { email: string; password: string }>({
+  query: (body) => ({
+    url: "/api/auth/login",
+    method: "POST",
+    body,
+  }),
+  invalidatesTags: ["User"],
+}),
       verifyOtp:
         builder.mutation<
           void,
