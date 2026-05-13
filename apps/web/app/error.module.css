@@ -1,24 +1,4 @@
 
-@keyframes blobFloat {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-30px) scale(1.04);
-  }
-}
-
-@keyframes iconShake {
-  0%, 100% {
-    transform: rotate(0);
-  }
-  25% {
-    transform: rotate(-8deg);
-  }
-  75% {
-    transform: rotate(8deg);
-  }
-}
 
 .page {
   min-height: 100vh;

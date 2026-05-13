@@ -82,45 +82,6 @@
   animation-delay: 1s;
 }
 
-@keyframes floatY {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  25% {
-    translate: 10px -18px;
-  }
-  50% {
-    translate: 0 -32px;
-  }
-  75% {
-    translate: -12px -12px;
-  }
-}
-
-@keyframes bubbleFloat {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.12;
-  }
-  25% {
-    transform: translate(15px, -25px) scale(1.05);
-    opacity: 0.15;
-  }
-  50% {
-    transform: translate(8px, -45px) scale(1);
-    opacity: 0.12;
-  }
-  75% {
-    transform: translate(-12px, -30px) scale(0.95);
-    opacity: 0.1;
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.12;
-  }
-}
-
 /* ======================================== */
 /* STARS */
 /* ======================================== */
@@ -135,15 +96,6 @@
   animation: twinkle linear infinite;
 }
 
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 
 /* ======================================== */
 /* NAVBAR */
@@ -264,14 +216,7 @@
   font-weight: 400;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
+
 
 /* ======================================== */
 /* CARD */
@@ -301,16 +246,7 @@
   animation: slideDown 0.3s ease;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 /* ======================================== */
 /* FIELD */

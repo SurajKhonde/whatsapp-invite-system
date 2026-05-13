@@ -4,14 +4,22 @@
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 
+/* =========================
+   RESET
+========================= */
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-/* 🌈 Theme */
+
+/* =========================
+   THEME
+========================= */
+
 :root {
-  --background: #fff1f2; /* soft pink bg */
+  --background: #fff1f2;
   --foreground: #1f2937;
 }
 
@@ -22,80 +30,331 @@
   }
 }
 
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
 }
 
-/* ✨ Animations */
+/* =========================
+   SCROLLBAR
+========================= */
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0810;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e91e8c;
+  border-radius: 2px;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
 
 @keyframes float {
-  0% {
-    transform: translateY(0px);
-    opacity: 0.6;
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
   }
+
   50% {
-    transform: translateY(-20px);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0px);
-    opacity: 0.6;
+    transform: translateY(-20px) scale(1.02);
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes fall {
+@keyframes floatBubble {
   0% {
-    transform: translateY(-100vh);
+    transform: translateY(0) translateX(0) scale(1);
+  }
+
+  33% {
+    transform: translateY(-30px) translateX(15px) scale(1.05);
+  }
+
+  66% {
+    transform: translateY(10px) translateX(-10px) scale(0.97);
+  }
+
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
     opacity: 0;
   }
-  30% {
+
+  to {
     opacity: 1;
   }
-  100% {
-    transform: translateY(100vh);
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
     opacity: 0;
   }
 }
 
-.animate-fall {
-  animation: fall linear infinite;
-}
-
-/* 🔥 Components (Tailwind-safe way) */
-
-@layer components {
-  .input {
-    @apply w-full px-3 py-3 rounded-xl border border-pink-200 bg-white
-    focus:ring-2 focus:ring-pink-300 focus:border-pink-400 outline-none transition;
-  }
-
-  .btn-primary {
-    @apply w-full py-3 rounded-xl text-white font-medium
-    bg-gradient-to-r from-pink-500 to-red-500
-    hover:from-pink-600 hover:to-red-600
-    shadow-md hover:shadow-lg transition transform hover:scale-[1.02];
-  }
-}
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(40px) scale(0.95);
+    transform: translateX(20px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
   }
 }
 
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(20px) scale(0.98);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(20deg);
+  }
+
+  75% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes blobFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-30px) scale(1.04);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(110%) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(110%) scale(0.92);
+  }
+}
+
+/* =========================
+   GLOBAL ANIMATION CLASSES
+========================= */
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fall {
+  animation: fall 10s linear infinite;
+}
+
 .animate-slideIn {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.35s ease-out;
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.animate-spin-slow {
+  animation: spin 6s linear infinite;
+}
+
+/* =========================
+   TAILWIND COMPONENTS
+========================= */
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-pink-200 bg-white px-3 py-3 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-300;
+  }
+
+  .btn-primary {
+    @apply w-full rounded-xl bg-gradient-to-r from-pink-500 to-red-500 py-3 font-medium text-white shadow-md transition hover:scale-[1.02] hover:from-pink-600 hover:to-red-600 hover:shadow-lg;
+  }
 }

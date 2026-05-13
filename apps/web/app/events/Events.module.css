@@ -35,14 +35,7 @@
   animation: float 18s ease-in-out infinite;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-30px) scale(1.05);
-  }
-}
+
 
 .inner {
   position: relative;
@@ -167,11 +160,7 @@
   font-size: 14px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+
 
 .spinner {
   width: 20px;
