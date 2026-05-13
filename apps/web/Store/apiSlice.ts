@@ -5,7 +5,8 @@ import { baseQueryWithNotify } from "@/lib/baseQueryWithNotify";
 import {
   MeResponse,
   User,
-  LoginResponse
+  LoginResponse,
+  LogoutRequest
 } from "@/types/api.types";
 
 import {
