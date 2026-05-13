@@ -35,3 +35,18 @@ export interface LoginResponse {
 export interface LogoutRequest {
   feedback?: string; 
 }
+
+
+export interface VerifyOtpResponse {
+  data: {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: "user" | "admin";
+      isEmailVerified: boolean;
+      isActive: boolean;
+      profileImageUrl?: string;
+    };
+  };
+}

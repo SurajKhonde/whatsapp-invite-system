@@ -6,7 +6,8 @@ import {
   MeResponse,
   User,
   LoginResponse,
-  LogoutRequest
+  LogoutRequest,
+  VerifyOtpResponse
 } from "@/types/api.types";
 
 import {
@@ -59,21 +60,20 @@ login: builder.mutation<LoginResponse, { email: string; password: string }>({
   }),
   invalidatesTags: ["User"],
 }),
-      verifyOtp:
-        builder.mutation<
-          void,
-          {
-            email: string;
-            otp: string;
-            purpose: string;
-          }
-        >({
-          query: (body) => ({
-            url: "/api/auth/verify-otp",
-            method: "POST",
-            body,
-          }),
-        }),
+      verifyOtp: builder.mutation<
+  VerifyOtpResponse,
+  {
+    email: string;
+    otp: string;
+    purpose: string;
+  }
+>({
+  query: (body) => ({
+    url: "/api/auth/verify-otp",
+    method: "POST",
+    body,
+  }),
+}),
 
       resendOtp:
         builder.mutation<
