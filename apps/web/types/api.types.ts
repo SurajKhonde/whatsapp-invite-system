@@ -32,3 +32,6 @@ export interface LoginResponse {
     token: string;
   };
 }
+export interface LogoutRequest {
+  feedback?: string; 
+}

@@ -134,15 +134,15 @@ login: builder.mutation<LoginResponse, { email: string; password: string }>({
           }),
         }),
 
-      logout:
-        builder.mutation<void, void>({
-          query: () => ({
-            url: "/api/auth/logout",
-            method: "POST",
-            credentials: "include",
-          }),
-          invalidatesTags: ["User"],
-        }),
+     logout: builder.mutation<void, LogoutRequest>({
+  query: (body) => ({
+    url: "/api/auth/logout",
+    method: "POST",
+    body,
+    credentials: "include",
+  }),
+  invalidatesTags: ["User"],
+}),
         getMe: builder.query<User, void>({
   query: () => "/api/auth/me",
 
