@@ -1,12 +1,6 @@
-// ============================================================
-// FILE:
-// src/modules/image-generation/template-pipeline.service.ts
-// ============================================================
 
 import Redis from "ioredis";
-
-const redis = new Redis();
-
+import { redisCache } from "@config/redis";
 export class TemplatePipelineService {
   async updateState(
     templateId: string,
@@ -17,7 +11,7 @@ export class TemplatePipelineService {
       `template:${templateId}`;
 
     const existing =
-      await redis.get(key);
+      await redisCache.get(key);
 
     const parsed =
       existing
@@ -31,7 +25,7 @@ export class TemplatePipelineService {
         new Date().toISOString(),
     };
 
-    await redis.set(
+    await redisCache.set(
       key,
       JSON.stringify(updated)
     );
@@ -46,7 +40,7 @@ export class TemplatePipelineService {
       `template:${templateId}`;
 
     const state =
-      await redis.get(key);
+      await redisCache.get(key);
 
     return state
       ? JSON.parse(state)

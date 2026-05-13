@@ -31,8 +31,6 @@ router.get(
   getWhatsappTemplate
 );
 
-/**
-
 
 export default router;
 
