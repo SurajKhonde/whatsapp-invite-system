@@ -17,12 +17,12 @@ export function useConnectionMonitor() {
   const [failCount, setFailCount] = useState(0);
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ;
   const HEALTH_CHECK_URL = `${BACKEND_URL}/health`;
 
-  const HEALTH_CHECK_INTERVAL = 60_000;
+  const HEALTH_CHECK_INTERVAL = 90_000;
   const HEALTH_CHECK_TIMEOUT = 3_000;
-  const MAX_FAILURES = 3
+  const MAX_FAILURES = 3;
 
   const checkHealth = async () => {
     setIsChecking(true);
@@ -136,50 +136,30 @@ export function useConnectionMonitor() {
 }
 
 export function ConnectionStatus() {
-  const { isConnected, error, isChecking, lastCheck } =
-    useConnectionMonitor();
+  const { isConnected, error, isChecking } = useConnectionMonitor();
 
+  // Only show when there's an issue
   if (isConnected && !isChecking) {
     return null;
   }
 
   return (
-    <div
-      className={`fixed top-0 left-0 right-0 px-4 py-3 text-center font-medium z-50 transition-all ${
-        isConnected
-          ? "bg-green-500 text-white"
-          : "bg-red-500 text-white animate-pulse"
-      }`}
-    >
+    <div className="statusBadge">
       {isChecking ? (
-        <div className="flex items-center justify-center gap-2">
-          <span className="inline-block w-2 h-2 bg-white rounded-full animate-bounce"></span>
-          Checking connection...
-        </div>
+        <>
+          <span className="statusDot statusDotSpinner"></span>
+          <span className="statusLabel">Checking</span>
+        </>
       ) : isConnected ? (
-        <div className="flex items-center justify-center gap-2">
-          <span>✓</span>
-          Connection restored
-          {lastCheck && (
-            <span className="text-xs opacity-75">
-              ({lastCheck.toLocaleTimeString()})
-            </span>
-          )}
-        </div>
+        <>
+          <span className="statusDot statusDotOnline"></span>
+          <span className="statusLabel">Online</span>
+        </>
       ) : (
-        <div className="flex items-center justify-center gap-2">
-          <span>⚠</span>
-          {error === "No internet connection" ? (
-            <span>No Internet Connection</span>
-          ) : (
-            <>
-              Server Offline {error && `(${error})`}
-            </>
-          )}
-          <span className="text-xs opacity-75">
-            Reconnecting...
-          </span>
-        </div>
+        <>
+          <span className="statusDot statusDotOffline"></span>
+          <span className="statusLabel">Offline</span>
+        </>
       )}
     </div>
   );

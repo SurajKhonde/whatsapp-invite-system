@@ -1,4 +1,95 @@
+/* ============================================================================
+   LOGOUT PAGE - COMPLETE STYLING
+   ============================================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes floatBubble {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  33% {
+    transform: translateY(-40px) translateX(20px) scale(1.08);
+  }
+  66% {
+    transform: translateY(15px) translateX(-15px) scale(0.95);
+  }
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh) translateX(0);
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(20deg);
+  }
+  75% {
+    transform: rotate(-20deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================================================
+   MAIN PAGE
+   ============================================================================ */
 
 .page {
   font-family: 'Playfair Display', Georgia, serif;
@@ -11,6 +102,10 @@
   overflow: hidden;
 }
 
+/* ============================================================================
+   TEXT EFFECTS
+   ============================================================================ */
+
 .shimmering {
   background: linear-gradient(90deg, #f5f0ff 0%, #e91e8c 30%, #ff9800 50%, #e91e8c 70%, #f5f0ff 100%);
   background-size: 200% auto;
@@ -20,101 +115,15 @@
   animation: shimmer 4s linear infinite;
 }
 
-.textarea {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f5f0ff;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  outline: none;
-  resize: none;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-
-.textarea::placeholder {
-  color: rgba(245, 240, 255, 0.3);
-}
-
-.textarea:focus {
-  border-color: rgba(233, 30, 140, 0.5);
-  background: rgba(233, 30, 140, 0.06);
-  box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.12);
-}
-
-.btnLogout {
-  flex: 1;
-  padding: 15px 20px;
-  border-radius: 100px;
-  background: linear-gradient(135deg, #e91e8c, #ff5252);
-  color: white;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  font-size: 15px;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 24px rgba(233, 30, 140, 0.35);
-  letter-spacing: 0.3px;
-}
-
-.btnLogout:hover:not(:disabled) {
-  transform: scale(1.02);
-  box-shadow: 0 8px 36px rgba(233, 30, 140, 0.5);
-}
-
-.btnLogout:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btnStay {
-  flex: 1;
-  padding: 15px 20px;
-  border-radius: 100px;
-  background: transparent;
-  border: 1px solid rgba(245, 240, 255, 0.15);
-  color: rgba(245, 240, 255, 0.6);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
-  letter-spacing: 0.3px;
-}
-
-.btnStay:hover {
-  border-color: rgba(233, 30, 140, 0.4);
-  color: #e91e8c;
-  background: rgba(233, 30, 140, 0.06);
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.star {
-  position: absolute;
-  width: 2px;
-  height: 12px;
-  background: rgba(233, 30, 140, 0.6);
-  border-radius: 2px;
-  filter: blur(0.5px);
-  animation: fall linear infinite;
-}
-
 .waveEmoji {
   display: inline-block;
   animation: wave 1.8s ease-in-out infinite;
   transform-origin: 70% 70%;
 }
+
+/* ============================================================================
+   FADE UP ANIMATIONS
+   ============================================================================ */
 
 .fadeUp1 {
   animation: fadeUp 0.6s ease 0s both;
@@ -132,6 +141,24 @@
   animation: fadeUp 0.6s ease 0.35s both;
 }
 
+/* ============================================================================
+   STAR EFFECT
+   ============================================================================ */
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  background: rgba(233, 30, 140, 0.6);
+  border-radius: 2px;
+  filter: blur(0.5px);
+  animation: fall linear infinite;
+}
+
+/* ============================================================================
+   NAVBAR
+   ============================================================================ */
+
 .nav {
   position: relative;
   z-index: 10;
@@ -148,6 +175,9 @@
   font-weight: 900;
   text-decoration: none;
   color: #f5f0ff;
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
 .logoHighlight {
@@ -172,6 +202,10 @@
   color: #e91e8c;
 }
 
+/* ============================================================================
+   MAIN CONTENT
+   ============================================================================ */
+
 .main {
   flex: 1;
   display: flex;
@@ -186,6 +220,10 @@
   width: 100%;
   max-width: 440px;
 }
+
+/* ============================================================================
+   ICON & BADGE
+   ============================================================================ */
 
 .iconBox {
   text-align: center;
@@ -219,6 +257,10 @@
   letter-spacing: 0.02em;
 }
 
+/* ============================================================================
+   HEADLINE & TITLE
+   ============================================================================ */
+
 .headline {
   text-align: center;
   margin-bottom: 36px;
@@ -238,11 +280,26 @@
   font-style: italic;
 }
 
+/* ============================================================================
+   GLASS MORPHISM CARD
+   ============================================================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
 .card {
   border-radius: 24px;
   padding: 36px 32px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(233, 30, 140, 0.08);
 }
+
+/* ============================================================================
+   FORM ELEMENTS
+   ============================================================================ */
 
 .label {
   display: block;
@@ -262,6 +319,32 @@
   letter-spacing: 0;
 }
 
+.textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f5f0ff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.textarea::placeholder {
+  color: rgba(245, 240, 255, 0.3);
+}
+
+.textarea:focus {
+  border-color: rgba(233, 30, 140, 0.5);
+  background: rgba(233, 30, 140, 0.06);
+  box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.12);
+}
+
 .hint {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
@@ -270,10 +353,65 @@
   line-height: 1.5;
 }
 
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
 .buttons {
   display: flex;
   gap: 12px;
 }
+
+.btnStay {
+  flex: 1;
+  padding: 15px 20px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid rgba(245, 240, 255, 0.15);
+  color: rgba(245, 240, 255, 0.6);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btnStay:hover {
+  border-color: rgba(233, 30, 140, 0.4);
+  color: #e91e8c;
+  background: rgba(233, 30, 140, 0.06);
+}
+
+.btnLogout {
+  flex: 1;
+  padding: 15px 20px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #e91e8c, #ff5252);
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 24px rgba(233, 30, 140, 0.35);
+  letter-spacing: 0.3px;
+}
+
+.btnLogout:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 8px 36px rgba(233, 30, 140, 0.5);
+}
+
+.btnLogout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   LOADING STATE
+   ============================================================================ */
 
 .loading {
   display: flex;
@@ -286,6 +424,10 @@
   display: inline-block;
   animation: pulse-dot 1s infinite;
 }
+
+/* ============================================================================
+   MESSAGE & FOOTER
+   ============================================================================ */
 
 .message {
   text-align: center;
@@ -330,6 +472,10 @@
   gap: 5px;
 }
 
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
 @media (max-width: 640px) {
   .nav {
     padding: 14px 20px;
@@ -345,5 +491,57 @@
     padding: 14px 20px;
     flex-direction: column;
     text-align: center;
+  }
+
+  .main {
+    padding: 28px 16px 48px;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav {
+    padding: 12px 16px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .backBtn {
+    font-size: 12px;
+  }
+
+  .card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: clamp(24px, 5vw, 36px);
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+  }
+
+  .btnStay,
+  .btnLogout {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .footer {
+    padding: 12px 16px;
+    gap: 4px;
+  }
+
+  .footerText {
+    font-size: 9px;
   }
 }

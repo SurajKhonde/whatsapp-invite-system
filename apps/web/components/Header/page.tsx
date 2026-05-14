@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
-import styles from "./header.module.css";
 
 export default function Header() {
   const pathname = usePathname();
@@ -16,51 +15,51 @@ export default function Header() {
   ];
 
   return (
-    <header className={styles.header}>
-      <div className={styles.inner}>
+    <header className="header">
+      <div className="inner">
         {/* Logo */}
-        <Link href="/dashboard" className={styles.logo}>
-          <span className={styles.logoP}>పി</span>
-          <span className={styles.logoRest}>looopu</span>
+        <Link href="/dashboard" className="headerLogo">
+          <span className="headerLogoP">ప</span>
+          <span className="headerLogoRest">looopu</span>
         </Link>
 
         {/* Nav links */}
-        <nav className={styles.nav}>
+        <nav className="headerNav">
           {navItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
-              className={`${styles.link} ${pathname === item.path ? styles.linkActive : ""}`}
+              className={`headerLink ${pathname === item.path ? "headerLinkActive" : ""}`}
             >
-              <span className={styles.linkIcon}>{item.icon}</span>
+              <span className="headerLinkIcon">{item.icon}</span>
               {item.name}
             </Link>
           ))}
         </nav>
 
         {/* Right */}
-        <div className={styles.right}>
+        <div className="headerRight">
           {/* STATUS INDICATOR WITH GLOW */}
-          <div className={styles.statusContainer}>
+          <div className="statusContainer">
             {isChecking ? (
-              <div className={styles.statusChecking}>
-                <span className={`${styles.statusDot} ${styles.dotAnimating}`} />
-                <span className={styles.statusText}>Checking...</span>
+              <div className="statusChecking">
+                <span className={`statusDot ${isChecking ? "dotAnimating" : ""}`} />
+                <span className="statusText">Checking...</span>
               </div>
             ) : isConnected ? (
-              <div className={styles.statusOnline}>
-                <span className={styles.statusDot} />
-                <span className={styles.statusText}>Live</span>
+              <div className="statusOnline">
+                <span className="statusDot" />
+                <span className="statusText">Live</span>
               </div>
             ) : (
-              <div className={styles.statusOffline}>
-                <span className={styles.statusDot} />
-                <span className={styles.statusText}>Server Down</span>
+              <div className="statusOffline">
+                <span className="statusDot" />
+                <span className="statusText">Offline</span>
               </div>
             )}
           </div>
 
-          <Link href="/logout" className={styles.logout}>
+          <Link href="/logout" className="logout">
             ↩ Logout
           </Link>
         </div>

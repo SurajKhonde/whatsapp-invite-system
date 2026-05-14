@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import './ConnectionStatus.css'
 import Providers from "@/providers/Providers";
 import AppLayout from "@/components/layout/AppLayout";
 import { ConnectionStatus, AutoReconnectRefresh } from "@/hooks/useConnectionMonitor"; 

@@ -14,9 +14,20 @@ const app = express();
 app.use(helmet());
 
 // 🔥 CORS
+const allowedOrigins = [
+  "https://pilooopu.shop",
+  "https://www.pilooopu.shop",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

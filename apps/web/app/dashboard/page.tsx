@@ -6,9 +6,8 @@ import DraftGuestList from "@/components/dashboard/DraftGuestList";
 import GuestTable from "@/components/dashboard/GuestTable";
 import { useAddGuestsMutation, useGetGuestsQuery } from "@/store/apiSlice";
 import { GuestInput, Relation } from "@/types/guest";
-import styles from "./Dashboard.module.css";
-
 import VerificationBanner from "@/components/VerificationBanner-Simple";
+
 export default function Dashboard() {
   // ==================== STATE ====================
   const [draftGuests, setDraftGuests] = useState<GuestInput[]>([]);
@@ -85,41 +84,41 @@ export default function Dashboard() {
   // ==================== RENDER ====================
 
   return (
-    <div className={styles.page}>
+    <div className="dashboardPage">
       <VerificationBanner />
-      <div className={styles.inner}>
+      <div className="dashboardInner">
         {/* ========== TOP BAR ========== */}
-        <div className={styles.topbar}>
+        <div className="dashboardTopbar">
           <div>
-            <div className={styles.greeting}>
-              Your <span className={styles.greetingHighlight}>Contacts</span>
+            <div className="dashboardGreeting">
+              Your <span className="dashboardGreetingHighlight">Contacts</span>
             </div>
-            <div className={styles.sub}>
+            <div className="dashboardSub">
               Add and manage guests for your events
             </div>
           </div>
-          <div className={styles.badge}>💌 పిlooopu Dashboard</div>
+          <div className="dashboardBadge">💌 పlooopu Dashboard</div>
         </div>
 
         {/* ========== STATISTICS CARDS ========== */}
-        <div className={styles.stats}>
+        <div className="dashboardStats">
           {statistics.map((stat) => (
-            <div key={stat.label} className={styles.statCard}>
-              <div className={styles.statLabel}>{stat.label}</div>
+            <div key={stat.label} className="dashboardStatCard">
+              <div className="dashboardStatLabel">{stat.label}</div>
               <div
-                className={`${styles.statValue} ${
-                  stat.isPink ? styles.statValuePink : ""
+                className={`dashboardStatValue ${
+                  stat.isPink ? "dashboardStatValuePink" : ""
                 }`}
               >
                 {stat.value}
               </div>
-              <div className={styles.statHint}>{stat.hint}</div>
+              <div className="dashboardStatHint">{stat.hint}</div>
             </div>
           ))}
         </div>
 
         {/* ========== FORM + DRAFT GRID ========== */}
-        <div className={styles.grid}>
+        <div className="dashboardGrid">
           <GuestForm onSubmit={handleAddDraft} />
           <DraftGuestList
             guests={draftGuests}
@@ -129,15 +128,44 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* ========== GUEST TABLE ========== */}
-        <div className={styles.tableSection}>
+        {/* ========== GUEST TABLE / EMPTY STATE ========== */}
+        <div className="dashboardTableSection">
           {isFetching ? (
-            <div className={styles.loading}>
-              <div className={styles.spinner} />
+            <div className="dashboardLoading">
+              <div className="dashboardSpinner" />
               Loading contacts...
             </div>
-          ) : (
+          ) : guests.length > 0 ? (
             <GuestTable data={guests} />
+          ) : (
+            /* BEAUTIFUL EMPTY STATE */
+            <div className="emptyStateContainer">
+              <div className="emptyStateIcon">📇</div>
+              <h2 className="emptyStateTitle">No Contacts Yet</h2>
+              <p className="emptyStateSubtitle">
+                Start adding guests to build your contact list. Add them one by one or in batches.
+              </p>
+
+              <div className="emptyStateSteps">
+                <div className="emptyStateStep">
+                  <div className="emptyStateStepNumber">1</div>
+                  <span className="emptyStateStepText">Fill in guest details on the left</span>
+                </div>
+                <div className="emptyStateStep">
+                  <div className="emptyStateStepNumber">2</div>
+                  <span className="emptyStateStepText">Add them to your draft list</span>
+                </div>
+                <div className="emptyStateStep">
+                  <div className="emptyStateStepNumber">3</div>
+                  <span className="emptyStateStepText">Click "Save All" to store contacts</span>
+                </div>
+              </div>
+
+              <div className="emptyStateHint">
+                <span className="emptyStateHintIcon">💡</span>
+                You can add as many guests as you want. They'll appear in this table once saved.
+              </div>
+            </div>
           )}
         </div>
       </div>

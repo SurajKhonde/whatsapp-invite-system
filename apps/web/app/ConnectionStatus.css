@@ -1,0 +1,166 @@
+/* ============================================================================
+   TINY STATUS BADGE - CORNER INDICATOR (DOESN'T BLOCK ANYTHING)
+   ============================================================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Main Badge Container */
+.statusBadge {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  animation: slideIn 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Checking State - Blue */
+.statusBadge:has(.statusDotSpinner) {
+  background: rgba(59, 130, 246, 0.92);
+  backdrop-filter: blur(10px);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.statusBadge:has(.statusDotSpinner) .statusDot {
+  background: #3b82f6;
+  animation: spin 1s linear infinite;
+}
+
+.statusBadge:has(.statusDotSpinner) .statusLabel {
+  color: white;
+}
+
+/* Online State - Green */
+.statusBadge:has(.statusDotOnline) {
+  background: rgba(34, 197, 94, 0.92);
+  backdrop-filter: blur(10px);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.statusBadge:has(.statusDotOnline) .statusDot {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.statusBadge:has(.statusDotOnline) .statusLabel {
+  color: white;
+}
+
+/* Offline State - Red */
+.statusBadge:has(.statusDotOffline) {
+  background: rgba(239, 68, 68, 0.92);
+  backdrop-filter: blur(10px);
+  border-color: rgba(239, 68, 68, 0.3);
+  animation: slideIn 0.4s ease, pulse 2s ease-in-out infinite;
+}
+
+.statusBadge:has(.statusDotOffline) .statusDot {
+  background: #ef4444;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.statusBadge:has(.statusDotOffline) .statusLabel {
+  color: white;
+}
+
+/* Responsive - Tablet */
+@media (max-width: 768px) {
+  .statusBadge {
+    bottom: 20px;
+    right: 20px;
+    padding: 8px 14px;
+  }
+
+  .statusDot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .statusLabel {
+    font-size: 11px;
+  }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 480px) {
+  .statusBadge {
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 12px;
+  }
+
+  .statusDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .statusLabel {
+    font-size: 10px;
+    font-weight: 600;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .statusBadge {
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 10px;
+  }
+
+  .statusDot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .statusLabel {
+    font-size: 9px;
+  }
+}

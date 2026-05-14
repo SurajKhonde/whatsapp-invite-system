@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLogoutMutation } from "Store/apiSlice";
+import { useLogoutMutation } from "@/store/apiSlice";
 import styles from "./Logout.module.css";
 
 export default function LogoutPage() {
@@ -25,26 +24,29 @@ export default function LogoutPage() {
     }
   };
 
+  // Bubble data
+  const bubbles = [
+    { w: 500, h: 500, l: "-5%", r: undefined, t: "-10%", b: undefined, c: "#e91e8c", d: 0, dur: 18 },
+    { w: 350, h: 350, l: undefined, r: "-5%", t: undefined, b: "-5%", c: "#ff5252", d: 5, dur: 22 },
+    { w: 250, h: 250, l: "60%", r: undefined, t: "40%", b: undefined, c: "#9c27b0", d: 9, dur: 16 },
+    { w: 180, h: 180, l: "15%", r: undefined, t: "65%", b: undefined, c: "#ff9800", d: 13, dur: 20 },
+  ];
+
   return (
     <div className={styles.page}>
       {/* Floating bubbles */}
-      {[
-        { w: 500, h: 500, l: "-5%", t: "-10%", c: "#e91e8c", d: 0, dur: 18 },
-        { w: 350, h: 350, r: "-5%", b: "-5%", c: "#ff5252", d: 5, dur: 22 },
-        { w: 250, h: 250, l: "60%", t: "40%", c: "#9c27b0", d: 9, dur: 16 },
-        { w: 180, h: 180, l: "15%", t: "65%", c: "#ff9800", d: 13, dur: 20 },
-      ].map((b, i) => (
+      {bubbles.map((b, i) => (
         <div
           key={i}
           style={{
             position: "absolute",
             borderRadius: "50%",
-            width: b.w,
-            height: b.h,
-            left: (b as any).l,
-            right: (b as any).r,
-            top: (b as any).t,
-            bottom: (b as any).b,
+            width: `${b.w}px`,
+            height: `${b.h}px`,
+            left: b.l,
+            right: b.r,
+            top: b.t,
+            bottom: b.b,
             background: b.c,
             filter: "blur(100px)",
             opacity: 0.1,
@@ -55,7 +57,7 @@ export default function LogoutPage() {
         />
       ))}
 
-      {/* Dot grid */}
+      {/* Dot grid background */}
       <div
         style={{
           position: "absolute",
@@ -67,7 +69,7 @@ export default function LogoutPage() {
         }}
       />
 
-      {/* Falling stars */}
+      {/* Falling stars animation */}
       {mounted &&
         Array.from({ length: 18 }).map((_, i) => (
           <span
@@ -85,7 +87,7 @@ export default function LogoutPage() {
       <nav className={styles.nav}>
         <a href="/" className={styles.logo}>
           <span className={styles.logoHighlight}>పి</span>
-          <span>lupoo</span>
+          <span>looopu</span>
         </a>
 
         <button className={styles.backBtn} onClick={() => router.push("/dashboard")}>
@@ -93,10 +95,10 @@ export default function LogoutPage() {
         </button>
       </nav>
 
-      {/* Main */}
+      {/* Main content */}
       <main className={styles.main}>
         <div className={styles.container}>
-          {/* Waving icon */}
+          {/* Waving icon section */}
           <div className={styles.fadeUp1}>
             <div className={styles.iconBox}>
               <div className={styles.icon}>
@@ -109,7 +111,7 @@ export default function LogoutPage() {
             </div>
           </div>
 
-          {/* Headline */}
+          {/* Main headline */}
           <div className={`${styles.headline} ${styles.fadeUp2}`}>
             <h1 className={styles.title}>
               <span className={styles.shimmering}>See you</span>
@@ -118,7 +120,7 @@ export default function LogoutPage() {
             </h1>
           </div>
 
-          {/* Card */}
+          {/* Feedback card */}
           <div className={`${styles.glass} ${styles.card} ${styles.fadeUp3}`}>
             {/* Feedback label */}
             <label className={styles.label}>
@@ -126,6 +128,7 @@ export default function LogoutPage() {
               <span className={styles.optional}>(optional)</span>
             </label>
 
+            {/* Textarea for feedback */}
             <textarea
               className={styles.textarea}
               rows={4}
@@ -134,11 +137,12 @@ export default function LogoutPage() {
               placeholder="Tell us what could be better, what you loved, or anything on your mind..."
             />
 
+            {/* Helpful hint */}
             <p className={styles.hint}>
               Your feedback shapes పిlooopu's roadmap 🛠
             </p>
 
-            {/* Buttons */}
+            {/* Action buttons */}
             <div className={styles.buttons}>
               <button className={styles.btnStay} onClick={() => router.push("/dashboard")}>
                 Stay
@@ -156,7 +160,7 @@ export default function LogoutPage() {
             </div>
           </div>
 
-          {/* Footer message */}
+          {/* Closing message */}
           <div className={`${styles.message} ${styles.fadeUp4}`}>
             <p>
               Thanks for being part of పిlooopu ❤️

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignupMutation } from "Store/apiSlice";
+import { useSignupMutation } from "@/store/apiSlice";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store/store";
 import { getErrorMessage } from "@/lib/errors";
@@ -14,7 +14,7 @@ import styles from "./signup.module.css";
 
 export default function SignupPage() {
   const router = useRouter();
- const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,18 +28,20 @@ export default function SignupPage() {
     setMounted(true);
   }, []);
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const validatePassword = (pass: string) => /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
+  const validatePassword = (pass: string) =>
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pass);
 
   const handleSignup = async () => {
     setError("");
     dispatch(setLoading(true));
 
     if (!name || !email || !password) {
-       setError("All fields are required");
-       dispatch(setLoading(false));
-       return;
+      setError("All fields are required");
+      dispatch(setLoading(false));
+      return;
     }
 
     if (!validateEmail(email)) {
@@ -48,7 +50,7 @@ export default function SignupPage() {
       return;
     }
 
-     if (!validatePassword(password)) {
+    if (!validatePassword(password)) {
       setError("Password must be 8+ chars, include uppercase, number & special char");
       dispatch(setLoading(false));
       return;
@@ -79,8 +81,8 @@ export default function SignupPage() {
           key={i}
           className={styles.blob}
           style={{
-            width: b.w,
-            height: b.h,
+            width: `${b.w}px`,
+            height: `${b.h}px`,
             left: (b as any).l,
             right: (b as any).r,
             top: (b as any).t,
@@ -212,7 +214,11 @@ export default function SignupPage() {
             </div>
 
             {/* Submit */}
-            <button className={styles.button} onClick={handleSignup} disabled={isLoading}>
+            <button
+              className={styles.button}
+              onClick={handleSignup}
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <span className={styles.loading}>
                   <span className={styles.pulse}>●</span>
