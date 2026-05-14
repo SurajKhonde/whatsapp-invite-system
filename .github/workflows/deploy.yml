@@ -19,11 +19,14 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
 
           script: |
-            cd /home/ubuntu/whatsapp-invite-system/apps/backend
+            cd /home/ubuntu/whatsapp-invite-system
 
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
-            docker compose down
+            cd apps/backend
+
+            docker compose down --remove-orphans
 
             docker compose up --build -d
 
