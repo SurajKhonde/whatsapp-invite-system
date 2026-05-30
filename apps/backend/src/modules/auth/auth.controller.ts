@@ -11,11 +11,14 @@ import {
 } from "./auth.service";
 import { sendResponse } from "@utils/response";
 import {invalidateUserCache} from "@utils/invalidateRedis"
+const isProd = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  secure: isProd,
+  sameSite: isProd ? "none" as const : "lax" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  domain: isProd ? ".pilooopu.shop" : undefined,
 };
 
 // ✅ SIGNUP
