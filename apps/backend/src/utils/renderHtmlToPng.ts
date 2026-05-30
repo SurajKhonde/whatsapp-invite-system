@@ -11,29 +11,22 @@ class HtmlToPngConverter {
   private browser: puppeteer.Browser | null = null;
 
   async init() {
-    if (!this.browser) {
-    //   this.browser = await puppeteer.launch({
-    //     headless: true,
-    //     args: [
-    //       "--no-sandbox",
-    //       "--disable-setuid-sandbox",
-    //       "--disable-dev-shm-usage",
-    //       "--disable-gpu",
-    //     ],
-    //   });
-        this.browser = await puppeteer.launch({
-    executablePath: "/usr/bin/brave-browser",
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--allow-file-access-from-files",
-      "--disable-web-security",
-    ],
-  });
-
-    }
-    return this.browser;
+  if (!this.browser) {
+    this.browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+        "--disable-web-security",
+      ],
+    });
   }
+  return this.browser;
+}
 
   async convertHtmlToPng(
   html: string,

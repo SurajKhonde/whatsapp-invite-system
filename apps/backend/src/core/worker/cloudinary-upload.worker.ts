@@ -1,13 +1,11 @@
-// ============================================================
-// FILE:
-// src/core/worker/cloudinary-upload.worker.ts
-// ============================================================
 
 import {
   Worker,
   Job,
 } from "bullmq";
-
+import { db } from "@/db/index";
+import {eq} from "drizzle-orm";
+import { templates } from "@/db/schema/template.schema";
 import cloudinary
 from "@config/cloudinary";
 
@@ -152,18 +150,31 @@ new Worker<UploadTemplateJob>(
       return {
         success: true,
       };
-    } catch (error: any) {
-      logger.error(
-        {
-          error:
-            error.message,
-        },
+} catch (error: any) {
+  logger.error({ error: error.message }, "❌ Cloudinary upload failed");
 
-        "❌ Cloudinary upload failed"
+  if (job.data?.templateId) {
+    const maxAttempts = job.opts.attempts || 1;
+    const isFinalAttempt = job.attemptsMade >= maxAttempts - 1;
+
+    if (isFinalAttempt) {
+      await db.delete(templates).where(eq(templates.id, job.data.templateId));
+      logger.warn(
+        { templateId: job.data.templateId },
+        "🗑️ Template deleted after exhausting retries"
       );
-
-      throw error;
+    } else {
+      await templatePipelineService.updateState(job.data.templateId, {
+        step: "upload_failed",
+        failed: true,
+        error: error.message,
+      });
     }
+  }
+
+  throw error;
+}
+
   },
 
   {

@@ -14,11 +14,15 @@ export interface UploadTemplateJob {
   fullCardPath: string;
 }
 
-export const cloudinaryUploadQueue =
-  new Queue<UploadTemplateJob>(
-    "cloudinaryUploadQueue",
-
-    {
-      connection: redisQueue,
-    }
-  );
+export const cloudinaryUploadQueue = new Queue<UploadTemplateJob>(
+  "cloudinaryUploadQueue",
+  {
+    connection: redisQueue,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  }
+);

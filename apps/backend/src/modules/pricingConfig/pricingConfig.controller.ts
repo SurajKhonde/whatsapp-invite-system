@@ -6,6 +6,7 @@ import { ApiErrorResponse } from "./Pricingconfig.types";
 export class PricingConfigController {
  
   async getPricingConfigByType(req: Request, res: Response): Promise<void> {
+    console.log(req,"required")
     try {
       const messageType = req.params.messageType;
 

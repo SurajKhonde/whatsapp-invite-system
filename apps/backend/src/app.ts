@@ -45,7 +45,6 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 app.use("/public", express.static(path.join(process.cwd(), "src/public")));
-// 🔥 API routes
 app.use("/api", mainRoutes);
 app.use("/admin/queues", serverAdapter.getRouter());
 // ❌ 404 handler (important)

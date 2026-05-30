@@ -1,7 +1,3 @@
-// ============================================================
-// FILE:
-// src/core/worker/template-finalize.worker.ts
-// ============================================================
 
 import {
   Worker,
@@ -124,18 +120,30 @@ new Worker<FinalizeTemplateJob>(
       return {
         success: true,
       };
-    } catch (error: any) {
-      logger.error(
-        {
-          error:
-            error.message,
-        },
+} catch (error: any) {
+  logger.error({ error: error.message }, "❌ Cloudinary upload failed");
 
-        "❌ Template finalize failed"
+  if (job.data?.templateId) {
+    const maxAttempts = job.opts.attempts || 1;
+    const isFinalAttempt = job.attemptsMade >= maxAttempts - 1;
+
+    if (isFinalAttempt) {
+      await db.delete(templates).where(eq(templates.id, job.data.templateId));
+      logger.warn(
+        { templateId: job.data.templateId },
+        "🗑️ Template deleted after exhausting retries"
       );
-
-      throw error;
+    } else {
+      await templatePipelineService.updateState(job.data.templateId, {
+        step: "upload_failed",
+        failed: true,
+        error: error.message,
+      });
     }
+  }
+
+  throw error;
+}
   },
 
   {
