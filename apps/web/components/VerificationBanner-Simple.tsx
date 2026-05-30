@@ -31,7 +31,7 @@ export const VerificationBanner = () => {
     if (meData) {
       dispatch(
         setUser({
-          userId: meData.id,
+          id: meData.id,
           email: meData.email,
           name: meData.name || "",  // Handle empty string
           role: meData.role,
