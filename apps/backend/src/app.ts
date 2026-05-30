@@ -16,8 +16,7 @@ app.use(helmet());
 // 🔥 CORS
 const allowedOrigins = [
   "https://pilooopu.shop",
-  "https://www.pilooopu.shop",
-  "http://localhost:3000"
+  "https://www.pilooopu.shop"
 ];
 
 app.use(
