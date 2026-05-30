@@ -95,7 +95,7 @@ export default function VerifyPage() {
       if (response?.data?.user) {
         dispatch(
           setUser({
-            userId: response.data.user.id,
+            id: response.data.user.id,
             email: response.data.user.email,
             name: response.data.user.name,
             role: response.data.user.role || "user",
