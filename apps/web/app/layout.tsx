@@ -3,7 +3,7 @@ import "./globals.css";
 import './ConnectionStatus.css'
 import Providers from "@/providers/Providers";
 import AppLayout from "@/components/layout/AppLayout";
-import { ConnectionStatus, AutoReconnectRefresh } from "@/hooks/useConnectionMonitor"; 
+import { ConnectionStatus } from "@/hooks/useConnectionMonitor";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Providers>
-          
           <ConnectionStatus />
-          <AutoReconnectRefresh />
-          
           <AppLayout>{children}</AppLayout>
         </Providers>
       </body>

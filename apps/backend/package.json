@@ -9,7 +9,7 @@
     "worker:prod": "node dist/src/core/worker/index.js",
     "build": "tsc && tsc-alias",
     "start": "node dist/src/server.js",
-    "migrate": "ts-node-dev -r tsconfig-paths/register -r dotenv/config src/db/migrations/migrate.ts"
+    "migrate": "drizzle-kit push --force"
   },
   "dependencies": {
     "@bull-board/api": "^7.0.0",

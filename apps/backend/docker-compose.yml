@@ -1,4 +1,17 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: invite-migrate
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["pnpm", "migrate"]
+    restart: "no"
+
   api:
     build:
       context: .
@@ -6,12 +19,14 @@ services:
     container_name: invite-api
     restart: unless-stopped
     ports:
-      - "5000:5000" 
+      - "5000:5000"
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     mem_limit: 500m
 
   worker:
@@ -23,8 +38,10 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     mem_limit: 700m
 
   postgres:
@@ -40,6 +57,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     mem_limit: 500m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
@@ -48,6 +70,6 @@ services:
     ports:
       - "6379:6379"
     mem_limit: 200m
-  
+
 volumes:
   postgres_data:

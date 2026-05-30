@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
       <nav className={styles.nav}>
         <a href="/" className={styles.logo}>
           <span className={styles.logoHighlight}>పి</span>
-          <span>lupoo</span>
+          <span>loopu</span>
         </a>
         <div className={styles.navRight}>
           <span>Know your password?</span>

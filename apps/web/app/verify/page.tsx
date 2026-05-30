@@ -215,7 +215,7 @@ export default function VerifyPage() {
       <nav className={styles.nav}>
         <a href="/" className={styles.logo}>
           <span className={styles.logoHighlight}>పి</span>
-          <span>lupoo</span>
+          <span>looopu</span>
         </a>
         <div className={styles.navText}>Check your inbox for the code</div>
       </nav>

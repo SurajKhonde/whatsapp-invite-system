@@ -95,7 +95,7 @@ export default function LandingPage() {
       <nav className={styles.nav}>
         <div className={styles.logo}>
           <span className={styles.logoP}>పి</span>
-          <span className={styles.logoRest}>lupoo</span>
+          <span className={styles.logoRest}>looopu</span>
         </div>
 
         <div className={styles.navMenu}>
@@ -575,7 +575,7 @@ export default function LandingPage() {
           <div className={styles.footerBrand}>
             <div className={styles.footerLogo}>
               <span className={styles.logoP}>పి</span>
-              <span className={styles.logoRest}>lupoo</span>
+              <span className={styles.logoRest}>looopu</span>
             </div>
             <p className={styles.footerDesc}>
               Bulk WhatsApp invitations for Indian weddings, birthdays, schools, and businesses.

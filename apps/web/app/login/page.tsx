@@ -104,7 +104,7 @@ export default function LoginPage() {
       <nav className={styles.navbar}>
         <a href="/" className={styles.logo}>
           <span className={styles.logoPink}>పి</span>
-          <span className={styles.logoWhite}>lupoo</span>
+          <span className={styles.logoWhite}>looopu</span>
         </a>
 
         <div className={styles.navRight}>

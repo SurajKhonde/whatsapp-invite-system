@@ -115,7 +115,7 @@ export default function SignupPage() {
       <nav className={styles.nav}>
         <a href="/" className={styles.logo}>
           <span className={styles.logoP}>పి</span>
-          <span className={styles.logoRest}>lupoo</span>
+          <span className={styles.logoRest}>looopu</span>
         </a>
 
         <div className={styles.navRight}>

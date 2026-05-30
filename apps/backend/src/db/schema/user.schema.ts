@@ -13,7 +13,7 @@ export const users = pgTable(
     
     // Role & Status
     role: varchar("role", { length: 50 }).default("user"),
-    isActive: boolean("is_active").default(true),
+    isActive: boolean("is_active").notNull().default(true),
     
     // Profile
     profileImageUrl: varchar("profile_image_url", { length: 500 }),

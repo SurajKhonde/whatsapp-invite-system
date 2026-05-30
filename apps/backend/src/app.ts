@@ -17,6 +17,7 @@ app.use(helmet());
 const allowedOrigins = [
   "https://pilooopu.shop",
   "https://www.pilooopu.shop",
+  "http://localhost:3000"
 ];
 
 app.use(

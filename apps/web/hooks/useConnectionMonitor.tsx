@@ -1,226 +1,151 @@
+
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
-interface HealthStatus {
-  status: "ok" | "error";
-  timestamp: string;
-  uptime: number;
+type ConnectionState = "connected" | "disconnected" | "reconnecting";
+
+// ─── Singleton event bus ───────────────────────────────────────────────────
+const listeners = new Set<(state: ConnectionState) => void>();
+let networkFailCount = 0;
+const FAILURES_BEFORE_OFFLINE = 2;
+
+export function notifyRequestSuccess() {
+  networkFailCount = 0;
+  listeners.forEach((fn) => fn("connected"));
 }
 
+export function notifyRequestFailure(isNetworkError: boolean) {
+  if (!isNetworkError) return;
+  networkFailCount++;
+  if (networkFailCount >= FAILURES_BEFORE_OFFLINE) {
+    listeners.forEach((fn) => fn("disconnected"));
+  }
+}
+// ──────────────────────────────────────────────────────────────────────────
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+const HEALTH_URL = `${BACKEND_URL}/health`;
+const POLL_INTERVAL = 8_000;
+const TIMEOUT = 5_000;
+
 export function useConnectionMonitor() {
-  const [isConnected, setIsConnected] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
-  const [lastCheck, setLastCheck] = useState<Date | null>(null);
-  const [checkCount, setCheckCount] = useState(0);
-  const [failCount, setFailCount] = useState(0);
-  const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+  const [state, setState] = useState<ConnectionState>("connected");
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
+  const stateRef = useRef<ConnectionState>("connected");
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ;
-  const HEALTH_CHECK_URL = `${BACKEND_URL}/health`;
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
 
-  const HEALTH_CHECK_INTERVAL = 90_000;
-  const HEALTH_CHECK_TIMEOUT = 3_000;
-  const MAX_FAILURES = 3;
-
-  const checkHealth = async () => {
-    setIsChecking(true);
-    setCheckCount((prev) => prev + 1);
-
+  const checkHealth = useCallback(async () => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, HEALTH_CHECK_TIMEOUT);
-
-      try {
-        const response = await fetch(HEALTH_CHECK_URL, {
-          method: "GET",
-          cache: "no-store",
-          signal: controller.signal,
-          keepalive: false,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data: HealthStatus = await response.json();
-
-          setIsConnected(true);
-          setError(null);
-          setFailCount(0);
-          setLastCheck(new Date());
-
-          return true;
-        } else {
-          throw new Error(`Server returned: ${response.status}`);
-        }
-      } catch (fetchErr) {
-        clearTimeout(timeoutId);
-        throw fetchErr;
-      }
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error 
-          ? err.message 
-          : "Network error - No connection to backend";
-
-      setFailCount((prev) => {
-        const newFailCount = prev + 1;
-
-        if (newFailCount >= MAX_FAILURES) {
-          setIsConnected(false);
-        }
-
-        return newFailCount;
+      const t = setTimeout(() => controller.abort(), TIMEOUT);
+      const res = await fetch(HEALTH_URL, {
+        cache: "no-store",
+        signal: controller.signal,
       });
+      clearTimeout(t);
 
-      setError(errorMsg);
-      return false;
-    } finally {
-      setIsChecking(false);
+      if (res.ok) {
+        networkFailCount = 0;
+        stateRef.current = "connected";
+        setState("connected");
+        stopPolling();
+        window.location.reload();
+      }
+    } catch {
+      // still down, keep polling
     }
-  };
+  }, [stopPolling]);
 
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+    pollRef.current = setInterval(checkHealth, POLL_INTERVAL);
+  }, [checkHealth]);
+
+  // ── On mount: single health check so 304s don't leave us "offline" ──
   useEffect(() => {
-    checkHealth();
-
-    const interval = setInterval(() => {
-      checkHealth();
-    }, HEALTH_CHECK_INTERVAL);
-
-    return () => {
-      clearInterval(interval);
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current);
+    const checkOnMount = async () => {
+      try {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), TIMEOUT);
+        const res = await fetch(HEALTH_URL, { cache: "no-store", signal: controller.signal });
+        clearTimeout(t);
+        if (res.ok) {
+          networkFailCount = 0;
+          stateRef.current = "connected";
+          setState("connected");
+        }
+      } catch {
+        // leave as connected — real API failures will trigger offline
       }
     };
+    checkOnMount();
   }, []);
 
+  // ── Listen to signals from baseQuery ──
   useEffect(() => {
-    const handleOnline = () => {
-      setFailCount(0);
+    const handler = (newState: ConnectionState) => {
+      if (newState === stateRef.current) return;
+      stateRef.current = newState;
+      setState(newState);
+
+      if (newState === "disconnected") {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    listeners.add(handler);
+    return () => {
+      listeners.delete(handler);
+      stopPolling();
+    };
+  }, [startPolling, stopPolling]);
+
+  // ── Browser online/offline events ──
+  useEffect(() => {
+    const onOffline = () => {
+      stateRef.current = "disconnected";
+      setState("disconnected");
+      startPolling();
+    };
+
+    const onOnline = () => {
+      stateRef.current = "reconnecting";
+      setState("reconnecting");
       checkHealth();
     };
 
-    const handleOffline = () => {
-      setIsConnected(false);
-      setError("No internet connection");
-      setFailCount(1);
-    };
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    if (!navigator.onLine) {
-      setIsConnected(false);
-      setError("No internet connection");
-    }
-
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", onOnline);
     };
-  }, []);
+  }, [startPolling, checkHealth]);
 
-  return {
-    isConnected,
-    error,
-    isChecking,
-    lastCheck,
-    checkCount,
-    failCount,
-    manualCheck: checkHealth,
-  };
+  return state;
 }
 
 export function ConnectionStatus() {
-  const { isConnected, error, isChecking } = useConnectionMonitor();
+  const state = useConnectionMonitor();
 
-  // Only show when there's an issue
-  if (isConnected && !isChecking) {
-    return null;
-  }
+  if (state === "connected") return null;
 
   return (
     <div className="statusBadge">
-      {isChecking ? (
-        <>
-          <span className="statusDot statusDotSpinner"></span>
-          <span className="statusLabel">Checking</span>
-        </>
-      ) : isConnected ? (
-        <>
-          <span className="statusDot statusDotOnline"></span>
-          <span className="statusLabel">Online</span>
-        </>
+      {state === "reconnecting" ? (
+        <><span className="statusDot statusDotSpinner" /><span className="statusLabel">Reconnecting…</span></>
       ) : (
-        <>
-          <span className="statusDot statusDotOffline"></span>
-          <span className="statusLabel">Offline</span>
-        </>
+        <><span className="statusDot statusDotOffline" /><span className="statusLabel">Offline</span></>
       )}
     </div>
   );
 }
-
-export function AutoReconnectRefresh() {
-  const [wasDisconnected, setWasDisconnected] = useState(false);
-  const { isConnected } = useConnectionMonitor();
-
-  useEffect(() => {
-    if (!isConnected) {
-      setWasDisconnected(true);
-    }
-
-    if (wasDisconnected && isConnected) {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    }
-  }, [isConnected, wasDisconnected]);
-
-  return null;
-}
-
-export async function apiWithRetry(
-  url: string,
-  options: RequestInit & { maxRetries?: number } = {}
-) {
-  const maxRetries = options.maxRetries || 3;
-  let retries = 0;
-
-  const attemptFetch = async (): Promise<Response> => {
-    try {
-      const fetchOptions = { ...options };
-      delete (fetchOptions as any).maxRetries;
-
-      const response = await fetch(url, fetchOptions);
-
-      if (response.ok) {
-        return response;
-      }
-
-      if (response.status >= 500) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      return response;
-    } catch (err) {
-      retries++;
-
-      if (retries < maxRetries) {
-        const delay = Math.pow(2, retries - 1) * 1000;
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return attemptFetch();
-      }
-
-      throw err;
-    }
-  };
-
-  return attemptFetch();
-}
-
-export default ConnectionStatus;

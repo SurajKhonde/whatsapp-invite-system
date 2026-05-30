@@ -1,5 +1,3 @@
-
-
 .header {
   position: sticky;
   top: 0;
@@ -134,10 +132,6 @@
   transition: all 0.3s ease;
 }
 
-/* ============================================================================
-   STATUS: ONLINE (GREEN GLOW)
-   ============================================================================ */
-
 .statusOnline {
   display: flex;
   align-items: center;
@@ -168,10 +162,6 @@
   text-transform: uppercase;
   font-size: 11px;
 }
-
-/* ============================================================================
-   STATUS: CHECKING (YELLOW GLOW)
-   ============================================================================ */
 
 .statusChecking {
   display: flex;
@@ -208,10 +198,6 @@
   animation: pdot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ============================================================================
-   STATUS: OFFLINE (RED GLOW)
-   ============================================================================ */
-
 .statusOffline {
   display: flex;
   align-items: center;
@@ -246,9 +232,6 @@
   display: inline-block;
 }
 
-/* ============================================================================
-   RESPONSIVE
-   ============================================================================ */
 
 @media (max-width: 768px) {
   .statusContainer {
@@ -270,6 +253,51 @@
   .statusText {
     font-size: 10px;
   }
+}
+
+
+/* ============================================================================
+   HAMBURGER (hidden on desktop)
+   ============================================================================ */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bar {
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin: 0 auto;
+  background: #f5f0ff;
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+
+.bar1Open {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.bar2Open {
+  opacity: 0;
+}
+
+.bar3Open {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.mobileDropdown {
+  display: none;
 }
 
 @media (max-width: 640px) {
@@ -295,4 +323,48 @@
     width: 8px;
     height: 8px;
   }
+
+  /* show hamburger */
+  .hamburger {
+    display: flex;
+  }
+
+  /* hide logout text button on mobile (it's in dropdown territory, keep if you want) */
+  .logout {
+    padding: 7px 10px;
+  }
+
+  /* dropdown menu */
+  .mobileDropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 16px 16px;
+    background: rgba(13, 8, 16, 0.97);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: dropIn 0.2s ease;
+  }
+
+  .mobileLink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(245, 240, 255, 0.7);
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .mobileLinkActive {
+    color: #e91e8c;
+    background: rgba(233, 30, 140, 0.1);
+    border-color: rgba(233, 30, 140, 0.2);
+  }
 }
+
