@@ -10,10 +10,9 @@ import priceConfig from "@modules/pricingConfig/pricingConfig.routes";
 import adminTeplateManger from "@modules/admin-templates/admin-templates.routes";
 const router = Router();
 
-// ✅ mount modules
-router.use("/auth", authRoutes);
-router.use("/guests", guestRoutes);
-router.use("/invite", inviteRoutes);
+router.use("/auth",authRoutes);
+router.use("/guests",guestRoutes);
+router.use("/invite",inviteRoutes);
 router.use("/templates",templateRoutes);
 router.use("/pricing-config",priceConfig)
 router.use("/payment",paymentRoutes);

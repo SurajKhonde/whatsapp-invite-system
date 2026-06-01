@@ -3,7 +3,7 @@ import { logger } from "@core/logger/logger";
 
 const TOKEN = process.env.WHATSAPP_TOKEN!;
 const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!;
-const BASE_URL = "https://graph.instagram.com/v18.0";
+const BASE_URL = "https://graph.facebook.com/v21.0";
 
 export interface SendWhatsAppPayload {
   to: string;

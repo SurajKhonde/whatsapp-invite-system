@@ -176,8 +176,6 @@ export const resetPasswordController = async (
   }
 };
 
-// ✅ LOGOUT
-// ⚠️ PROTECTED ROUTE - Requires authentication
 export const logoutController = async (
   req: Request,
   res: Response,
@@ -185,8 +183,8 @@ export const logoutController = async (
 ) => {
   try {
     const userId = (req as any).user?.userId;
- 
-     if (!userId) {
+
+    if (!userId) {
       return sendResponse({
         res,
         statusCode: 401,
@@ -194,23 +192,19 @@ export const logoutController = async (
         notify: true,
       });
     }
- 
-    // ✅ CLEAR USER CACHE FROM REDIS
-    // Remove the user's verification cache so it can't be reused
+
     await invalidateUserCache(userId);
- 
-    console.log(`✅ User ${userId} logged out - cache cleared`);
- 
-    // ✅ CLEAR HTTPONLY COOKIE
-    // Backend clears the cookie by sending empty value
+
+    const isProd = process.env.NODE_ENV === "production";
+
     res.clearCookie("access_token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      domain: isProd ? ".pilooopu.shop" : undefined,
       path: "/",
     });
- 
-    // ✅ RETURN SUCCESS
+
     res.json({
       message: "Logged out successfully",
       data: { success: true },
@@ -219,7 +213,6 @@ export const logoutController = async (
     next(err);
   }
 };
-
 export const getMeController = async (
   req: Request,
   res: Response,
